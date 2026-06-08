@@ -15,7 +15,7 @@ export const DOCTORS: Doctor[] = [
     name: 'د. خالد بترجي',
     specialty: 'جراحة العظام والمفاصل',
     title: 'استشاري جراحة العظام والمفاصل — رئيس المركز',
-    experience: '٣٥+ سنة خبرة',
+    experience: '35+ سنة خبرة',
     image: '/doctor-card.png',
     bio: 'استشاري متخصص في جراحات الركبة والمفاصل الصناعية والمناظير وجراحة الحوادث، خبرة طويلة في علاج مشاكل العظام المستعصية.',
     calendlyUrl: 'https://calendly.com/your-doctor-link',
