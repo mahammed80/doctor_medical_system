@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { DOCTORS, Doctor } from '@/lib/doctors'
+import { ARTICLES } from '@/lib/articles'
 
 /* ── DATA ── */
 
@@ -119,11 +120,7 @@ const qualifications = [
   { year: '2026', title: 'نظام الاستشارات المطور', inst: 'إطلاق المنصة الجديدة وتفعيل ميزات التخزين الطبي الآمن وتوصيل الأدوية' },
 ]
 
-const resources = [
-  { title: 'دليل المريض الشامل لجراحات المفاصل والمنظار', summary: 'كل ما تحتاج معرفته عن كيفية التحضير لعملية المنظار وما يمكن توقعه في مرحلة التعافي.', tag: 'جراحة العظام', readTime: '5' },
-  { title: 'طرق التمييز بين آلام العضلات والروماتيزم', summary: 'دليل مبسط لمساعدتك في فهم طبيعة الألم ومتى يتعين عليك استشارة طبيب روماتيزم متخصص.', tag: 'الروماتيزم', readTime: '3' },
-  { title: 'تمارين وقائية لتقوية أسفل الظهر وحماية العمود الفقري', summary: 'مجموعة من التمارين اليومية البسيطة التي تقي من الانزلاق الغضروفي وتخفف آلام الجلوس الطويل.', tag: 'العمود الفقري', readTime: '4' },
-]
+
 
 /* ── COMPONENTS ── */
 
@@ -1246,16 +1243,18 @@ export default function Home() {
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: '1.5rem',
           }}>
-            {resources.map((r, i) => (
+            {ARTICLES.map((r, i) => (
               <ScrollReveal key={r.title} delay={i * 100}>
-                <div style={{
+                <Link href={`/articles/${r.slug}`} style={{
+                  display: 'block',
+                  textDecoration: 'none',
                   padding: '2rem',
                   background: 'var(--surface)',
                   borderRadius: 'var(--r-xl)',
                   border: '1px solid var(--border-faint)',
                   boxShadow: 'var(--shadow-sm)',
                   textAlign: 'right',
-                  transition: 'transform 350ms var(--ease-spring), box-shadow 350ms',
+                  transition: 'transform 350ms var(--ease-spring), box-shadow 350ms, border-color 350ms',
                   cursor: 'pointer',
                   position: 'relative',
                   overflow: 'hidden',
@@ -1305,7 +1304,7 @@ export default function Home() {
                     </svg>
                     <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 700 }}>{r.readTime}</span> دقائق قراءة
                   </div>
-                </div>
+                </Link>
               </ScrollReveal>
             ))}
           </div>
