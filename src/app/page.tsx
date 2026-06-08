@@ -363,6 +363,8 @@ export default function Home() {
                   backgroundClip: 'text',
                   backgroundSize: '200% 200%',
                   animation: 'shimmer 4s ease-in-out infinite',
+                  display: 'inline-block',
+                  paddingTop: '5px',
                 }}>
                   استشاري جراحة العظام والمفاصل
                 </span>
