@@ -67,8 +67,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '0.95rem', fontWeight: 800, lineHeight: 1.2 }}>مركز بترجي للاستشارات</span>
-                <span style={{ fontSize: '0.68rem', color: 'var(--fg-dim)', fontWeight: 500 }}>نخبة من الأطباء الاستشاريين أونلاين</span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 800, lineHeight: 1.2 }}>استشارات د. خالد بترجي</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--fg-dim)', fontWeight: 500 }}>استشاري جراحة العظام والمفاصل أونلاين</span>
               </div>
             </Link>
 
@@ -138,12 +138,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     style={{ objectFit: 'cover' }}
                   />
                 </div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 800 }}>مركز بترجي للاستشارات الطبية</div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 800 }}>استشارات د. خالد بترجي</div>
               </div>
               <div style={{
                 fontSize: '0.78rem', color: 'var(--fg-dim)', lineHeight: 1.8,
               }}>
-                منصة استشارات طبية متكاملة تضم نخبة من أفضل الاستشاريين والأطباء المتخصصين، لتقديم رعاية صحية ممتازة وتجربة استشارية آمنة وموثوقة من منزلك.
+                منصة استشارات طبية متكاملة مع د. خالد بترجي، لتقديم رعاية صحية ممتازة وتجربة استشارية آمنة وموثوقة من منزلك.
               </div>
             </div>
 

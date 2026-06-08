@@ -8,13 +8,13 @@ import { DOCTORS, Doctor } from '@/lib/doctors'
 /* ── DATA ── */
 
 const stats = [
-  { num: '٤', label: 'أطباء استشاريين', desc: 'نخبة من كبار الأخصائيين' },
+  { num: '٣٥+', label: 'سنة من الخبرة', desc: 'في جراحة العظام والمفاصل' },
   { num: '١٠٠٪', label: 'استشارة أون لاين', desc: 'مرئية، آمنة ومريحة' },
   { num: '+١,٥٠٠', label: 'مريض تم علاجهم', desc: 'بنسبة رضا تفوق ٩٨٪' },
 ]
 
 const steps = [
-  { step: '01', title: 'اختر طبيبك', desc: 'تصفح قائمة الأطباء الاستشاريين واختر الأنسب لحالتك' },
+  { step: '01', title: 'احجز الاستشارة', desc: 'اختر الباقة الطبية المناسبة لحالتك لبدء حجز موعدك' },
   { step: '02', title: 'سجّل بياناتك الطبية', desc: 'املأ معلوماتك الشخصية وارفع الأشعة والتحاليل في دقائق' },
   { step: '03', title: 'سدد الرسوم بأمان', desc: 'ادفع عبر بوابات الدفع الإلكتروني المعتمدة والسريعة' },
   { step: '04', title: 'احجز موعدك وتواصل', desc: 'اختر الموعد المناسب لجلستك المرئية المباشرة مع الطبيب' },
@@ -355,7 +355,7 @@ export default function Home() {
                 color: 'var(--fg)',
                 marginBottom: '1.5rem',
               }}>
-                نخبة من الأطباء{' '}
+                استشارات د. خالد بترجي{' '}
                 <br />
                 <span style={{
                   background: 'linear-gradient(135deg, var(--primary) 0%, oklch(55% 0.22 260) 50%, var(--primary-down) 100%)',
@@ -365,7 +365,7 @@ export default function Home() {
                   backgroundSize: '200% 200%',
                   animation: 'shimmer 4s ease-in-out infinite',
                 }}>
-                  الاستشاريين أونلاين
+                  استشاري جراحة العظام والمفاصل
                 </span>
                 <span style={{
                   fontSize: 'clamp(1.1rem, 2.2vw, 1.5rem)',
@@ -375,7 +375,7 @@ export default function Home() {
                   marginTop: '0.75rem',
                   letterSpacing: '-0.01em',
                 }}>
-                  رعاية طبية تخصصية تشمل جراحة العظام، العمود الفقري، الروماتيزم، والتأهيل
+                  رعاية طبية فائقة لجراحات الركبة والمفاصل الصناعية والمناظير أونلاين من منزلك
                 </span>
               </h1>
 
@@ -400,8 +400,8 @@ export default function Home() {
                   <span style={{ fontSize: '1.2rem', lineHeight: 1, display: 'inline-block', transform: 'translateX(0)', transition: 'transform 200ms' }}
                   >←</span>
                 </Link>
-                <Link href="#doctors-section" className="btn-ghost" style={{ fontSize: '0.95rem', padding: '0.9rem 1.75rem' }}>
-                  أطباؤنا الاستشاريون
+                <Link href="#about-section" className="btn-ghost" style={{ fontSize: '0.95rem', padding: '0.9rem 1.75rem' }}>
+                  تعرّف على الدكتور
                 </Link>
               </div>
 
@@ -569,134 +569,6 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* ── DOCTORS TEAM SECTION ── */}
-      <section id="doctors-section" style={{ position: 'relative', zIndex: 2, padding: '5rem 0 3rem' }}>
-        <div className="container" style={{ position: 'relative' }}>
-          <ScrollReveal>
-            <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-              <SectionLabel>الفريق الطبي للمركز</SectionLabel>
-              <h2 style={{
-                fontSize: 'clamp(2rem, 4vw, 3rem)',
-                fontWeight: 900,
-                letterSpacing: '-0.02em',
-                color: 'var(--fg)',
-                marginBottom: '0.75rem',
-              }}>
-                أطباؤنا الاستشاريون
-              </h2>
-              <p style={{
-                fontSize: '1.05rem',
-                color: 'var(--fg-muted)',
-                maxWidth: '560px',
-                margin: '0 auto',
-                lineHeight: 1.8,
-              }}>
-                تضم عياداتنا التخصصية نخبة من كبار الأطباء الاستشاريين الحاصلين على أعلى الزمالات الكندية والبريطانية لتقديم رعاية طبية متكاملة.
-              </p>
-            </div>
-          </ScrollReveal>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: '1.5rem',
-          }}>
-            {DOCTORS.map((doc, idx) => (
-              <ScrollReveal key={doc.id} delay={idx * 80}>
-                <div className="card-warm" style={{
-                  padding: '1.5rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: '100%',
-                  transition: 'transform 400ms var(--ease-spring), box-shadow 400ms, border-color 400ms',
-                  border: '1px solid var(--border-faint)',
-                  overflow: 'hidden',
-                  position: 'relative',
-                }}
-                  onMouseOver={e => {
-                    const el = e.currentTarget as HTMLElement
-                    el.style.transform = 'translateY(-6px)'
-                    el.style.boxShadow = 'var(--shadow-lg)'
-                    el.style.borderColor = 'var(--border-accent)'
-                  }}
-                  onMouseOut={e => {
-                    const el = e.currentTarget as HTMLElement
-                    el.style.transform = 'translateY(0)'
-                    el.style.boxShadow = 'var(--shadow-warm)'
-                    el.style.borderColor = 'var(--border-faint)'
-                  }}
-                >
-                  <div className="photo-frame" style={{
-                    width: '100%',
-                    aspectRatio: '1',
-                    marginBottom: '1.25rem',
-                    boxShadow: 'var(--shadow-sm)',
-                    position: 'relative',
-                  }}>
-                    <Image
-                      src={doc.image}
-                      alt={doc.name}
-                      width={300}
-                      height={300}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                    <div style={{
-                      position: 'absolute', bottom: 0, left: 0, right: 0, height: '4px',
-                      background: 'linear-gradient(90deg, var(--gold) 0%, var(--primary) 100%)',
-                      zIndex: 3
-                    }} />
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem', gap: '0.5rem' }}>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--fg)', margin: 0, whiteSpace: 'nowrap' }}>{doc.name}</h3>
-                    <span style={{
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
-                      color: 'var(--primary)',
-                      background: 'var(--primary-soft)',
-                      padding: '0.2rem 0.55rem',
-                      borderRadius: '9999px',
-                      border: '1px solid var(--border-accent)',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {doc.specialty}
-                    </span>
-                  </div>
-
-                  <div style={{
-                    fontSize: '0.75rem',
-                    color: 'var(--fg-dim)',
-                    fontWeight: 600,
-                    marginBottom: '0.75rem',
-                  }}>
-                    {doc.title} • <span style={{ color: 'var(--gold)' }}>{doc.experience}</span>
-                  </div>
-
-                  <p style={{
-                    fontSize: '0.82rem',
-                    color: 'var(--fg-muted)',
-                    lineHeight: 1.7,
-                    marginBottom: '1.5rem',
-                    flexGrow: 1,
-                  }}>
-                    {doc.bio}
-                  </p>
-
-                  <Link href={`/consultation/new?doctor=${doc.id}`}
-                    className="btn-primary"
-                    style={{ width: '100%', justifyContent: 'center', fontSize: '0.9rem', padding: '0.75rem 1.25rem' }}
-                  >
-                    حجز استشارة
-                  </Link>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <SectionDivider />
-
       {/* ── ACHIEVEMENT COUNTERS ── */}
       <section style={{ position: 'relative', zIndex: 2, padding: '5rem 0' }}>
         <div style={{
@@ -749,7 +621,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── DOCTOR QUALIFICATIONS ── */}
-      <section style={{ position: 'relative', zIndex: 2, padding: '5rem 0' }}>
+      <section id="about-section" style={{ position: 'relative', zIndex: 2, padding: '5rem 0' }}>
         <div className="container">
           <div style={{
             display: 'grid',
