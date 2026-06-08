@@ -205,7 +205,7 @@ export default function NewConsultation() {
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   ) : (
-                    s.label.slice(0, 1)
+                    i + 1
                   )}
                   {/* Gold ring on active */}
                   {i === step && (
