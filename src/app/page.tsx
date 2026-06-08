@@ -406,41 +406,7 @@ export default function Home() {
                 </Link>
               </div>
 
-              <div className="anim-fade-3 stats-inline" style={{
-                marginTop: '4.5rem',
-                display: 'flex',
-                gap: '2.5rem',
-                paddingTop: '2.5rem',
-                borderTop: '1px solid var(--border-faint)',
-              }}>
-                {stats.map(({ num, label, desc }, idx) => (
-                  <div key={label} style={{
-                    position: 'relative',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    flex: '1',
-                    paddingRight: idx > 0 ? '2.5rem' : '0',
-                    borderRight: idx > 0 ? '1px solid var(--border-faint)' : 'none',
-                  }}>
-                    <div className="num" style={{
-                      fontSize: 'clamp(2.5rem, 4.5vw, 3.4rem)',
-                      fontWeight: 900,
-                      letterSpacing: '-0.02em',
-                      background: 'linear-gradient(135deg, var(--primary) 0%, var(--gold) 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                      lineHeight: 1.0,
-                      marginBottom: '0.4rem',
-                      fontFamily: 'var(--font-inter), sans-serif',
-                    }}>
-                      {num}
-                    </div>
-                    <div style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--fg)', marginBottom: '0.15rem' }}>{label}</div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--fg-muted)', lineHeight: 1.3 }}>{desc}</div>
-                  </div>
-                ))}
-              </div>
+
             </div>
 
             {/* Doctor Photo Column */}
@@ -536,6 +502,55 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── HERO STATS SECTION ── */}
+      <section style={{ position: 'relative', zIndex: 3, padding: '1.5rem 0 3rem' }}>
+        <div className="container">
+          <ScrollReveal>
+            <div style={{
+              background: 'linear-gradient(135deg, oklch(100% 0 0 / 0.8) 0%, oklch(98.5% 0.004 85 / 0.8) 100%)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1.5px solid var(--border-accent)',
+              borderRadius: 'var(--r-2xl)',
+              boxShadow: 'var(--shadow-lg), 0 20px 50px oklch(60% 0.08 60 / 0.04)',
+              padding: '3rem 2.5rem',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '2.5rem',
+            }}>
+              {stats.map(({ num, label, desc }, idx) => (
+                <div key={label} style={{
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  paddingLeft: idx < 2 ? '2.5rem' : '0',
+                  borderLeft: idx < 2 ? '1px solid var(--border-faint)' : 'none',
+                }}>
+                  <div className="num" style={{
+                    fontSize: 'clamp(3.5rem, 6vw, 4.8rem)',
+                    fontWeight: 900,
+                    letterSpacing: '-0.03em',
+                    background: 'linear-gradient(135deg, var(--primary) 0%, var(--gold) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    lineHeight: 1.0,
+                    marginBottom: '0.75rem',
+                    fontFamily: 'var(--font-inter), sans-serif',
+                  }}>
+                    {num}
+                  </div>
+                  <div style={{ fontSize: '1.15rem', fontWeight: 900, color: 'var(--fg)', marginBottom: '0.35rem' }}>{label}</div>
+                  <div style={{ fontSize: '0.88rem', color: 'var(--fg-muted)', lineHeight: 1.4, maxWidth: '280px' }}>{desc}</div>
+                </div>
+              ))}
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
