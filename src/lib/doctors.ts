@@ -16,7 +16,7 @@ export const DOCTORS: Doctor[] = [
     specialty: 'جراحة العظام والمفاصل',
     title: 'استشاري جراحة العظام والمفاصل — رئيس المركز',
     experience: '35+ سنة خبرة',
-    image: '/doctor-card.png',
+    image: '/main_image.jpeg',
     bio: 'استشاري متخصص في جراحات الركبة والمفاصل الصناعية والمناظير وجراحة الحوادث، خبرة طويلة في علاج مشاكل العظام المستعصية.',
     calendlyUrl: 'https://calendly.com/your-doctor-link',
   },

@@ -471,7 +471,7 @@ export default function Home() {
                 }} />
                 
                 <Image
-                  src="/doctor-card.png"
+                  src="/main_image.jpeg"
                   alt="د. خالد بترجي"
                   fill
                   sizes="(max-width: 900px) 100vw, 550px"
