@@ -997,9 +997,9 @@ export default function Home() {
                   gap: '1rem',
                 }}>
                   {[
-                    { num: '+١,٥٠٠', label: 'مريض' },
-                    { num: '٩٨٪', label: 'رضا المرضى' },
-                    { num: '٢٤', label: 'ساعة للرد' },
+                    { num: '1,500+', label: 'مريض' },
+                    { num: '98%', label: 'رضا المرضى' },
+                    { num: '24', label: 'ساعة للرد' },
                   ].map((s) => (
                     <div key={s.label} style={{
                       padding: '1.25rem', textAlign: 'center',
@@ -1014,6 +1014,7 @@ export default function Home() {
                       <div className="num" style={{
                         fontSize: '1.6rem', fontWeight: 900, color: 'var(--primary)',
                         marginBottom: '0.15rem',
+                        fontFamily: 'var(--font-inter), sans-serif',
                       }}>{s.num}</div>
                       <div style={{ fontSize: '0.78rem', color: 'var(--fg-dim)' }}>{s.label}</div>
                     </div>
