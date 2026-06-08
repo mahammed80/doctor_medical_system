@@ -183,7 +183,7 @@ export default function NewConsultation() {
           {STEPS.map((s, i) => (
             <div key={s.label} style={{ display: 'flex', alignItems: 'center', flex: 1, position: 'relative', zIndex: 1 }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem', flex: 'none' }}>
-                <div style={{
+                <div className="num" style={{
                   width: i === step ? '46px' : i < step ? '40px' : '38px',
                   height: i === step ? '46px' : i < step ? '40px' : '38px',
                   borderRadius: '50%',
