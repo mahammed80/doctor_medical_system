@@ -21,12 +21,14 @@ const MOCK_CONSULTATIONS: EnhancedConsultation[] = [
     chief_complaint: 'ألم حاد ومستمر في الركبة اليسرى عند المشي أو صعود الدرج بعد ممارسة رياضة الجري.',
     medical_history: 'لا توجد أمراض مزمنة. إصابة قديمة في الرباط الجانبي قبل ٥ سنوات.',
     current_medications: 'مسكنات ألم (باراسيتامول) عند الحاجة.',
-    status: 'booked',
+    status: 'approved',
     payment_id: 'pay_mada_8761234',
-    calendly_event_url: 'https://calendly.com/events/khalid-batarfi-1',
+    calendly_event_url: null,
     doctor_id: 'khalid',
     doctor_name: 'د. خالد بترجي',
     specialty: 'جراحة العظام والمفاصل',
+    appointment_date: '2026-06-11',
+    appointment_time: '10:00',
     created_at: new Date(Date.now() - 3600000 * 2).toISOString(), // 2 hours ago
   },
   {
@@ -37,12 +39,14 @@ const MOCK_CONSULTATIONS: EnhancedConsultation[] = [
     chief_complaint: 'خشونة وتورم في مفاصل الركبة وتصلب حركي خاصة في الصباح الباكر.',
     medical_history: 'تاريخ عائلي للإصابة بخشونة المفاصل.',
     current_medications: 'لا يوجد.',
-    status: 'pending_booking',
+    status: 'pending_approval',
     payment_id: 'pay_visa_9918273',
     calendly_event_url: null,
     doctor_id: 'khalid',
     doctor_name: 'د. خالد بترجي',
     specialty: 'جراحة العظام والمفاصل',
+    appointment_date: '2026-06-12',
+    appointment_time: '14:30',
     created_at: new Date(Date.now() - 3600000 * 24).toISOString(), // 1 day ago
   },
   {
@@ -59,6 +63,8 @@ const MOCK_CONSULTATIONS: EnhancedConsultation[] = [
     doctor_id: 'khalid',
     doctor_name: 'د. خالد بترجي',
     specialty: 'جراحة العظام والمفاصل',
+    appointment_date: null,
+    appointment_time: null,
     created_at: new Date(Date.now() - 3600000 * 48).toISOString(), // 2 days ago
   },
   {
@@ -69,12 +75,14 @@ const MOCK_CONSULTATIONS: EnhancedConsultation[] = [
     chief_complaint: 'برنامج تأهيلي ومتابعة طبية لعلاج كسر في عظمة الترقوة ومفاصل الكتف.',
     medical_history: 'كسر مضاعف في الترقوة تم علاجه تحفظياً بجبيرة لمدة ٦ أسابيع.',
     current_medications: 'فيتامين د وكالسيوم.',
-    status: 'booked',
+    status: 'declined',
     payment_id: 'pay_apple_4455667',
-    calendly_event_url: 'https://calendly.com/events/khalid-batarfi-1',
+    calendly_event_url: null,
     doctor_id: 'khalid',
     doctor_name: 'د. خالد بترجي',
     specialty: 'جراحة العظام والمفاصل',
+    appointment_date: '2026-06-10',
+    appointment_time: '15:00',
     created_at: new Date(Date.now() - 3600000 * 72).toISOString(), // 3 days ago
   }
 ]
@@ -291,4 +299,147 @@ export async function saveLocalUploadedFile(consultationId: string, fileName: st
   
   existing.push(newFile)
   localStorage.setItem(key, JSON.stringify(existing))
+}
+
+// ── CUSTOM SCHEDULING CALENDAR SERVICES ──
+
+export type DoctorScheduleSettings = {
+  workingDays: number[] // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+  startTime: string // "09:00"
+  endTime: string // "17:00"
+  slotDuration: number // 30
+  lunchStart: string // "12:00"
+  lunchEnd: string // "13:00"
+}
+
+const DEFAULT_SETTINGS: DoctorScheduleSettings = {
+  workingDays: [0, 1, 2, 3, 4], // Sun - Thu
+  startTime: '09:00',
+  endTime: '17:00',
+  slotDuration: 30,
+  lunchStart: '12:00',
+  lunchEnd: '13:00'
+}
+
+export async function getDoctorSettings(doctorId: string): Promise<DoctorScheduleSettings> {
+  if (isDemo) {
+    if (!isBrowser) return DEFAULT_SETTINGS
+    const saved = localStorage.getItem(`doctor_settings_${doctorId}`)
+    return saved ? JSON.parse(saved) : DEFAULT_SETTINGS
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('doctor_settings')
+      .select('*')
+      .eq('doctor_id', doctorId)
+      .single()
+
+    if (error) throw error
+    return data.settings || DEFAULT_SETTINGS
+  } catch (err) {
+    if (isBrowser) {
+      const saved = localStorage.getItem(`doctor_settings_${doctorId}`)
+      if (saved) return JSON.parse(saved)
+    }
+    return DEFAULT_SETTINGS
+  }
+}
+
+export async function saveDoctorSettings(doctorId: string, settings: DoctorScheduleSettings): Promise<DoctorScheduleSettings> {
+  if (isDemo) {
+    if (isBrowser) {
+      localStorage.setItem(`doctor_settings_${doctorId}`, JSON.stringify(settings))
+    }
+    return settings
+  }
+
+  try {
+    const { error } = await supabase
+      .from('doctor_settings')
+      .upsert({ doctor_id: doctorId, settings, updated_at: new Date().toISOString() })
+
+    if (error) throw error
+    return settings
+  } catch (err) {
+    console.warn('Failed to save to Supabase doctor_settings, saving to localStorage:', err)
+    if (isBrowser) {
+      localStorage.setItem(`doctor_settings_${doctorId}`, JSON.stringify(settings))
+    }
+    return settings
+  }
+}
+
+export type TimeSlot = {
+  time: string // "09:00"
+  available: boolean
+  status: 'available' | 'pending_approval' | 'approved' | 'declined' | 'booked'
+  consultationId?: string
+}
+
+// Generate slots for a doctor on a specific date (dateStr format: 'YYYY-MM-DD')
+export async function getDoctorSlots(doctorId: string, dateStr: string): Promise<TimeSlot[]> {
+  const settings = await getDoctorSettings(doctorId)
+  
+  // Parse date
+  const date = new Date(dateStr)
+  const dayOfWeek = date.getDay() // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+
+  // If not a working day, return empty array
+  if (!settings.workingDays.includes(dayOfWeek)) {
+    return []
+  }
+
+  // Helper to convert time string to minutes since midnight
+  const timeToMinutes = (t: string) => {
+    const [h, m] = t.split(':').map(Number)
+    return h * 60 + m
+  }
+
+  // Helper to format minutes as "HH:MM"
+  const minutesToTime = (m: number) => {
+    const h = Math.floor(m / 60)
+    const min = m % 60
+    return `${h.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`
+  }
+
+  const startMin = timeToMinutes(settings.startTime)
+  const endMin = timeToMinutes(settings.endTime)
+  const lunchStartMin = timeToMinutes(settings.lunchStart)
+  const lunchEndMin = timeToMinutes(settings.lunchEnd)
+  const duration = settings.slotDuration
+
+  const slots: TimeSlot[] = []
+  
+  // Generate potential slots
+  for (let m = startMin; m + duration <= endMin; m += duration) {
+    if (m >= lunchStartMin && m < lunchEndMin) {
+      continue
+    }
+    slots.push({
+      time: minutesToTime(m),
+      available: true,
+      status: 'available'
+    })
+  }
+
+  // Load all consultations for this doctor on this day
+  const consultations = await getConsultations()
+  const dayConsultations = consultations.filter(c => 
+    (c.doctor_id || 'khalid') === doctorId && 
+    c.appointment_date === dateStr &&
+    (c.status === 'booked' || c.status === 'pending_approval' || c.status === 'approved')
+  )
+
+  // Mark booked/pending slots
+  slots.forEach(slot => {
+    const match = dayConsultations.find(c => c.appointment_time === slot.time)
+    if (match) {
+      slot.available = false
+      slot.status = match.status === 'pending_approval' ? 'pending_approval' : 'booked'
+      slot.consultationId = match.id
+    }
+  })
+
+  return slots
 }

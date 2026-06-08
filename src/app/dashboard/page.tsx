@@ -3,13 +3,16 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { getConsultations, EnhancedConsultation } from '@/lib/consultationService'
+import { getConsultations, getDoctorSettings, saveDoctorSettings, DoctorScheduleSettings, EnhancedConsultation } from '@/lib/consultationService'
 import { DOCTORS } from '@/lib/doctors'
 
 const STATUS_CONFIG: Record<string, { label: string; badge: string }> = {
-  pending_payment: { label: 'في انتظار الدفع', badge: 'badge-gold' },
-  pending_booking: { label: 'في انتظار الحجز', badge: 'badge-primary' },
-  booked:          { label: 'محجوز', badge: 'badge-ok' },
+  pending_payment:  { label: 'في انتظار الدفع', badge: 'badge-gold' },
+  pending_booking:  { label: 'في انتظار الحجز', badge: 'badge-primary' },
+  pending_approval: { label: 'بانتظار موافقة الطبيب', badge: 'badge-gold' },
+  approved:         { label: 'مقبول ومؤكد', badge: 'badge-ok' },
+  declined:         { label: 'مرفوض', badge: 'badge-err' },
+  booked:           { label: 'محجوز', badge: 'badge-ok' },
 }
 
 export default function Dashboard() {
@@ -18,6 +21,12 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedDoctorFilter, setSelectedDoctorFilter] = useState('all')
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('all')
+
+  // Custom scheduling settings states
+  const [activeTab, setActiveTab] = useState<'requests' | 'settings'>('requests')
+  const [scheduleSettings, setScheduleSettings] = useState<DoctorScheduleSettings | null>(null)
+  const [savingSettings, setSavingSettings] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
 
   useEffect(() => {
     async function loadData() {
@@ -33,10 +42,20 @@ export default function Dashboard() {
     loadData()
   }, [])
 
+  // Load schedule settings when dashboard loads or doctor filter changes
+  useEffect(() => {
+    async function loadSettings() {
+      const docId = selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter
+      const settings = await getDoctorSettings(docId)
+      setScheduleSettings(settings)
+    }
+    loadSettings()
+  }, [selectedDoctorFilter])
+
   // Calculate status counts based on loaded data
-  const statusCounts = (['pending_payment', 'pending_booking', 'booked'] as const).map(s => ({
+  const statusCounts = (['pending_payment', 'pending_booking', 'pending_approval', 'approved', 'declined'] as const).map(s => ({
     status: s,
-    count: consultations.filter(c => c.status === s).length,
+    count: consultations.filter(c => c.status === s || (s === 'approved' && c.status === 'booked')).length,
     ...STATUS_CONFIG[s],
   }))
 
@@ -198,16 +217,60 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Filters and Search Bar */}
-        <div className="card-warm" style={{
-          padding: '1.25rem 1.5rem',
-          marginBottom: '1.5rem',
+        {/* Tab buttons */}
+        <div style={{
           display: 'flex',
-          flexWrap: 'wrap',
           gap: '1rem',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          marginBottom: '1.5rem',
+          borderBottom: '1px solid var(--border)',
+          paddingBottom: '0.5rem',
         }}>
+          <button
+            onClick={() => setActiveTab('requests')}
+            style={{
+              padding: '0.6rem 1.25rem',
+              fontSize: '0.9rem',
+              fontWeight: activeTab === 'requests' ? 800 : 500,
+              color: activeTab === 'requests' ? 'var(--primary)' : 'var(--fg-muted)',
+              border: 'none',
+              background: 'none',
+              borderBottom: activeTab === 'requests' ? '2.5px solid var(--primary)' : 'none',
+              cursor: 'pointer',
+              transition: 'all 200ms',
+            }}
+          >
+            📥 طلبات الاستشارات
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            style={{
+              padding: '0.6rem 1.25rem',
+              fontSize: '0.9rem',
+              fontWeight: activeTab === 'settings' ? 800 : 500,
+              color: activeTab === 'settings' ? 'var(--primary)' : 'var(--fg-muted)',
+              border: 'none',
+              background: 'none',
+              borderBottom: activeTab === 'settings' ? '2.5px solid var(--primary)' : 'none',
+              cursor: 'pointer',
+              transition: 'all 200ms',
+            }}
+          >
+            ⚙ إعدادات أوقات العمل والمواعيد
+          </button>
+        </div>
+
+        {activeTab === 'requests' && (
+          <>
+            {/* Filters and Search Bar */}
+            <div className="card-warm" style={{
+              padding: '1.25rem 1.5rem',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
           {/* Search box */}
           <div style={{ flex: '1 1 300px', position: 'relative' }}>
             <input
@@ -250,14 +313,16 @@ export default function Dashboard() {
               <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--fg-muted)' }}>الحالة:</span>
               <select
                 className="input"
-                style={{ width: '150px', padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+                style={{ width: '175px', padding: '0.5rem 1rem', fontSize: '0.85rem' }}
                 value={selectedStatusFilter}
                 onChange={e => setSelectedStatusFilter(e.target.value)}
               >
                 <option value="all">الكل</option>
                 <option value="pending_payment">في انتظار الدفع</option>
                 <option value="pending_booking">في انتظار الحجز</option>
-                <option value="booked">محجوز</option>
+                <option value="pending_approval">بانتظار موافقة الطبيب</option>
+                <option value="approved">مقبول ومؤكد</option>
+                <option value="declined">مرفوض</option>
               </select>
             </div>
 
@@ -458,6 +523,170 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+        </>
+        )}
+
+        {activeTab === 'settings' && scheduleSettings && (
+          <div className="card-warm" style={{ padding: '2rem', animation: 'fadeUp 0.4s var(--ease-out)', position: 'relative' }}>
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              height: '3px',
+              background: 'linear-gradient(90deg, var(--primary), var(--gold))',
+            }} />
+            
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 900, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              🗓 ضبط جدول العمل والعيادة ({DOCTORS.find(d => d.id === (selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter))?.name})
+            </h2>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
+              {/* Working Days Checkboxes */}
+              <div>
+                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--fg)', marginBottom: '1rem' }}>
+                  أيام العمل الأسبوعية
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {[
+                    { val: 0, label: 'الأحد (Sunday)' },
+                    { val: 1, label: 'الاثنين (Monday)' },
+                    { val: 2, label: 'الثلاثاء (Tuesday)' },
+                    { val: 3, label: 'الأربعاء (Wednesday)' },
+                    { val: 4, label: 'الخميس (Thursday)' },
+                    { val: 5, label: 'الجمعة (Friday)' },
+                    { val: 6, label: 'السبت (Saturday)' },
+                  ].map(day => {
+                    const isChecked = scheduleSettings.workingDays.includes(day.val)
+                    return (
+                      <label key={day.val} style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer', fontSize: '0.88rem', fontWeight: isChecked ? 700 : 400 }}>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            const newList = e.target.checked
+                              ? [...scheduleSettings.workingDays, day.val].sort()
+                              : scheduleSettings.workingDays.filter(v => v !== day.val)
+                            setScheduleSettings({ ...scheduleSettings, workingDays: newList })
+                          }}
+                          style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                        />
+                        {day.label}
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Working Hours Settings */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--fg)', marginBottom: '0.25rem' }}>
+                  ساعات الدوام اليومي
+                </h3>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--fg-dim)', marginBottom: '0.35rem', fontWeight: 600 }}>بداية الدوام</label>
+                    <input
+                      type="time"
+                      className="input num"
+                      value={scheduleSettings.startTime}
+                      onChange={(e) => setScheduleSettings({ ...scheduleSettings, startTime: e.target.value })}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--fg-dim)', marginBottom: '0.35rem', fontWeight: 600 }}>نهاية الدوام</label>
+                    <input
+                      type="time"
+                      className="input num"
+                      value={scheduleSettings.endTime}
+                      onChange={(e) => setScheduleSettings({ ...scheduleSettings, endTime: e.target.value })}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                </div>
+
+                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--fg)', marginTop: '0.5rem', marginBottom: '0.25rem' }}>
+                  فترة الاستراحة / الغداء
+                </h3>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--fg-dim)', marginBottom: '0.35rem', fontWeight: 600 }}>بداية الاستراحة</label>
+                    <input
+                      type="time"
+                      className="input num"
+                      value={scheduleSettings.lunchStart}
+                      onChange={(e) => setScheduleSettings({ ...scheduleSettings, lunchStart: e.target.value })}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--fg-dim)', marginBottom: '0.35rem', fontWeight: 600 }}>نهاية الاستراحة</label>
+                    <input
+                      type="time"
+                      className="input num"
+                      value={scheduleSettings.lunchEnd}
+                      onChange={(e) => setScheduleSettings({ ...scheduleSettings, lunchEnd: e.target.value })}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--fg-dim)', marginBottom: '0.35rem', fontWeight: 600 }}>مدة الاستشارة (دقيقة)</label>
+                  <select
+                    className="input num"
+                    value={scheduleSettings.slotDuration}
+                    onChange={(e) => setScheduleSettings({ ...scheduleSettings, slotDuration: parseInt(e.target.value) })}
+                    style={{ width: '100%', padding: '0.6rem 1rem' }}
+                  >
+                    <option value="15">15 دقيقة</option>
+                    <option value="30">30 دقيقة</option>
+                    <option value="45">45 دقيقة</option>
+                    <option value="60">60 دقيقة (ساعة كاملة)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {saveSuccess && (
+              <div style={{
+                padding: '0.85rem 1.25rem',
+                background: 'var(--ok-soft)',
+                border: '1.5px solid var(--ok)',
+                borderRadius: 'var(--r)',
+                color: 'var(--ok)',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                marginBottom: '1.5rem',
+                animation: 'scaleIn 0.3s var(--ease-out)'
+              }}>
+                ✔ تم حفظ إعدادات المواعيد وجدول العمل بنجاح!
+              </div>
+            )}
+
+            <button
+              className="btn-primary"
+              disabled={savingSettings}
+              style={{ width: '100%', justifyContent: 'center', padding: '1rem' }}
+              onClick={async () => {
+                setSavingSettings(true)
+                setSaveSuccess(false)
+                const docId = selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter
+                try {
+                  await saveDoctorSettings(docId, scheduleSettings)
+                  setSaveSuccess(true)
+                  setTimeout(() => setSaveSuccess(false), 4000)
+                } catch (err) {
+                  alert('خطأ أثناء حفظ الإعدادات')
+                } finally {
+                  setSavingSettings(false)
+                }
+              }}
+            >
+              {savingSettings ? 'جاري الحفظ...' : 'حفظ التعديلات وإعدادات الدوام'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

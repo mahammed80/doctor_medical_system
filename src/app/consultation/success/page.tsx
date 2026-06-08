@@ -143,7 +143,7 @@ export default function Success() {
           letterSpacing: '-0.02em',
           marginBottom: '1rem',
         }}>
-          تم الحجز بنجاح
+          تم إرسال الطلب بنجاح
         </h1>
 
         <p style={{
@@ -152,7 +152,7 @@ export default function Success() {
           marginBottom: '0.5rem',
           fontSize: '0.95rem',
         }}>
-          استشارتك مع <strong style={{ color: 'var(--fg)' }}>{assignedDoc.name}</strong> مؤكدة.
+          تم إرسال طلب حجز استشارتك مع <strong style={{ color: 'var(--fg)' }}>{assignedDoc.name}</strong> بنجاح.
         </p>
         <p style={{
           color: 'var(--fg-dim)',
@@ -160,7 +160,7 @@ export default function Success() {
           marginBottom: '2.5rem',
           fontSize: '0.88rem',
         }}>
-          سوف يصلك بريد إلكتروني قريباً يحتوي على كافة التفاصيل ورابط اللقاء المرئي المباشر.
+          طلبك بانتظار مراجعة وتأكيد الطبيب. سوف يصلك إشعار بالبريد الإلكتروني أو رسالة نصية فور مراجعة الموعد وقبوله.
         </p>
 
         <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>

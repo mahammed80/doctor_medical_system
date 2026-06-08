@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import { DOCTORS } from '@/lib/doctors'
-import { createConsultation, updateConsultation, saveLocalUploadedFile } from '@/lib/consultationService'
+import { createConsultation, updateConsultation, saveLocalUploadedFile, getDoctorSlots, getDoctorSettings } from '@/lib/consultationService'
 
 type FormData = {
   patient_name: string
@@ -24,6 +24,11 @@ const STEPS = [
   { label: 'الموعد',     sub: 'اختر وقتك' },
 ]
 
+const ARABIC_MONTHS = [
+  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+]
+
 export default function NewConsultation() {
   const router = useRouter()
   const [step, setStep] = useState(0)
@@ -34,6 +39,14 @@ export default function NewConsultation() {
     patient_name: '', patient_phone: '', patient_age: '',
     chief_complaint: '', medical_history: '', current_medications: '', files: [],
   })
+
+  // Custom scheduling calendar states
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedTime, setSelectedTime] = useState<string | null>(null)
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [slots, setSlots] = useState<any[]>([])
+  const [slotsLoading, setSlotsLoading] = useState(false)
+  const [docSettings, setDocSettings] = useState<any>(null)
 
   const set = (k: keyof FormData, v: string) => setForm(f => ({ ...f, [k]: v }))
   const isDemo = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')
@@ -100,22 +113,47 @@ export default function NewConsultation() {
 
   const price = process.env.NEXT_PUBLIC_CONSULTATION_PRICE || '899'
 
-  // ── Calendly postMessage listener ──
+  // Native Custom Scheduler data loaders
   useEffect(() => {
-    function handleCalendlyEvent(e: MessageEvent) {
-      if (e.data?.event === 'calendly.event_scheduled' && consultationId) {
-        const eventUrl = e.data?.payload?.event?.uri
-        updateConsultation(consultationId, {
-          status: 'booked',
-          calendly_event_url: eventUrl || null,
-        }).then(() => {
-          router.push('/consultation/success')
-        })
-      }
+    getDoctorSettings(selectedDoctorId).then(settings => {
+      setDocSettings(settings)
+    })
+  }, [selectedDoctorId])
+
+  useEffect(() => {
+    if (selectedDate) {
+      setSlotsLoading(true)
+      getDoctorSlots(selectedDoctorId, selectedDate).then(data => {
+        setSlots(data)
+        setSlotsLoading(false)
+      })
+    } else {
+      setSlots([])
     }
-    window.addEventListener('message', handleCalendlyEvent)
-    return () => window.removeEventListener('message', handleCalendlyEvent)
-  }, [consultationId, router])
+  }, [selectedDate, selectedDoctorId])
+
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const firstDay = new Date(year, month, 1).getDay()
+    const numDays = new Date(year, month + 1, 0).getDate()
+    
+    const days = []
+    for (let i = 0; i < firstDay; i++) {
+      days.push(null)
+    }
+    for (let i = 1; i <= numDays; i++) {
+      days.push(new Date(year, month, i))
+    }
+    return days
+  }
+
+  const formatDateStr = (d: Date) => {
+    const y = d.getFullYear()
+    const m = (d.getMonth() + 1).toString().padStart(2, '0')
+    const day = d.getDate().toString().padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }
 
   return (
     <div className="geo-bg" style={{
@@ -718,32 +756,270 @@ export default function NewConsultation() {
                 </div>
               </div>
 
-              <div style={{
-                borderRadius: 'var(--r-lg)',
-                overflow: 'hidden',
+              {/* Native Calendar Interface */}
+              <div className="card-warm" style={{
+                padding: '1.5rem',
                 border: '1px solid var(--border-faint)',
+                borderRadius: 'var(--r-lg)',
+                background: 'var(--surface)',
                 boxShadow: 'var(--shadow-sm)',
+                marginBottom: '1.5rem'
               }}>
-                <iframe
-                  src={`${process.env.NEXT_PUBLIC_CALENDLY_URL || 'https://calendly.com/placeholder'}?embed_type=Inline&hide_event_type_details=1&hide_gdpr_banner=1`}
-                  width="100%"
-                  height="520"
-                  frameBorder="0"
-                  style={{ display: 'block' }}
-                />
+                {/* Month Selector Header */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '1.25rem'
+                }}>
+                  <button
+                    className="btn-ghost"
+                    style={{ padding: '0.4rem 0.85rem', fontSize: '0.82rem' }}
+                    onClick={() => {
+                      const prev = new Date(currentMonth)
+                      prev.setMonth(prev.getMonth() - 1)
+                      setCurrentMonth(prev)
+                    }}
+                  >
+                    السابق ◀
+                  </button>
+                  <span className="num" style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--fg)' }}>
+                    {ARABIC_MONTHS[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+                  </span>
+                  <button
+                    className="btn-ghost"
+                    style={{ padding: '0.4rem 0.85rem', fontSize: '0.82rem' }}
+                    onClick={() => {
+                      const next = new Date(currentMonth)
+                      next.setMonth(next.getMonth() + 1)
+                      setCurrentMonth(next)
+                    }}
+                  >
+                    ▶ التالي
+                  </button>
+                </div>
+
+                {/* Weekdays Grid */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  gap: '0.35rem',
+                  textAlign: 'center',
+                  marginBottom: '0.5rem'
+                }}>
+                  {['أحد', 'إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت'].map(w => (
+                    <div key={w} style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--fg-dim)', paddingBottom: '0.25rem' }}>
+                      {w}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Calendar Days Grid */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  gap: '0.35rem'
+                }}>
+                  {getDaysInMonth(currentMonth).map((day, idx) => {
+                    if (!day) return <div key={`empty-${idx}`} />
+
+                    const dateStr = formatDateStr(day)
+                    const isSelected = selectedDate === dateStr
+                    const today = new Date()
+                    today.setHours(0,0,0,0)
+                    const isPast = day < today
+                    
+                    const dayOfWeek = day.getDay()
+                    const workingDays = docSettings?.workingDays || [0,1,2,3,4]
+                    const isWorking = workingDays.includes(dayOfWeek)
+
+                    const disabled = isPast || !isWorking
+
+                    return (
+                      <button
+                        key={dateStr}
+                        disabled={disabled}
+                        onClick={() => {
+                          setSelectedDate(dateStr)
+                          setSelectedTime(null)
+                        }}
+                        className="num"
+                        style={{
+                          aspectRatio: '1',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: isSelected 
+                            ? '1.5px solid var(--primary)' 
+                            : '1px solid var(--border-faint)',
+                          background: isSelected 
+                            ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-down) 100%)'
+                            : disabled 
+                            ? 'var(--surface-subtle)' 
+                            : 'var(--bg)',
+                          color: isSelected 
+                            ? 'white' 
+                            : disabled 
+                            ? 'var(--fg-dim)' 
+                            : 'var(--fg)',
+                          cursor: disabled ? 'not-allowed' : 'pointer',
+                          opacity: disabled ? 0.45 : 1,
+                          fontSize: '0.82rem',
+                          fontWeight: isSelected || !disabled ? 700 : 400,
+                          transition: 'all 200ms',
+                          position: 'relative'
+                        }}
+                        onMouseEnter={e => {
+                          if (!disabled && !isSelected) {
+                            e.currentTarget.style.background = 'var(--primary-soft)'
+                          }
+                        }}
+                        onMouseLeave={e => {
+                          if (!disabled && !isSelected) {
+                            e.currentTarget.style.background = 'var(--bg)'
+                          }
+                        }}
+                      >
+                        {day.getDate()}
+                        {!isWorking && !isPast && (
+                          <span style={{ fontSize: '0.45rem', display: 'block', color: 'var(--fg-dim)', fontWeight: 400 }}>مغلق</span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
+              {/* Time Slots Area */}
+              <div className="card-warm" style={{
+                padding: '1.5rem',
+                border: '1px solid var(--border-faint)',
+                borderRadius: 'var(--r-lg)',
+                background: 'var(--surface)',
+                boxShadow: 'var(--shadow-sm)',
+                marginBottom: '1.5rem'
+              }}>
+                <h3 style={{ fontSize: '0.9rem', fontWeight: 800, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ width: '4px', height: '14px', borderRadius: '2px', background: 'var(--gold)' }} />
+                  الأوقات المتاحة ليوم {selectedDate ? (
+                    <span className="num" style={{ color: 'var(--primary)' }}>{new Date(selectedDate).toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                  ) : '...'}
+                </h3>
+
+                {slotsLoading ? (
+                  <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+                    <Spinner />
+                    <p style={{ fontSize: '0.8rem', color: 'var(--fg-dim)', marginTop: '0.5rem' }}>جاري تحميل الأوقات...</p>
+                  </div>
+                ) : !selectedDate ? (
+                  <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--fg-dim)', background: 'var(--bg)', borderRadius: 'var(--r)', border: '1px dashed var(--border)' }}>
+                    📅 الرجاء اختيار تاريخ من التقويم في الأعلى لعرض الأوقات المتاحة
+                  </div>
+                ) : slots.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--fg-dim)', background: 'var(--bg)', borderRadius: 'var(--r)', border: '1px dashed var(--border)' }}>
+                    📭 عذراً، لا توجد فترات عمل متاحة في هذا اليوم
+                  </div>
+                ) : (
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
+                    gap: '0.5rem'
+                  }}>
+                    {slots.map(slot => {
+                      const isTimeSelected = selectedTime === slot.time
+                      const slotDisabled = !slot.available
+
+                      return (
+                        <button
+                          key={slot.time}
+                          disabled={slotDisabled}
+                          onClick={() => setSelectedTime(slot.time)}
+                          className="num"
+                          style={{
+                            padding: '0.6rem 0.5rem',
+                            borderRadius: '8px',
+                            border: isTimeSelected 
+                              ? '1.5px solid var(--gold)' 
+                              : '1px solid var(--border-faint)',
+                            background: isTimeSelected 
+                              ? 'var(--gold-soft)' 
+                              : slotDisabled 
+                              ? 'var(--surface-subtle)' 
+                              : 'var(--bg)',
+                            color: isTimeSelected 
+                              ? 'var(--gold)' 
+                              : slotDisabled 
+                              ? 'var(--fg-dim)' 
+                              : 'var(--fg)',
+                            cursor: slotDisabled ? 'not-allowed' : 'pointer',
+                            opacity: slotDisabled ? 0.55 : 1,
+                            textDecoration: slotDisabled ? 'line-through' : 'none',
+                            fontSize: '0.82rem',
+                            fontWeight: isTimeSelected ? 800 : 600,
+                            transition: 'all 200ms',
+                            textAlign: 'center'
+                          }}
+                        >
+                          {slot.time}
+                          {slotDisabled && (
+                            <span style={{ fontSize: '0.55rem', display: 'block', color: 'var(--err)', textDecoration: 'none', fontWeight: 500 }}>محجوز</span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Summary of selection */}
+              {selectedDate && selectedTime && (
+                <div style={{
+                  padding: '0.95rem 1.25rem',
+                  background: 'var(--primary-soft)',
+                  border: '1.5px solid var(--primary)',
+                  borderRadius: 'var(--r)',
+                  marginBottom: '1.5rem',
+                  fontSize: '0.88rem',
+                  fontWeight: 700,
+                  color: 'var(--primary)',
+                  animation: 'scaleIn 0.3s var(--ease-out)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <span>
+                    📌 الموعد المختار: {new Date(selectedDate).toLocaleDateString('ar-SA', { weekday: 'long', day: 'numeric', month: 'long' })} في تمام الساعة <span className="num">{selectedTime}</span>
+                  </span>
+                  <span className="num" style={{ fontSize: '0.72rem', color: 'var(--fg-dim)', fontWeight: 400 }}>بانتظار موافقة الطبيب</span>
+                </div>
+              )}
+
+              {/* Confirm booking button */}
               <button
                 className="btn-primary"
+                disabled={!selectedDate || !selectedTime || loading}
                 style={{ width: '100%', justifyContent: 'center', marginTop: '1.25rem', padding: '1rem' }}
                 onClick={async () => {
-                  if (consultationId) {
-                    await updateConsultation(consultationId, { status: 'booked' })
+                  if (consultationId && selectedDate && selectedTime) {
+                    setLoading(true)
+                    try {
+                      await updateConsultation(consultationId, {
+                        status: 'pending_approval',
+                        appointment_date: selectedDate,
+                        appointment_time: selectedTime,
+                      })
+                      router.push(`/consultation/success?doctor=${selectedDoctorId}`)
+                    } catch (err) {
+                      alert('حدث خطأ أثناء حجز الموعد')
+                    } finally {
+                      setLoading(false)
+                    }
                   }
-                  router.push('/consultation/success')
                 }}
               >
-                تأكيد الحجز
+                {loading ? <Spinner /> : 'تأكيد وحجز الموعد'}
               </button>
             </div>
           )}

@@ -17,9 +17,11 @@ export type Consultation = {
   chief_complaint: string
   medical_history: string
   current_medications: string
-  status: 'pending_payment' | 'pending_booking' | 'booked'
+  status: 'pending_payment' | 'pending_booking' | 'pending_approval' | 'approved' | 'declined' | 'booked'
   payment_id: string | null
   calendly_event_url: string | null
+  appointment_date?: string | null
+  appointment_time?: string | null
   created_at: string
 }
 
