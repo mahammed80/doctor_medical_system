@@ -120,9 +120,9 @@ const qualifications = [
 ]
 
 const resources = [
-  { title: 'دليل المريض الشامل لجراحات المفاصل والمنظار', summary: 'كل ما تحتاج معرفته عن كيفية التحضير لعملية المنظار وما يمكن توقعه في مرحلة التعافي.', tag: 'جراحة العظام', readTime: '5 دقائق' },
-  { title: 'طرق التمييز بين آلام العضلات والروماتيزم', summary: 'دليل مبسط لمساعدتك في فهم طبيعة الألم ومتى يتعين عليك استشارة طبيب روماتيزم متخصص.', tag: 'الروماتيزم', readTime: '3 دقائق' },
-  { title: 'تمارين وقائية لتقوية أسفل الظهر وحماية العمود الفقري', summary: 'مجموعة من التمارين اليومية البسيطة التي تقي من الانزلاق الغضروفي وتخفف آلام الجلوس الطويل.', tag: 'العمود الفقري', readTime: '4 دقائق' },
+  { title: 'دليل المريض الشامل لجراحات المفاصل والمنظار', summary: 'كل ما تحتاج معرفته عن كيفية التحضير لعملية المنظار وما يمكن توقعه في مرحلة التعافي.', tag: 'جراحة العظام', readTime: '5' },
+  { title: 'طرق التمييز بين آلام العضلات والروماتيزم', summary: 'دليل مبسط لمساعدتك في فهم طبيعة الألم ومتى يتعين عليك استشارة طبيب روماتيزم متخصص.', tag: 'الروماتيزم', readTime: '3' },
+  { title: 'تمارين وقائية لتقوية أسفل الظهر وحماية العمود الفقري', summary: 'مجموعة من التمارين اليومية البسيطة التي تقي من الانزلاق الغضروفي وتخفف آلام الجلوس الطويل.', tag: 'العمود الفقري', readTime: '4' },
 ]
 
 /* ── COMPONENTS ── */
@@ -698,6 +698,7 @@ export default function Home() {
                       fontSize: '0.72rem',
                       fontWeight: 800,
                       color: 'var(--primary)',
+                      fontFamily: 'var(--font-inter), sans-serif',
                     }}>
                       {q.year}
                     </div>
@@ -781,6 +782,7 @@ export default function Home() {
                     boxShadow: i === 0 ? '0 4px 20px var(--primary-glow)' : 'var(--shadow-sm)',
                     transition: 'all 400ms var(--ease-spring)',
                     position: 'relative',
+                    fontFamily: 'var(--font-inter), sans-serif',
                   }}
                     onMouseOver={e => {
                       const el = e.currentTarget as HTMLElement
@@ -1283,7 +1285,7 @@ export default function Home() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
                     </svg>
-                    {r.readTime} قراءة
+                    <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 700 }}>{r.readTime}</span> دقائق قراءة
                   </div>
                 </div>
               </ScrollReveal>
