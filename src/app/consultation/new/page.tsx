@@ -6,6 +6,11 @@ import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import { DOCTORS } from '@/lib/doctors'
 import { createConsultation, updateConsultation, saveLocalUploadedFile, getDoctorSlots, getDoctorSettings } from '@/lib/consultationService'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
+
+// Initialize Stripe with the publishable key from environment variables
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
 
 type FormData = {
   patient_name: string
@@ -35,6 +40,102 @@ const ARABIC_MONTHS = [
   'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
   'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
 ]
+
+function StripePaymentForm({
+  clientSecret,
+  price,
+  consultationId,
+  onSuccess,
+}: {
+  clientSecret: string
+  price: string
+  consultationId: string
+  onSuccess: (paymentId: string) => void
+}) {
+  const stripe = useStripe()
+  const elements = useElements()
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!stripe || !elements) {
+      return
+    }
+
+    setLoading(true)
+    setErrorMessage(null)
+
+    const { error: submitError } = await elements.submit()
+    if (submitError) {
+      setErrorMessage(submitError.message || 'خطأ في معالجة معلومات الدفع.')
+      setLoading(false)
+      return
+    }
+
+    try {
+      const { paymentIntent, error } = await stripe.confirmPayment({
+        elements,
+        clientSecret,
+        confirmParams: {
+          return_url: `${window.location.origin}/consultation/new?step=4&consultation=${consultationId}`,
+        },
+        redirect: 'if_required',
+      })
+
+      if (error) {
+        setErrorMessage(error.message || 'فشلت عملية الدفع.')
+      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+        onSuccess(paymentIntent.id)
+      } else {
+        setErrorMessage('حالة الدفع غير معروفة.')
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'حدث خطأ غير متوقع أثناء الدفع.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <div style={{
+        background: 'var(--bg)',
+        borderRadius: 'var(--r-lg)',
+        padding: '1.25rem',
+        border: '1px solid var(--border-faint)',
+        direction: 'ltr',
+      }}>
+        <PaymentElement options={{ layout: 'tabs' }} />
+      </div>
+
+      {errorMessage && (
+        <div style={{
+          color: 'var(--err)',
+          background: 'var(--err-soft)',
+          border: '1px solid var(--err)',
+          padding: '0.75rem 1rem',
+          borderRadius: 'var(--radius-md)',
+          fontSize: '0.85rem',
+          fontWeight: 700,
+          textAlign: 'right',
+        }}>
+          ⚠️ {errorMessage}
+        </div>
+      )}
+
+      <button
+        type="submit"
+        className="btn-primary"
+        disabled={!stripe || loading}
+        style={{ width: '100%', justifyContent: 'center', padding: '1rem', fontSize: '1rem' }}
+      >
+        {loading ? <Spinner /> : `ادفع ${price} ريال أونلاين`}
+      </button>
+    </form>
+  )
+}
 
 export default function NewConsultation() {
   const router = useRouter()
@@ -66,6 +167,10 @@ export default function NewConsultation() {
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [docSettings, setDocSettings] = useState<any>(null)
 
+  const price = process.env.NEXT_PUBLIC_CONSULTATION_PRICE || '899'
+  const [clientSecret, setClientSecret] = useState<string | null>(null)
+  const [paymentLoading, setPaymentLoading] = useState(false)
+
   const set = (k: keyof FormData, v: any) => setForm(f => ({ ...f, [k]: v }))
   const isDemo = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')
 
@@ -76,8 +181,65 @@ export default function NewConsultation() {
       if (doc && DOCTORS.some(d => d.id === doc)) {
         setSelectedDoctorId(doc)
       }
+
+      // Check if redirected from Stripe (e.g. after 3D Secure verification)
+      const urlStep = params.get('step')
+      const urlConsultationId = params.get('consultation')
+      if (urlStep === '4' && urlConsultationId) {
+        setStep(4)
+        setConsultationId(urlConsultationId)
+        
+        const paymentIntentId = params.get('payment_intent')
+        if (paymentIntentId) {
+          updateConsultation(urlConsultationId, {
+            status: 'pending_booking',
+            payment_id: paymentIntentId,
+          })
+        }
+      }
     }
   }, [])
+
+  useEffect(() => {
+    if (step === 3 && consultationId && !clientSecret) {
+      setPaymentLoading(true)
+      fetch('/api/payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: parseInt(price), consultationId }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.clientSecret) {
+            setClientSecret(data.clientSecret)
+          } else {
+            console.error('Failed to get client secret:', data.error)
+            alert('خطأ في إعداد بوابة الدفع الإلكتروني.')
+          }
+        })
+        .catch(err => {
+          console.error(err)
+          alert('خطأ في الاتصال بالخادم لإعداد عملية الدفع.')
+        })
+        .finally(() => {
+          setPaymentLoading(false)
+        })
+    }
+  }, [step, consultationId, price, clientSecret])
+
+  async function handlePaymentSuccess(paymentId: string) {
+    if (consultationId) {
+      try {
+        await updateConsultation(consultationId, {
+          status: 'pending_booking',
+          payment_id: paymentId,
+        })
+      } catch (e) {
+        console.error('Error updating consultation status:', e)
+      }
+    }
+    setStep(4)
+  }
 
   function nextFromStep0() {
     if (!form.patient_name || !form.patient_phone || !form.patient_age || !form.id_file) {
@@ -191,8 +353,6 @@ export default function NewConsultation() {
       setLoading(false)
     }
   }
-
-  const price = process.env.NEXT_PUBLIC_CONSULTATION_PRICE || '899'
 
   // Native Custom Scheduler data loaders
   useEffect(() => {
@@ -754,6 +914,7 @@ export default function NewConsultation() {
           )}
 
           {/* ── STEP 3 ── */}
+          {/* ── STEP 3 ── */}
           {step === 3 && (
             <div>
               {/* Price - enhanced */}
@@ -838,7 +999,7 @@ export default function NewConsultation() {
               {/* Gold accent divider */}
               <div style={{
                 display: 'flex', alignItems: 'center', gap: '0.75rem',
-                marginBottom: '1.5rem',
+                marginBottom: '2rem',
               }}>
                 <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent, var(--border), transparent)' }} />
                 <div style={{
@@ -849,116 +1010,45 @@ export default function NewConsultation() {
                 <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent, var(--border), transparent)' }} />
               </div>
 
-              {/* Payment methods */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '0.6rem',
-                marginBottom: '1.5rem',
-              }}>
-                {[
-                  { id: 'mada', label: 'مدى' },
-                  { id: 'visa', label: 'Visa' },
-                  { id: 'mastercard', label: 'Mastercard' },
-                  { id: 'applepay', label: 'Apple Pay' },
-                ].map(m => (
-                  <div
-                    key={m.id}
-                    style={{
-                      padding: '0.85rem 0.5rem',
-                      background: 'var(--primary-subtle)',
-                      border: '1px solid var(--border-accent)',
-                      borderRadius: 'var(--r)',
-                      textAlign: 'center',
-                      fontSize: '0.72rem',
-                      color: 'var(--primary)',
-                      fontFamily: 'var(--font-tajawal), sans-serif',
-                      fontWeight: 700,
-                      transition: 'all 200ms',
-                      cursor: 'default',
-                    }}
-                    onMouseOver={e => { e.currentTarget.style.background = 'var(--primary-soft)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                    onMouseOut={e => { e.currentTarget.style.background = 'var(--primary-subtle)'; e.currentTarget.style.transform = 'translateY(0)' }}
-                  >
-                    {m.label}
-                  </div>
-                ))}
-              </div>
-
-              {/* Card fields with enhanced design */}
-              <div style={{
-                background: 'var(--bg)',
-                borderRadius: 'var(--r-lg)',
-                padding: '1.25rem',
-                border: '1px solid var(--border-faint)',
-                marginBottom: '1.25rem',
-              }}>
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.85rem',
-                }}>
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      className="input"
-                      placeholder="رقم البطاقة"
-                      dir="ltr"
-                      style={{ letterSpacing: '0.1em', paddingLeft: '3rem', direction: 'ltr' }}
-                      disabled
-                    />
-                    <span style={{
-                      position: 'absolute',
-                      left: '1rem',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      fontSize: '0.7rem',
-                      color: 'var(--fg-dim)',
-                      fontWeight: 500,
-                    }}>
-                      〶
-                    </span>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
-                    <input
-                      className="input"
-                      placeholder="MM / YY"
-                      dir="ltr"
-                      disabled
-                    />
-                    <input
-                      className="input"
-                      placeholder="CVV"
-                      dir="ltr"
-                      disabled
-                    />
-                  </div>
-                  <input
-                    className="input"
-                    placeholder="اسم حامل البطاقة"
-                    disabled
-                  />
+              {/* Stripe Payment Form container */}
+              {paymentLoading ? (
+                <div style={{ textAlign: 'center', padding: '3rem 0' }}>
+                  <Spinner />
+                  <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--fg-dim)' }}>
+                    جاري تحميل بوابة الدفع الآمنة من Stripe...
+                  </p>
                 </div>
-              </div>
+              ) : clientSecret && consultationId ? (
+                <Elements stripe={stripePromise} options={{ clientSecret, locale: 'ar' }}>
+                  <StripePaymentForm
+                    clientSecret={clientSecret}
+                    price={price}
+                    consultationId={consultationId}
+                    onSuccess={handlePaymentSuccess}
+                  />
+                </Elements>
+              ) : (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '2rem 1.5rem',
+                  background: 'var(--err-soft)',
+                  border: '1.5px solid var(--err)',
+                  borderRadius: 'var(--radius-lg)',
+                  color: 'var(--err)',
+                  fontWeight: 700,
+                  fontSize: '0.9rem',
+                }}>
+                  حدث خطأ أثناء الاتصال ببوابة الدفع. يرجى إعادة تحميل الصفحة أو المحاولة لاحقاً.
+                </div>
+              )}
 
-              <button
-                className="btn-primary"
-                style={{ width: '100%', justifyContent: 'center', padding: '1rem', fontSize: '1rem' }}
-                onClick={async () => {
-                  if (consultationId) {
-                    await updateConsultation(consultationId, { status: 'pending_booking', payment_id: 'pay_demo_' + Date.now() })
-                  }
-                  setStep(4)
-                }}
-              >
-                ادفع {price} ريال
-              </button>
-
+              {/* Trust badges footer */}
               <div style={{
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
                 gap: '0.5rem',
-                marginTop: '1.25rem',
+                marginTop: '2rem',
               }}>
                 <div style={{
                   width: '18px', height: '18px',
@@ -975,14 +1065,14 @@ export default function NewConsultation() {
                   ✓
                 </div>
                 <span style={{ fontSize: '0.75rem', color: 'var(--fg-dim)' }}>
-                  الدفع مشفر وآمن 128-bit SSL
+                  الدفع مشفر وآمن 256-bit SSL
                 </span>
                 <span style={{
                   width: '3px', height: '3px', borderRadius: '50%',
                   background: 'var(--border)', display: 'inline-block',
                 }} />
                 <span style={{ fontSize: '0.75rem', color: 'var(--fg-dim)' }}>
-                  مدعوم من Moyasar
+                  مدعوم من Stripe
                 </span>
               </div>
             </div>
