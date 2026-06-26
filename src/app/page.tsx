@@ -211,9 +211,9 @@ function AnimatedCounter({ end, suffix = '' }: { end: number; suffix?: string })
 }
 
 const ORB_COLORS = [
-  'radial-gradient(circle, oklch(42% 0.13 162 / 0.12) 0%, transparent 70%)',
-  'radial-gradient(circle, oklch(68% 0.17 70 / 0.08) 0%, transparent 70%)',
-  'radial-gradient(circle, oklch(50% 0.15 155 / 0.06) 0%, transparent 70%)',
+  'radial-gradient(circle, rgba(12, 90, 66, 0.12) 0%, transparent 70%)',
+  'radial-gradient(circle, rgba(194, 154, 104, 0.08) 0%, transparent 70%)',
+  'radial-gradient(circle, rgba(30, 139, 98, 0.06) 0%, transparent 70%)',
 ]
 
 function FloatingOrbs() {
@@ -250,7 +250,7 @@ function MouseGlow() {
       if (!ref.current) return
       const x = e.clientX / window.innerWidth
       const y = e.clientY / window.innerHeight
-      ref.current.style.background = `radial-gradient(600px at ${x * 100}% ${y * 100}%, oklch(42% 0.13 162 / 0.04) 0%, transparent 70%)`
+      ref.current.style.background = `radial-gradient(600px at ${x * 100}% ${y * 100}%, rgba(12, 90, 66, 0.04) 0%, transparent 70%)`
     }
     window.addEventListener('mousemove', handleMouse)
     return () => window.removeEventListener('mousemove', handleMouse)
@@ -296,6 +296,275 @@ function DiamondShower() {
   )
 }
 
+/* ── INTERACTIVE VIRTUAL CONSULTATION DESK DATA & COMPONENT ── */
+
+const JOINTS_DATA = {
+  knee: {
+    name: 'الركبة',
+    icon: '🦵',
+    diagnosis: 'تآكل غضاريف الركبة والصليبي',
+    mriPath: 'M 25,20 C 35,20 40,30 40,45 C 40,55 35,65 25,65 M 75,20 C 65,20 60,30 60,45 C 60,55 65,65 75,65 M 50,15 L 50,35 Q 50,45 42,48 T 50,85',
+    metrics: { wear: '65%', stability: 'تقييم مطلوب' },
+    symptoms: ['ألم شديد عند صعود الدرج', 'صوت طرقعة واحتكاك في المفصل', 'تورم طفيف بعد الجهد'],
+    level: 'الكشف الأساسي (899 ريال)',
+    desc: 'جلسة 30 دقيقة تشمل دراسة الأشعة السينية والرنين المغناطيسي مع تقديم تشخيص فوري ومتابعة مجانية لمدة 10 أيام.'
+  },
+  spine: {
+    name: 'الظهر',
+    icon: '🦴',
+    diagnosis: 'تقييم ديسك الفقرات والضغط العصبي',
+    mriPath: 'M 50,10 L 50,90 M 42,25 L 58,25 M 40,42 L 60,42 M 38,60 L 62,60 M 40,78 L 60,78',
+    metrics: { wear: '20%', stability: 'مستقر نسبياً' },
+    symptoms: ['خدر وتنميل في الأطراف السفلى', 'ألم أسفل الظهر يمتد للساقين', 'تصلب في الظهر عند الاستيقاظ'],
+    level: 'الكشف الشامل (1700 ريال)',
+    desc: 'دراسة تفصيلية لحالة الفقرات والغضاريف، إعداد خطة علاجية متكاملة لتقويم العمود الفقري بدون جراحة، وتحديد مدى الحاجة للجراحة.'
+  },
+  shoulder: {
+    name: 'الكتف',
+    icon: '💪',
+    diagnosis: 'التهاب الأوتار والخلع المتكرر',
+    mriPath: 'M 20,40 C 30,25 50,15 70,25 C 75,30 80,45 75,60 C 60,55 40,55 20,40 Z M 72,25 C 60,30 55,42 62,50',
+    metrics: { wear: '40%', stability: 'تحديد حركي' },
+    symptoms: ['صعوبة بالغة في رفع الذراع للأعلى', 'ألم حاد في الكتف يمنع النوم المريح', 'ضعف ملحوظ في قوة الكتف الحركية'],
+    level: 'الكشف الأساسي (899 ريال)',
+    desc: 'تقييم حركي ووظيفي لأوتار وأربطة الكتف بالمنظار الرقمي وتحديد البرنامج العلاجي المناسب لتفادي المضاعفات.'
+  },
+  hip: {
+    name: 'الحوض',
+    icon: '🚶',
+    diagnosis: 'خشونة مفصل الورك وتآكل الغضروف',
+    mriPath: 'M 30,30 Q 50,20 70,30 L 65,70 Q 50,85 35,70 Z M 38,38 C 45,35 48,45 42,52',
+    metrics: { wear: '75%', stability: 'تآكل متقدم' },
+    symptoms: ['صعوبة المشي لمسافات طويلة دون توقف', 'ألم عميق في مفصل الورك والحوض', 'تصلب المفصل وصعوبة ارتداء الحذاء'],
+    level: 'الكشف الشامل (1700 ريال)',
+    desc: 'تقييم شامل لمدى خشونة مفصل الفخذ وهل يتطلب تدخلاً جراحياً لاستبدال المفصل، مع توفير باقات متابعة مخصصة.'
+  }
+}
+
+function VirtualConsultationDesk() {
+  const [activeJoint, setActiveJoint] = useState<'knee' | 'spine' | 'shoulder' | 'hip'>('knee')
+  const [selectedSlot, setSelectedSlot] = useState<string>('18:00')
+
+  const joint = JOINTS_DATA[activeJoint]
+
+  return (
+    <div className="card-elevated geo-corner" style={{
+      width: '100%',
+      padding: '1.5rem',
+      background: 'rgba(255, 255, 255, 0.9)',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+      border: '1.5px solid var(--border-accent)',
+      borderRadius: 'var(--radius-xl)',
+      boxShadow: 'var(--shadow-xl), 0 20px 40px rgba(12, 90, 66, 0.04)',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Header Bar */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderBottom: '1px solid var(--border-faint)',
+        paddingBottom: '1rem',
+        marginBottom: '1rem',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{
+            width: '8px', height: '8px', borderRadius: '50%',
+            background: 'var(--primary-down)', display: 'inline-block',
+            animation: 'pulse-soft 1.5s infinite',
+            boxShadow: '0 0 8px var(--primary-glow)',
+          }} />
+          <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--fg)' }}>بوابة التشخيص التفاعلي أونلاين</span>
+        </div>
+        <span style={{
+          fontSize: '0.72rem',
+          fontWeight: 700,
+          color: 'var(--gold)',
+          background: 'var(--gold-soft)',
+          padding: '0.2rem 0.65rem',
+          borderRadius: '9999px',
+          border: '1px solid var(--gold)',
+        }}>محاكاة سريرية</span>
+      </div>
+
+      {/* Joint Tabs */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: '0.5rem',
+        marginBottom: '1.25rem',
+      }}>
+        {(Object.keys(JOINTS_DATA) as Array<keyof typeof JOINTS_DATA>).map((key) => (
+          <button
+            key={key}
+            onClick={() => setActiveJoint(key)}
+            className={`joint-tab-btn ${activeJoint === key ? 'active' : ''}`}
+            style={{
+              padding: '0.5rem 0.25rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.25rem',
+              fontSize: '0.78rem',
+            }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>{JOINTS_DATA[key].icon}</span>
+            <span>{JOINTS_DATA[key].name}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Main Grid: MRI Scanner & Symptom list */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1.2fr 1.1fr',
+        gap: '1rem',
+        alignItems: 'start',
+      }}>
+        {/* MRI Scanner */}
+        <div className="mri-screen" style={{ height: '170px', width: '100%', position: 'relative' }}>
+          <div className="mri-grid" />
+          <div className="mri-scanline" />
+          
+          {/* Anatomical Line Art SVG */}
+          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox="0 0 100 100">
+            <path
+              d={joint.mriPath}
+              fill="none"
+              stroke="var(--primary-down)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{
+                opacity: 0.8,
+                filter: 'drop-shadow(0 0 3px var(--primary-down))',
+              }}
+            />
+            {/* Target overlay cursor */}
+            <circle cx="50" cy="50" r="5" fill="none" stroke="var(--gold)" strokeWidth="1" strokeDasharray="2 2" />
+            <line x1="50" y1="10" x2="50" y2="90" stroke="rgba(194,154,104,0.15)" strokeWidth="0.5" strokeDasharray="1 3" />
+            <line x1="10" y1="50" x2="90" y2="50" stroke="rgba(194,154,104,0.15)" strokeWidth="0.5" strokeDasharray="1 3" />
+          </svg>
+
+          {/* Scanner Overlay HUD */}
+          <div style={{
+            position: 'absolute', bottom: '0.5rem', right: '0.5rem', left: '0.5rem',
+            display: 'flex', justifyContent: 'space-between',
+            fontSize: '0.62rem', color: 'var(--primary-down)',
+            fontFamily: 'var(--font-inter), sans-serif',
+            background: 'rgba(7, 16, 13, 0.85)',
+            padding: '0.2rem 0.4rem',
+            borderRadius: '4px',
+          }}>
+            <span>WEAR: {joint.metrics.wear}</span>
+            <span>STATUS: {joint.metrics.stability}</span>
+          </div>
+        </div>
+
+        {/* Diagnostic Details */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', textAlign: 'right' }}>
+          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--gold)', letterSpacing: '0.04em' }}>أعراض شائعة للشكوى</span>
+          <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--fg)', lineHeight: 1.3 }}>{joint.diagnosis}</h4>
+          
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.35rem',
+            marginTop: '0.2rem',
+          }}>
+            {joint.symptoms.map((sym, idx) => (
+              <div key={idx} style={{
+                display: 'flex', gap: '0.35rem', alignItems: 'flex-start',
+                fontSize: '0.72rem', color: 'var(--fg-muted)', lineHeight: 1.35,
+              }}>
+                <span style={{ color: 'var(--primary-down)', fontSize: '0.85rem', flexShrink: 0, marginTop: '-2px' }}>✦</span>
+                <span>{sym}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Recommended banner */}
+      <div style={{
+        background: 'var(--gray-100)',
+        border: '1px solid var(--border-faint)',
+        borderRadius: 'var(--radius-md)',
+        padding: '0.65rem 0.85rem',
+        marginTop: '1rem',
+        textAlign: 'right',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--fg-dim)', fontWeight: 600 }}>مستوى الكشف الموصى به:</span>
+          <span style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 800 }}>{joint.level}</span>
+        </div>
+        <p style={{ fontSize: '0.7rem', color: 'var(--fg-muted)', lineHeight: 1.45, marginTop: '0.3rem' }}>
+          {joint.desc}
+        </p>
+      </div>
+
+      {/* Timetable timeline simulator */}
+      <div style={{
+        borderTop: '1px solid var(--border-faint)',
+        paddingTop: '0.85rem',
+        marginTop: '0.85rem',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+          <span style={{ fontSize: '0.74rem', color: 'var(--fg-muted)', fontWeight: 700 }}>جدول الطبيب الفعلي المتاح اليوم:</span>
+          <span style={{ fontSize: '0.65rem', color: 'var(--primary-down)', fontWeight: 800, animation: 'pulse-soft 2s infinite' }}>حجز فوري</span>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '0.5rem',
+          marginBottom: '0.75rem',
+        }}>
+          {['16:30', '18:00', '19:30'].map((time) => (
+            <button
+              key={time}
+              onClick={() => setSelectedSlot(time)}
+              style={{
+                background: selectedSlot === time ? 'var(--primary)' : 'var(--surface)',
+                border: '1.5px solid',
+                borderColor: selectedSlot === time ? 'var(--primary)' : 'var(--border)',
+                color: selectedSlot === time ? 'white' : 'var(--fg-muted)',
+                borderRadius: 'var(--radius-sm)',
+                padding: '0.35rem 0.25rem',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 200ms ease',
+                fontFamily: 'var(--font-inter), sans-serif',
+              }}
+            >
+              {time === '16:30' ? '04:30 PM' : time === '18:00' ? '06:00 PM' : '07:30 PM'}
+            </button>
+          ))}
+        </div>
+
+        <Link
+          href="/consultation/new"
+          className="btn-primary"
+          style={{
+            width: '100%',
+            height: '42px',
+            fontSize: '0.85rem',
+            borderRadius: 'var(--radius-md)',
+            justifyContent: 'center',
+            background: 'var(--primary)',
+            boxShadow: 'var(--shadow-sm)',
+          }}
+        >
+          ابدأ استشارتك الآن وعيّن موعداً
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 /* ── PAGE ── */
 
 export default function Home() {
@@ -313,7 +582,7 @@ export default function Home() {
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0,
           height: '85%',
-          background: 'linear-gradient(170deg, oklch(97% 0.008 85) 0%, var(--bg) 40%, transparent 100%)',
+          background: 'linear-gradient(170deg, var(--surface-up) 0%, var(--bg) 40%, transparent 100%)',
           pointerEvents: 'none',
         }} />
 
@@ -331,7 +600,7 @@ export default function Home() {
                 fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.06em',
                 color: 'var(--gold)',
                 padding: '0.45rem 1.25rem', borderRadius: '9999px',
-                border: '1px solid oklch(68% 0.17 70 / 0.25)',
+                border: '1px solid rgba(194, 154, 104, 0.25)',
                 background: 'var(--gold-soft)', marginBottom: '2rem',
                 boxShadow: '0 0 20px var(--gold-glow)',
               }}>
@@ -354,7 +623,7 @@ export default function Home() {
                 استشارات د. خالد بترجي{' '}
                 <br />
                 <span style={{
-                  background: 'linear-gradient(135deg, var(--primary) 0%, oklch(52% 0.14 162) 50%, var(--primary-down) 100%)',
+                  background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-down) 50%, var(--primary-down) 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
@@ -406,97 +675,14 @@ export default function Home() {
 
             </div>
 
-            {/* Doctor Photo Column */}
+            {/* Doctor Desk Column */}
             <div className="anim-scale" style={{
               width: '100%',
-              height: '100%',
-              minHeight: '520px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <div className="photo-frame" style={{
-                width: '70%',
-                height: '70%',
-                position: 'relative',
-                boxShadow: '0 16px 64px oklch(0% 0 0 / 0.1), 0 4px 16px oklch(60% 0.08 60 / 0.08)',
-                transform: 'perspective(1000px) rotateY(-2deg)',
-                transition: 'transform 500ms var(--ease-out)',
-                flexGrow: 1,
-              }}
-                onMouseOver={e => (e.currentTarget as HTMLElement).style.transform = 'perspective(1000px) rotateY(0deg)'}
-                onMouseOut={e => (e.currentTarget as HTMLElement).style.transform = 'perspective(1000px) rotateY(-2deg)'}
-              >
-                <div style={{
-                  position: 'absolute', inset: 2,
-                  background: 'linear-gradient(180deg, transparent 40%, oklch(15% 0.015 265 / 0.35) 100%)',
-                  pointerEvents: 'none', zIndex: 2, borderRadius: 'var(--r-xl)',
-                }} />
-                
-                <Image
-                  src="/main_image.jpeg"
-                  alt="د. خالد بترجي"
-                  fill
-                  sizes="(max-width: 900px) 100vw, 550px"
-                  style={{ objectFit: 'cover', scale: '1.02', borderRadius: 'var(--r-xl)' }}
-                  priority
-                />
-
-                <div style={{
-                  position: 'absolute', bottom: 2, left: 2, right: 2, height: '4px',
-                  background: 'linear-gradient(90deg, var(--gold) 0%, oklch(68% 0.17 70 / 0.4) 50%, var(--primary) 100%)',
-                  zIndex: 3, borderRadius: '0 0 var(--r-xl) var(--r-xl)',
-                }} />
-                
-                {/* Decorative gold corner accents */}
-                <div style={{
-                  position: 'absolute', top: '1.25rem', right: '1.25rem', zIndex: 3,
-                  width: '20px', height: '20px',
-                  borderTop: '2px solid var(--gold)',
-                  borderRight: '2px solid var(--gold)',
-                  opacity: 0.4,
-                  borderRadius: '0 4px 0 0',
-                }} />
-                <div style={{
-                  position: 'absolute', bottom: '1.25rem', left: '1.25rem', zIndex: 3,
-                  width: '20px', height: '20px',
-                  borderBottom: '2px solid var(--gold)',
-                  borderLeft: '2px solid var(--gold)',
-                  opacity: 0.4,
-                  borderRadius: '0 0 0 4px',
-                }} />
-
-                {/* Floating Profile Card */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: '1.5rem',
-                  left: '1.5rem',
-                  right: '1.5rem',
-                  textAlign: 'center',
-                  padding: '1.1rem 1.5rem',
-                  background: 'oklch(100% 0 0 / 0.85)',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
-                  borderRadius: 'var(--r-lg)',
-                  border: '1px solid var(--border-faint)',
-                  boxShadow: 'var(--shadow-lg)',
-                  zIndex: 4,
-                }}>
-                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--fg)' }}>د. خالد بترجي</div>
-                  <div style={{
-                    fontSize: '0.82rem', color: 'var(--fg-muted)', marginTop: '0.2rem',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
-                  }}>
-                    <span style={{
-                      width: '6px', height: '6px', borderRadius: '50%',
-                      background: 'var(--ok)', display: 'inline-block',
-                      animation: 'pulse-soft 2s ease-in-out infinite',
-                      boxShadow: '0 0 6px var(--ok-soft)',
-                    }} />
-                    رئيس مجلس إدارة المركز — متاح للحجز
-                  </div>
-                </div>
-              </div>
+              <VirtualConsultationDesk />
             </div>
           </div>
         </div>
@@ -507,12 +693,12 @@ export default function Home() {
         <div className="container">
           <ScrollReveal>
             <div style={{
-              background: 'linear-gradient(135deg, oklch(100% 0 0 / 0.8) 0%, oklch(98.5% 0.004 85 / 0.8) 100%)',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(243, 239, 233, 0.8) 100%)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
               border: '1.5px solid var(--border-accent)',
               borderRadius: 'var(--r-2xl)',
-              boxShadow: 'var(--shadow-lg), 0 20px 50px oklch(60% 0.08 60 / 0.04)',
+              boxShadow: 'var(--shadow-lg), 0 20px 50px rgba(0, 0, 0, 0.04)',
               padding: '3rem 2.5rem',
               display: 'grid',
               gridTemplateColumns: 'repeat(3, 1fr)',
@@ -562,7 +748,7 @@ export default function Home() {
               flexWrap: 'wrap',
               gap: '2.5rem 4rem',
               padding: '2rem 2.5rem',
-              background: 'oklch(100% 0 0 / 0.7)',
+              background: 'rgba(255, 255, 255, 0.7)',
               backdropFilter: 'blur(16px)',
               borderRadius: 'var(--r-xl)',
               border: '1px solid var(--border-faint)',
@@ -595,7 +781,7 @@ export default function Home() {
       <section style={{ position: 'relative', zIndex: 2, padding: '5rem 0' }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'linear-gradient(180deg, transparent 0%, oklch(97% 0.008 85) 50%, transparent 100%)',
+          background: 'linear-gradient(180deg, transparent 0%, var(--surface-up) 50%, transparent 100%)',
         }} />
         <div className="container" style={{ position: 'relative' }}>
           <ScrollReveal>
@@ -604,7 +790,7 @@ export default function Home() {
               gridTemplateColumns: 'repeat(4, 1fr)',
               gap: '1rem',
               padding: '3rem',
-              background: 'linear-gradient(135deg, oklch(42% 0.13 162 / 0.03), oklch(68% 0.17 70 / 0.03))',
+              background: 'linear-gradient(135deg, rgba(12, 90, 66, 0.03), rgba(194, 154, 104, 0.03))',
               borderRadius: 'var(--r-xl)',
               border: '1px solid var(--border-accent)',
             }}>
@@ -734,7 +920,7 @@ export default function Home() {
       <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'linear-gradient(180deg, transparent 0%, oklch(97% 0.008 85) 50%, transparent 100%)',
+          background: 'linear-gradient(180deg, transparent 0%, var(--surface-up) 50%, transparent 100%)',
         }} />
         <div className="container" style={{ textAlign: 'center', position: 'relative' }}>
           <ScrollReveal>
@@ -828,7 +1014,7 @@ export default function Home() {
       <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'linear-gradient(180deg, var(--bg) 0%, oklch(97% 0.008 85) 50%, var(--bg) 100%)',
+          background: 'linear-gradient(180deg, var(--bg) 0%, var(--surface-up) 50%, var(--bg) 100%)',
         }} />
         <div className="container" style={{ textAlign: 'center', position: 'relative' }}>
           <ScrollReveal>
@@ -866,7 +1052,7 @@ export default function Home() {
                   border: svc.popular ? '2px solid var(--primary)' : '1px solid var(--border-faint)',
                   borderRadius: 'var(--r-xl)',
                   padding: svc.popular ? '2.5rem 2rem' : '2rem',
-                  boxShadow: svc.popular ? '0 8px 40px var(--primary-glow), 0 4px 16px oklch(0% 0 0 / 0.04)' : 'var(--shadow-warm)',
+                  boxShadow: svc.popular ? '0 8px 40px var(--primary-glow), 0 4px 16px rgba(0, 0, 0, 0.04)' : 'var(--shadow-warm)',
                   textAlign: 'right',
                   position: 'relative',
                   overflow: 'hidden',
@@ -875,12 +1061,12 @@ export default function Home() {
                   onMouseOver={e => {
                     const el = e.currentTarget as HTMLElement
                     el.style.transform = 'translateY(-8px)'
-                    el.style.boxShadow = svc.popular ? '0 12px 48px var(--primary-glow), 0 4px 16px oklch(0% 0 0 / 0.04)' : '0 12px 40px oklch(0% 0 0 / 0.1)'
+                    el.style.boxShadow = svc.popular ? '0 12px 48px var(--primary-glow), 0 4px 16px rgba(0, 0, 0, 0.04)' : '0 12px 40px rgba(0, 0, 0, 0.1)'
                   }}
                   onMouseOut={e => {
                     const el = e.currentTarget as HTMLElement
                     el.style.transform = 'translateY(0)'
-                    el.style.boxShadow = svc.popular ? '0 8px 40px var(--primary-glow), 0 4px 16px oklch(0% 0 0 / 0.04)' : 'var(--shadow-warm)'
+                    el.style.boxShadow = svc.popular ? '0 8px 40px var(--primary-glow), 0 4px 16px rgba(0, 0, 0, 0.04)' : 'var(--shadow-warm)'
                   }}
                 >
                   {/* Gold decorative corner */}
@@ -917,7 +1103,7 @@ export default function Home() {
                       <div style={{
                         position: 'absolute', top: 0, right: 0,
                         width: '120px', height: '120px',
-                        background: 'radial-gradient(circle at top right, oklch(42% 0.13 162 / 0.06), transparent 70%)',
+                        background: 'radial-gradient(circle at top right, rgba(12, 90, 66, 0.06), transparent 70%)',
                         pointerEvents: 'none',
                       }} />
                     </>
@@ -1083,7 +1269,7 @@ export default function Home() {
                     <div style={{
                       width: '2.75rem', height: '2.75rem',
                       borderRadius: 'var(--r)',
-                      background: 'linear-gradient(135deg, var(--primary-subtle) 0%, oklch(42% 0.13 162 / 0.08) 100%)',
+                      background: 'linear-gradient(135deg, var(--primary-subtle) 0%, rgba(12, 90, 66, 0.08) 100%)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       color: 'var(--primary)',
                       marginBottom: '0.75rem',
@@ -1107,7 +1293,7 @@ export default function Home() {
       <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'linear-gradient(180deg, var(--bg) 0%, oklch(97% 0.008 85) 50%, var(--bg) 100%)',
+          background: 'linear-gradient(180deg, var(--bg) 0%, var(--surface-up) 50%, var(--bg) 100%)',
         }} />
         <div className="container" style={{ textAlign: 'center', position: 'relative' }}>
           <ScrollReveal>
@@ -1143,7 +1329,7 @@ export default function Home() {
                   onMouseOver={e => {
                     (e.currentTarget as HTMLElement).style.transform = 'translateY(-6px)';
                     (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-lg)';
-                    (e.currentTarget as HTMLElement).style.borderColor = 'oklch(68% 0.17 70 / 0.2)';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(194, 154, 104, 0.2)';
                   }}
                   onMouseOut={e => {
                     (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
@@ -1317,7 +1503,7 @@ export default function Home() {
       <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'linear-gradient(180deg, transparent 0%, oklch(97% 0.008 85) 50%, transparent 100%)',
+          background: 'linear-gradient(180deg, transparent 0%, var(--surface-up) 50%, transparent 100%)',
         }} />
         <div className="container" style={{ position: 'relative' }}>
           <div className="faq-layout" style={{
@@ -1412,7 +1598,7 @@ export default function Home() {
             <div style={{
               padding: '5rem 4rem',
               borderRadius: 'var(--r-xl)',
-              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-up) 50%, oklch(32% 0.11 162) 100%)',
+              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-up) 50%, #094532 100%)',
               textAlign: 'center',
               position: 'relative',
               overflow: 'hidden',
@@ -1422,7 +1608,7 @@ export default function Home() {
                 position: 'absolute', top: '-40%', right: '-10%',
                 width: '400px', height: '400px',
                 borderRadius: '50%',
-                background: 'radial-gradient(circle, oklch(100% 0 0 / 0.08) 0%, transparent 70%)',
+                background: 'radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%)',
                 pointerEvents: 'none',
                 animation: 'floatOrb 20s ease-in-out infinite',
               }} />
@@ -1430,7 +1616,7 @@ export default function Home() {
                 position: 'absolute', bottom: '-30%', left: '-5%',
                 width: '300px', height: '300px',
                 borderRadius: '50%',
-                background: 'radial-gradient(circle, oklch(100% 0 0 / 0.05) 0%, transparent 70%)',
+                background: 'radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%)',
                 pointerEvents: 'none',
                 animation: 'floatOrb2 25s ease-in-out infinite',
               }} />
@@ -1439,10 +1625,10 @@ export default function Home() {
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
                   fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.06em',
-                  color: 'oklch(100% 0 0 / 0.8)',
+                  color: 'rgba(255, 255, 255, 0.8)',
                   padding: '0.4rem 1.1rem', borderRadius: '9999px',
-                  border: '1px solid oklch(100% 0 0 / 0.2)',
-                  background: 'oklch(100% 0 0 / 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  background: 'rgba(255, 255, 255, 0.08)',
                   marginBottom: '1.5rem',
                 }}>
                   <span style={{ fontSize: '0.6rem', animation: 'pulse-soft 2s ease-in-out infinite' }}>◇</span>
@@ -1459,7 +1645,7 @@ export default function Home() {
                 </h2>
                 <p style={{
                   fontSize: '1.05rem',
-                  color: 'oklch(100% 0 0 / 0.75)',
+                  color: 'rgba(255, 255, 255, 0.75)',
                   lineHeight: 1.8,
                   maxWidth: '520px',
                   margin: '0 auto 2rem',
@@ -1480,18 +1666,18 @@ export default function Home() {
                     fontWeight: 800,
                     textDecoration: 'none',
                     fontFamily: 'var(--font-tajawal), sans-serif',
-                    boxShadow: '0 4px 14px oklch(0% 0 0 / 0.15)',
+                    boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
                     transition: 'transform 300ms var(--ease-spring), box-shadow 300ms',
                     position: 'relative',
                     overflow: 'hidden',
                   }}
                   onMouseOver={e => {
                     (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)';
-                    (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px oklch(0% 0 0 / 0.2)';
+                    (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(0, 0, 0, 0.2)';
                   }}
                   onMouseOut={e => {
                     (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-                    (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 14px oklch(0% 0 0 / 0.15)';
+                    (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 14px rgba(0, 0, 0, 0.15)';
                   }}
                 >
                   ابدأ الاستشارة

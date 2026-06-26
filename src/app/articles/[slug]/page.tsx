@@ -72,7 +72,7 @@ export default function ArticleDetail() {
           {/* Main Content Card */}
           <article className="card-warm" style={{
             padding: '3rem 2.5rem',
-            background: 'oklch(100% 0 0 / 0.8)',
+            background: 'rgba(255, 255, 255, 0.8)',
             border: '1.5px solid var(--border-accent)',
             boxShadow: 'var(--shadow-md)',
           }}>
@@ -144,7 +144,7 @@ export default function ArticleDetail() {
             {/* Consultation Booking Card */}
             <div className="card-warm" style={{
               padding: '2rem 1.5rem',
-              background: 'linear-gradient(135deg, oklch(100% 0 0 / 0.9) 0%, var(--surface) 100%)',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, var(--surface) 100%)',
               border: '1.5px solid var(--border-accent)',
               textAlign: 'center',
               boxShadow: 'var(--shadow-sm)',
@@ -182,7 +182,7 @@ export default function ArticleDetail() {
             {/* Other Articles Card */}
             <div className="card-warm" style={{
               padding: '1.5rem',
-              background: 'oklch(100% 0 0 / 0.8)',
+              background: 'rgba(255, 255, 255, 0.8)',
               border: '1px solid var(--border-faint)',
               boxShadow: 'var(--shadow-sm)',
             }}>

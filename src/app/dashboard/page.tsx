@@ -167,10 +167,10 @@ export default function Dashboard() {
                 position: 'absolute', top: 0, left: 0, right: 0,
                 height: '3px',
                 background: status === 'pending_payment'
-                  ? 'linear-gradient(90deg, var(--gold), oklch(68% 0.17 70 / 0.3))'
+                  ? 'linear-gradient(90deg, var(--gold), rgba(194, 154, 104, 0.3))'
                   : status === 'pending_booking'
-                  ? 'linear-gradient(90deg, var(--primary), oklch(42% 0.13 162 / 0.3))'
-                  : 'linear-gradient(90deg, var(--ok), oklch(50% 0.15 155 / 0.3))',
+                  ? 'linear-gradient(90deg, var(--primary), rgba(12, 90, 66, 0.3))'
+                  : 'linear-gradient(90deg, var(--ok), rgba(12, 90, 66, 0.3))',
               }} />
               <div style={{
                 width: '48px',
@@ -178,9 +178,9 @@ export default function Dashboard() {
                 borderRadius: '14px',
                 background: status === 'pending_payment' ? 'var(--gold-soft)' : status === 'pending_booking' ? 'var(--primary-soft)' : 'var(--ok-soft)',
                 border: `1px solid ${
-                  status === 'pending_payment' ? 'oklch(68% 0.17 70 / 0.25)' :
+                  status === 'pending_payment' ? 'rgba(194, 154, 104, 0.25)' :
                   status === 'pending_booking' ? 'var(--border-accent)' :
-                  'oklch(50% 0.15 155 / 0.25)'
+                  'rgba(12, 90, 66, 0.25)'
                 }`,
                 display: 'flex',
                 alignItems: 'center',
@@ -396,7 +396,7 @@ export default function Dashboard() {
                         color: 'var(--fg-dim)',
                         letterSpacing: '0.06em',
                         whiteSpace: 'nowrap',
-                        background: 'oklch(97% 0.004 85)',
+                        background: 'var(--surface-up)',
                         textTransform: 'uppercase',
                       }}>
                         {h}
@@ -418,7 +418,7 @@ export default function Dashboard() {
                         transition: 'background 200ms',
                         animation: `fadeUp 0.4s var(--ease-out) ${i * 0.03}s both`,
                       }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'oklch(97% 0.004 85)' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-up)' }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
                         
                         {/* Patient */}

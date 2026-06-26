@@ -768,7 +768,7 @@ export default function NewConsultation() {
                   transform: 'translate(-50%, -50%)',
                   width: '220px', height: '220px',
                   borderRadius: '50%',
-                  border: '1px solid oklch(68% 0.17 70 / 0.08)',
+                  border: '1px solid rgba(194, 154, 104, 0.08)',
                   pointerEvents: 'none',
                 }} />
                 <div style={{
@@ -776,7 +776,7 @@ export default function NewConsultation() {
                   transform: 'translate(-50%, -50%)',
                   width: '180px', height: '180px',
                   borderRadius: '50%',
-                  border: '1px solid oklch(68% 0.17 70 / 0.04)',
+                  border: '1px solid rgba(194, 154, 104, 0.04)',
                   pointerEvents: 'none',
                 }} />
 
@@ -792,7 +792,7 @@ export default function NewConsultation() {
                   padding: '0.35rem 1rem',
                   borderRadius: '9999px',
                   background: 'var(--gold-soft)',
-                  border: '1px solid oklch(68% 0.17 70 / 0.25)',
+                  border: '1px solid rgba(194, 154, 104, 0.25)',
                   position: 'relative',
                 }}>
                   <span style={{ fontSize: '0.55rem' }}>◇</span>
@@ -808,7 +808,7 @@ export default function NewConsultation() {
                     fontSize: '4.5rem',
                     fontWeight: 900,
                     letterSpacing: '-0.04em',
-                    background: 'linear-gradient(135deg, var(--primary) 0%, oklch(52% 0.14 162) 50%, var(--primary-down) 100%)',
+                    background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-down) 50%, var(--primary-down) 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -964,7 +964,7 @@ export default function NewConsultation() {
                   width: '18px', height: '18px',
                   borderRadius: '4px',
                   background: 'var(--ok-soft)',
-                  border: '1px solid oklch(50% 0.15 155 / 0.25)',
+                  border: '1px solid var(--border-accent)',
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -997,7 +997,7 @@ export default function NewConsultation() {
                 gap: '0.75rem',
                 padding: '1rem 1.25rem',
                 background: 'var(--ok-soft)',
-                border: '1px solid oklch(50% 0.15 155 / 0.2)',
+                border: '1px solid var(--border-accent)',
                 borderRadius: 'var(--r)',
                 marginBottom: '1.5rem',
                 animation: 'scaleIn 0.4s var(--ease-out)',
@@ -1374,7 +1374,7 @@ function IdDropZone({ file, onChange }: { file: File | null; onChange: (f: File 
               height: '36px',
               borderRadius: '8px',
               background: 'var(--ok-soft)',
-              border: '1px solid oklch(50% 0.15 155 / 0.2)',
+              border: '1px solid var(--border-accent)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -1405,7 +1405,7 @@ function IdDropZone({ file, onChange }: { file: File | null; onChange: (f: File 
             onClick={() => onChange(null)}
             style={{
               background: 'var(--err-soft)',
-              border: '1px solid oklch(50% 0.22 28 / 0.15)',
+              border: '1px solid rgba(155, 44, 44, 0.15)',
               borderRadius: '6px',
               cursor: 'pointer',
               color: 'var(--err)',
@@ -1587,7 +1587,7 @@ function DropZone({ files, onAdd, onRemove }: { files: File[]; onAdd: (f: File[]
                 onClick={() => onRemove(i)}
                 style={{
                   background: 'var(--err-soft)',
-                  border: '1px solid oklch(50% 0.22 28 / 0.15)',
+                  border: '1px solid rgba(155, 44, 44, 0.15)',
                   borderRadius: '6px',
                   cursor: 'pointer',
                   color: 'var(--err)',
@@ -1617,7 +1617,7 @@ function Spinner() {
       display: 'inline-block',
       width: '18px',
       height: '18px',
-      border: '2.5px solid oklch(100% 0 0 / 0.3)',
+      border: '2.5px solid rgba(255, 255, 255, 0.3)',
       borderTopColor: 'white',
       borderRadius: '50%',
       animation: 'spin 0.7s linear infinite',

@@ -65,20 +65,20 @@ export default function Success() {
           <div style={{
             position: 'absolute', top: '-12px', left: '-12px', right: '-12px', bottom: '-12px',
             borderRadius: '50%',
-            border: '1.5px solid oklch(68% 0.17 70 / 0.15)',
+            border: '1.5px solid rgba(194, 154, 104, 0.15)',
             animation: 'pulse-soft 3s ease-in-out infinite',
           }} />
           <div style={{
             width: '88px',
             height: '88px',
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--ok) 0%, oklch(50% 0.15 155 / 0.8) 100%)',
+            background: 'linear-gradient(135deg, var(--ok) 0%, rgba(12, 90, 66, 0.8) 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto',
             animation: 'successPop 0.6s var(--ease-spring) 0.1s both, ringExpand 1.5s ease-out 0.6s',
-            boxShadow: '0 8px 32px oklch(50% 0.15 155 / 0.25)',
+            boxShadow: '0 8px 32px rgba(12, 90, 66, 0.25)',
             position: 'relative',
           }}>
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -97,7 +97,7 @@ export default function Success() {
           gap: '1rem',
           border: '1px solid var(--border-accent)',
           borderRadius: 'var(--r-lg)',
-          background: 'oklch(100% 0 0 / 0.6)',
+          background: 'rgba(255, 255, 255, 0.6)',
           backdropFilter: 'blur(8px)'
         }}>
           <div style={{

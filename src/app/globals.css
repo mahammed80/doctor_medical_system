@@ -6,74 +6,74 @@
 }
 
 :root {
-  /* Brand Personality: Trustworthy, Professional, Calm, Modern, Human-centered */
+  /* Brand Personality: Elite Saudi Medical Consultant, Luxurious, Cultural, Trustworthy */
 
-  /* 2. Color System: Primary Palette (Saudi Green) */
-  --primary-50: #ECFDF5;
-  --primary-100: #D1FAE5;
-  --primary-200: #A7F3D0;
-  --primary-300: #6EE7B7;
-  --primary-400: #34D399;
-  --primary-500: #10B981;
-  --primary-600: #059669;
-  --primary-700: #047857;
-  --primary-800: #065F46;
-  --primary-900: #064E3B;
+  /* 2. Color System: Primary Palette (Royal Saudi Green) */
+  --primary-50: #E6F3EE;
+  --primary-100: #CCE7DD;
+  --primary-200: #99CFBC;
+  --primary-300: #66B69C;
+  --primary-400: #339E7B;
+  --primary-500: #0F6E52;
+  --primary-600: #0C5A42; /* Primary Royal Green */
+  --primary-700: #094532;
+  --primary-800: #063023;
+  --primary-900: #031811;
 
-  /* Secondary Palette (Medical Blue) */
-  --secondary-50: #EFF6FF;
-  --secondary-100: #DBEAFE;
-  --secondary-200: #BFDBFE;
-  --secondary-300: #93C5FD;
-  --secondary-400: #60A5FA;
-  --secondary-500: #3B82F6;
-  --secondary-600: #2563EB;
-  --secondary-700: #1D4ED8;
-  --secondary-800: #1E40AF;
-  --secondary-900: #1E3A8A;
+  /* Secondary Palette (Desert Sand Gold) */
+  --secondary-50: #F9F5EF;
+  --secondary-100: #F3ECE0;
+  --secondary-200: #E6D9C1;
+  --secondary-300: #D8C5A3;
+  --secondary-400: #CBAF85;
+  --secondary-500: #C29A68; /* Camel/Desert Gold */
+  --secondary-600: #B28552;
+  --secondary-700: #936C40;
+  --secondary-800: #745431;
+  --secondary-900: #553D23;
 
-  /* Neutral Colors */
-  --gray-50: #FAFAFA;
-  --gray-100: #F5F5F5;
-  --gray-200: #E5E7EB;
-  --gray-300: #D1D5DB;
-  --gray-400: #9CA3AF;
-  --gray-500: #6B7280;
-  --gray-600: #4B5563;
-  --gray-700: #374151;
-  --gray-800: #1F2937;
-  --gray-900: #111827;
+  /* Neutral Colors (Warm Cotton Cream / Charcoal Green) */
+  --gray-50: #FAF8F5; /* Cotton Cream background */
+  --gray-100: #F3EFE9;
+  --gray-200: #E3DDD3;
+  --gray-300: #D3CAB9;
+  --gray-400: #B3A58E;
+  --gray-500: #8D7D64;
+  --gray-600: #675B49;
+  --gray-700: #463E32;
+  --gray-800: #26211B;
+  --gray-900: #121C18; /* Dark Charcoal Green */
 
   /* Semantic Colors */
-  --success: #16A34A;
-  --warning: #F59E0B;
-  --danger: #DC2626;
-  --info: #0284C7;
+  --success: #0C5A42;
+  --warning: #C29A68;
+  --danger: #9B2C2C;
+  --info: #2B6CB0;
 
   /* Global variables mapped to design system tokens */
   --bg:           var(--gray-50);
   --surface:      #ffffff;
   --surface-up:   var(--gray-100);
   --fg:           var(--gray-900);
-  --fg-muted:     var(--gray-700);
-  --fg-dim:       var(--gray-500);
+  --fg-muted:     #2B3D36;
+  --fg-dim:       #53685F;
 
   --primary:      var(--primary-600);
   --primary-up:   var(--primary-700);
-  --primary-down: var(--primary-500);
-  --primary-glow: rgba(16, 185, 129, 0.15);
-  --primary-soft: rgba(16, 185, 129, 0.08);
-  --primary-subtle: rgba(16, 185, 129, 0.04);
-  --border-accent: rgba(16, 185, 129, 0.12);
+  --primary-down: #1E8B62; /* Accent Emerald Hover */
+  --primary-glow: rgba(12, 90, 66, 0.15);
+  --primary-soft: rgba(12, 90, 66, 0.08);
+  --primary-subtle: rgba(12, 90, 66, 0.04);
+  --border-accent: rgba(12, 90, 66, 0.12);
 
-  --gold:         #D97706;
-  --gold-soft:    rgba(217, 119, 6, 0.08);
-  --gold-glow:    rgba(217, 119, 6, 0.15);
+  --gold:         var(--secondary-500);
+  --gold-soft:    rgba(194, 154, 104, 0.08);
+  --gold-glow:    rgba(194, 154, 104, 0.15);
 
-  --ok:           var(--success);
-  --ok-soft:      rgba(22, 163, 74, 0.08);
+  --ok:           var(--primary-600);
+  --ok-soft:      rgba(12, 90, 66, 0.08);
   --err:          var(--danger);
-  --err-soft:     rgba(220, 38, 38, 0.08);
+  --err-soft:     rgba(155, 44, 44, 0.08);
 
   --border:       var(--gray-200);
   --border-faint: var(--gray-100);
@@ -139,7 +139,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 0L80 40L60 80L40 40Z' fill='none' stroke='oklch(42%25 0.13 162)' stroke-width='0.3' opacity='0.04'/%3E%3Cpath d='M60 20L90 60L60 100L30 60Z' fill='none' stroke='oklch(68%25 0.17 70)' stroke-width='0.3' opacity='0.03'/%3E%3Ccircle cx='60' cy='60' r='30' fill='none' stroke='oklch(42%25 0.13 162)' stroke-width='0.2' opacity='0.03'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 0L80 40L60 80L40 40Z' fill='none' stroke='%230C5A42' stroke-width='0.3' opacity='0.04'/%3E%3Cpath d='M60 20L90 60L60 100L30 60Z' fill='none' stroke='%23C29A68' stroke-width='0.3' opacity='0.03'/%3E%3Ccircle cx='60' cy='60' r='30' fill='none' stroke='%230C5A42' stroke-width='0.2' opacity='0.03'/%3E%3C/svg%3E");
   background-size: 180px 180px;
   pointer-events: none;
   z-index: 0;
@@ -703,6 +703,69 @@ details summary::-webkit-details-marker {
   left: 0;
   right: 0;
   height: 5px;
-  background: linear-gradient(90deg, var(--primary) 0%, oklch(42% 0.13 162 / 0.6) 50%, var(--gold) 100%);
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-down) 50%, var(--gold) 100%);
   z-index: 100;
+}
+
+/* ── Interactive Virtual Consultation Desk styles ── */
+@keyframes mriScan {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(180px); }
+  100% { transform: translateY(0); }
+}
+
+.mri-screen {
+  background: #07100D;
+  border: 1px solid rgba(12, 90, 66, 0.4);
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+
+.mri-grid {
+  position: absolute;
+  inset: 0;
+  background-size: 16px 16px;
+  background-image: linear-gradient(to right, rgba(30, 139, 98, 0.08) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(30, 139, 98, 0.08) 1px, transparent 1px);
+}
+
+.mri-scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary-down), transparent);
+  box-shadow: 0 0 10px var(--primary-down);
+  animation: mriScan 5s ease-in-out infinite;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.joint-tab-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: all 300ms var(--ease-spring);
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-tajawal), sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.joint-tab-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-subtle);
+  transform: translateY(-2px);
+}
+
+.joint-tab-btn.active {
+  border-color: var(--primary);
+  color: white;
+  background: var(--primary);
+  box-shadow: var(--shadow-sm);
 }
