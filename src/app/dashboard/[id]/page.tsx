@@ -91,19 +91,53 @@ export default function ConsultationDetail() {
     )
   }
 
+  const rawComplaint = consultation.chief_complaint || ''
+  const cleanComplaint = rawComplaint.split('\n\n[تفاصيل إضافية عن الشكوى]:')[0]
+
   const patientFields = [
     { label: 'الاسم الكامل', value: consultation.patient_name },
     { label: 'رقم الجوال', value: consultation.patient_phone, dir: 'ltr' as const, num: true },
     { label: 'العمر', value: `${consultation.patient_age} سنة`, num: true },
-    { label: 'سبب الاستشارة', value: consultation.chief_complaint },
-    { label: 'التاريخ المرضي', value: consultation.medical_history || 'لا يوجد' },
-    { label: 'الأدوية الحالية', value: consultation.current_medications || 'لا يوجد' },
+    { label: 'سبب الاستشارة', value: cleanComplaint },
   ]
+
+  let duration = consultation.pain_duration
+  let type = consultation.pain_type
+  let swelling = consultation.joint_swelling_stiffness
+
+  // Fallback to text parsing if column values are not directly present
+  if (!duration && rawComplaint.includes('مدة الشكوى:')) {
+    const match = rawComplaint.match(/-\s*مدة الشكوى:\s*([^\n]+)/)
+    if (match) duration = match[1]
+  }
+  if (!type && rawComplaint.includes('طبيعة الألم:')) {
+    const match = rawComplaint.match(/-\s*طبيعة الألم:\s*([^\n]+)/)
+    if (match) type = match[1]
+  }
+  if (!swelling && rawComplaint.includes('تورم أو تيبس المفاصل:')) {
+    const match = rawComplaint.match(/-\s*تورم أو تيبس المفاصل:\s*([^\n]+)/)
+    if (match) swelling = match[1]
+  }
+
+  if (duration) {
+    patientFields.push({ label: 'مدة الشكوى', value: duration })
+  }
+  if (type) {
+    patientFields.push({ label: 'طبيعة الألم', value: type })
+  }
+  if (swelling) {
+    patientFields.push({ label: 'تورم أو تيبس المفاصل', value: swelling })
+  }
+
+  patientFields.push(
+    { label: 'التاريخ المرضي', value: consultation.medical_history || 'لا يوجد' },
+    { label: 'الأدوية الحالية', value: consultation.current_medications || 'لا يوجد' }
+  )
 
   if (consultation.appointment_date) {
     patientFields.push({
       label: 'تاريخ الموعد المطلوب',
-      value: new Date(consultation.appointment_date).toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+      value: new Date(consultation.appointment_date).toLocaleDateString('ar-SA-u-nu-latn', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
       num: true
     })
   }
@@ -121,6 +155,99 @@ export default function ConsultationDetail() {
   // Find doctor info
   const doctorId = consultation.doctor_id || 'khalid'
   const assignedDoc = DOCTORS.find(d => d.id === doctorId) || DOCTORS[0]
+
+  // Categorize files by type/prefix for display
+  const idFiles = files.filter(f => f.file_type === 'id_card' || f.file_name.includes('هوية_') || f.file_name.toLowerCase().includes('id_card'))
+  const xrayFiles = files.filter(f => f.file_type === 'xray' || f.file_name.includes('أشعة_'))
+  const bloodFiles = files.filter(f => f.file_type === 'blood_analytics' || f.file_name.includes('تحليل_'))
+  const otherFiles = files.filter(f => 
+    !idFiles.some(id => id.id === f.id) &&
+    !xrayFiles.some(x => x.id === f.id) &&
+    !bloodFiles.some(b => b.id === f.id)
+  )
+
+  const renderFileRow = (f: ConsultationFile, i: number) => {
+    let badgeColor = 'var(--primary)'
+    let badgeBg = 'var(--primary-soft)'
+    if (f.file_type === 'xray' || f.file_name.includes('أشعة_')) {
+      badgeColor = 'var(--gold)'
+      badgeBg = 'var(--gold-soft)'
+    } else if (f.file_type === 'blood_analytics' || f.file_name.includes('تحليل_')) {
+      badgeColor = 'var(--ok)'
+      badgeBg = 'var(--ok-soft)'
+    }
+    
+    let displayName = f.file_name
+    if (displayName.startsWith('هوية_')) {
+      displayName = displayName.replace(/^هوية_[^_]+_/, '')
+    } else if (displayName.startsWith('أشعة_')) {
+      displayName = displayName.replace(/^أشعة_/, '')
+    } else if (displayName.startsWith('تحليل_')) {
+      displayName = displayName.replace(/^تحليل_/, '')
+    }
+
+    return (
+      <a
+        key={f.id}
+        href={f.file_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '0.85rem 1rem',
+          background: 'var(--bg)',
+          borderRadius: 'var(--r)',
+          textDecoration: 'none',
+          border: '1px solid var(--border-faint)',
+          transition: 'all 250ms var(--ease-spring)',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.background = 'var(--surface-up)'; e.currentTarget.style.transform = 'translateX(-4px)' }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-faint)'; e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.transform = 'translateX(0)' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', overflow: 'hidden', flex: 1 }}>
+          <span style={{
+            width: '34px',
+            height: '34px',
+            borderRadius: '8px',
+            background: badgeBg,
+            border: '1px solid var(--border-accent)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '0.55rem',
+            fontWeight: 800,
+            color: badgeColor,
+            flexShrink: 0,
+          }}>
+            {f.file_name.split('.').pop()?.toUpperCase()}
+          </span>
+          <span style={{
+            color: 'var(--fg)',
+            fontSize: '0.85rem',
+            fontWeight: 500,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}>
+            {displayName}
+          </span>
+        </div>
+        <span style={{
+          color: 'var(--primary)',
+          fontSize: '0.8rem',
+          fontWeight: 700,
+          flexShrink: 0,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.25rem',
+        }}>
+          فتح الملف ←
+        </span>
+      </a>
+    )
+  }
 
   return (
     <div className="geo-bg" style={{ minHeight: '100vh', padding: '3rem 0', position: 'relative' }}>
@@ -185,7 +312,7 @@ export default function ConsultationDetail() {
             border: '1px solid var(--border-faint)',
             whiteSpace: 'nowrap',
           }}>
-            {new Date(consultation.created_at).toLocaleString('ar-SA')}
+            {new Date(consultation.created_at).toLocaleString('ar-SA-u-nu-latn')}
           </span>
         </div>
 
@@ -252,7 +379,7 @@ export default function ConsultationDetail() {
             }}>
               <span style={{ fontSize: '0.68rem', color: 'var(--fg-dim)', fontWeight: 600 }}>الموعد المختار:</span>
               <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--primary)' }}>
-                {new Date(consultation.appointment_date).toLocaleDateString('ar-SA', { weekday: 'short', day: 'numeric', month: 'short' })}
+                {new Date(consultation.appointment_date).toLocaleDateString('ar-SA-u-nu-latn', { weekday: 'short', day: 'numeric', month: 'short' })}
               </span>
               <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--gold)' }}>
                 {consultation.appointment_time}
@@ -304,7 +431,7 @@ export default function ConsultationDetail() {
                 🔔 طلب حجز موعد جديد
               </h3>
               <p style={{ fontSize: '0.82rem', color: 'var(--fg-muted)', marginTop: '0.25rem' }}>
-                يرغب المريض في حجز موعد الاستشارة يوم <strong className="num" style={{ color: 'var(--primary)' }}>{consultation.appointment_date ? new Date(consultation.appointment_date).toLocaleDateString('ar-SA', { weekday: 'long', day: 'numeric', month: 'long' }) : ''}</strong> الساعة <strong className="num" style={{ color: 'var(--primary)' }}>{consultation.appointment_time}</strong>. يرجى مراجعة الطلب واتخاذ إجراء بالقبول أو الرفض.
+                يرغب المريض في حجز موعد الاستشارة يوم <strong className="num" style={{ color: 'var(--primary)' }}>{consultation.appointment_date ? new Date(consultation.appointment_date).toLocaleDateString('ar-SA-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' }) : ''}</strong> الساعة <strong className="num" style={{ color: 'var(--primary)' }}>{consultation.appointment_time}</strong>. يرجى مراجعة الطلب واتخاذ إجراء بالقبول أو الرفض.
               </p>
             </div>
 
@@ -472,69 +599,46 @@ export default function ConsultationDetail() {
               </p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {files.map((f, i) => (
-                <a
-                  key={f.id}
-                  href={f.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '0.85rem 1rem',
-                    background: 'var(--bg)',
-                    borderRadius: 'var(--r)',
-                    textDecoration: 'none',
-                    border: '1px solid var(--border-faint)',
-                    transition: 'all 250ms var(--ease-spring)',
-                    animation: `fadeUp 0.4s var(--ease-out) ${i * 0.05}s both`,
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.background = 'var(--surface-up)'; e.currentTarget.style.transform = 'translateX(-4px)' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-faint)'; e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.transform = 'translateX(0)' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', overflow: 'hidden', flex: 1 }}>
-                    <span style={{
-                      width: '34px',
-                      height: '34px',
-                      borderRadius: '8px',
-                      background: 'var(--primary-soft)',
-                      border: '1px solid var(--border-accent)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '0.55rem',
-                      fontWeight: 800,
-                      color: 'var(--primary)',
-                      flexShrink: 0,
-                    }}>
-                      {f.file_name.split('.').pop()?.toUpperCase()}
-                    </span>
-                    <span style={{
-                      color: 'var(--fg)',
-                      fontSize: '0.85rem',
-                      fontWeight: 500,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {f.file_name}
-                    </span>
-                  </div>
-                  <span style={{
-                    color: 'var(--primary)',
-                    fontSize: '0.8rem',
-                    fontWeight: 700,
-                    flexShrink: 0,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.25rem',
-                  }}>
-                    فتح الملف ←
-                  </span>
-                </a>
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {/* ID Files Group */}
+              {idFiles.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <h4 style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.3rem', margin: '0.2rem 0' }}>
+                    <span>🪪</span> إثبات الهوية الشخصية والتحقق
+                  </h4>
+                  {idFiles.map((f, i) => renderFileRow(f, i))}
+                </div>
+              )}
+
+              {/* X-Ray Files Group */}
+              {xrayFiles.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <h4 style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '0.3rem', margin: '0.2rem 0' }}>
+                    <span>🩻</span> صور الأشعة الطبية (X-Ray / MRI / CT)
+                  </h4>
+                  {xrayFiles.map((f, i) => renderFileRow(f, i))}
+                </div>
+              )}
+
+              {/* Blood Test Files Group */}
+              {bloodFiles.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <h4 style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--ok)', display: 'flex', alignItems: 'center', gap: '0.3rem', margin: '0.2rem 0' }}>
+                    <span>🩸</span> تحاليل الدم والتحاليل المخبرية
+                  </h4>
+                  {bloodFiles.map((f, i) => renderFileRow(f, i))}
+                </div>
+              )}
+
+              {/* Other Files Group */}
+              {otherFiles.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <h4 style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--fg-dim)', display: 'flex', alignItems: 'center', gap: '0.3rem', margin: '0.2rem 0' }}>
+                    <span>📁</span> مستندات وملفات إضافية
+                  </h4>
+                  {otherFiles.map((f, i) => renderFileRow(f, i))}
+                </div>
+              )}
             </div>
           )}
         </div>

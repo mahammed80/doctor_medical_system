@@ -23,6 +23,9 @@ export type Consultation = {
   appointment_date?: string | null
   appointment_time?: string | null
   created_at: string
+  pain_duration?: string | null
+  pain_type?: string | null
+  joint_swelling_stiffness?: string | null
 }
 
 export type ConsultationFile = {

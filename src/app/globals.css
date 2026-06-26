@@ -9,15 +9,15 @@
   --bg:           oklch(97.5% 0.004 85);
   --surface:      oklch(100% 0.002 85);
   --surface-up:   oklch(96% 0.006 85);
-  --fg:           oklch(15% 0.015 265);
-  --fg-muted:     oklch(44% 0.012 265);
-  --fg-dim:       oklch(62% 0.008 265);
-  --primary:      oklch(46% 0.19 260);
-  --primary-up:   oklch(40% 0.21 260);
-  --primary-down: oklch(52% 0.17 260);
-  --primary-glow: oklch(46% 0.19 260 / 0.15);
-  --primary-soft: oklch(46% 0.19 260 / 0.07);
-  --primary-subtle: oklch(46% 0.19 260 / 0.04);
+  --fg:           oklch(15% 0.015 162);
+  --fg-muted:     oklch(44% 0.012 162);
+  --fg-dim:       oklch(62% 0.008 162);
+  --primary:      oklch(42% 0.13 162);
+  --primary-up:   oklch(36% 0.12 162);
+  --primary-down: oklch(48% 0.14 162);
+  --primary-glow: oklch(42% 0.13 162 / 0.15);
+  --primary-soft: oklch(42% 0.13 162 / 0.07);
+  --primary-subtle: oklch(42% 0.13 162 / 0.04);
   --gold:         oklch(68% 0.17 70);
   --gold-soft:    oklch(68% 0.17 70 / 0.1);
   --gold-glow:    oklch(68% 0.17 70 / 0.2);
@@ -27,7 +27,7 @@
   --err-soft:     oklch(50% 0.22 28 / 0.1);
   --border:       oklch(88% 0.004 85);
   --border-faint: oklch(93% 0.003 85);
-  --border-accent: oklch(46% 0.19 260 / 0.12);
+  --border-accent: oklch(42% 0.13 162 / 0.12);
   --shadow-sm:    0 1px 3px oklch(0% 0 0 / 0.04), 0 1px 2px oklch(0% 0 0 / 0.03);
   --shadow-md:    0 4px 16px oklch(0% 0 0 / 0.06), 0 2px 4px oklch(0% 0 0 / 0.03);
   --shadow-lg:    0 8px 32px oklch(0% 0 0 / 0.08), 0 4px 8px oklch(0% 0 0 / 0.04);
@@ -76,7 +76,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 0L80 40L60 80L40 40Z' fill='none' stroke='oklch(46%25 0.19 260)' stroke-width='0.3' opacity='0.04'/%3E%3Cpath d='M60 20L90 60L60 100L30 60Z' fill='none' stroke='oklch(68%25 0.17 70)' stroke-width='0.3' opacity='0.03'/%3E%3Ccircle cx='60' cy='60' r='30' fill='none' stroke='oklch(46%25 0.19 260)' stroke-width='0.2' opacity='0.03'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 0L80 40L60 80L40 40Z' fill='none' stroke='oklch(42%25 0.13 162)' stroke-width='0.3' opacity='0.04'/%3E%3Cpath d='M60 20L90 60L60 100L30 60Z' fill='none' stroke='oklch(68%25 0.17 70)' stroke-width='0.3' opacity='0.03'/%3E%3Ccircle cx='60' cy='60' r='30' fill='none' stroke='oklch(42%25 0.13 162)' stroke-width='0.2' opacity='0.03'/%3E%3C/svg%3E");
   background-size: 180px 180px;
   pointer-events: none;
   z-index: 0;
@@ -612,6 +612,6 @@ details summary::-webkit-details-marker {
   left: 0;
   right: 0;
   height: 5px;
-  background: linear-gradient(90deg, var(--primary) 0%, oklch(46% 0.19 260 / 0.6) 50%, var(--gold) 100%);
+  background: linear-gradient(90deg, var(--primary) 0%, oklch(42% 0.13 162 / 0.6) 50%, var(--gold) 100%);
   z-index: 100;
 }

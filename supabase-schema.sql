@@ -10,6 +10,9 @@ create table consultations (
   current_medications text,
   status text not null default 'pending_payment'
     check (status in ('pending_payment', 'pending_booking', 'booked')),
+  pain_duration text,
+  pain_type text,
+  joint_swelling_stiffness text,
   payment_id text,
   calendly_event_url text,
   created_at timestamptz default now()

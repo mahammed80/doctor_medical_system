@@ -168,11 +168,17 @@ export async function createConsultation(data: Omit<EnhancedConsultation, 'id' |
   try {
     // Insert into Supabase (will ignore doctor_id / doctor_name / specialty if they don't exist in SQL schema yet)
     // To ensure compatibility, we insert standard fields and store doctor info if schema matches
+    const detailedComplaint = `${data.chief_complaint}${
+      data.pain_duration || data.pain_type || data.joint_swelling_stiffness
+        ? `\n\n[تفاصيل إضافية عن الشكوى]:\n- مدة الشكوى: ${data.pain_duration || 'غير محدد'}\n- طبيعة الألم: ${data.pain_type || 'غير محدد'}\n- تورم أو تيبس المفاصل: ${data.joint_swelling_stiffness || 'غير محدد'}`
+        : ''
+    }`
+
     const supabasePayload: any = {
       patient_name: data.patient_name,
       patient_phone: data.patient_phone,
       patient_age: data.patient_age,
-      chief_complaint: data.chief_complaint,
+      chief_complaint: detailedComplaint,
       medical_history: data.medical_history,
       current_medications: data.current_medications,
       status: 'pending_payment',
@@ -184,6 +190,9 @@ export async function createConsultation(data: Omit<EnhancedConsultation, 'id' |
       supabasePayload.doctor_id = data.doctor_id
       supabasePayload.doctor_name = selectedDoctor.name
       supabasePayload.specialty = selectedDoctor.specialty
+      supabasePayload.pain_duration = data.pain_duration
+      supabasePayload.pain_type = data.pain_type
+      supabasePayload.joint_swelling_stiffness = data.joint_swelling_stiffness
     } catch {}
 
     const { data: insertedData, error } = await supabase

@@ -14,12 +14,19 @@ type FormData = {
   chief_complaint: string
   medical_history: string
   current_medications: string
-  files: File[]
+  id_file: File | null
+  has_previous_tests: 'yes' | 'no' | ''
+  xray_files: File[]
+  blood_files: File[]
+  pain_duration: string
+  pain_type: string
+  joint_swelling_stiffness: string
 }
 
 const STEPS = [
-  { label: 'بياناتك',        sub: 'المعلومات الشخصية' },
-  { label: 'الملفات',  sub: 'المستندات الطبية' },
+  { label: 'بياناتك والتحقق', sub: 'المعلومات الشخصية والهوية' },
+  { label: 'الشكوى الطبية', sub: 'تفاصيل الحالة الصحية' },
+  { label: 'الأشعة والتحاليل', sub: 'المستندات والفحوصات' },
   { label: 'الدفع',          sub: 'رسوم الاستشارة' },
   { label: 'الموعد',     sub: 'اختر وقتك' },
 ]
@@ -36,8 +43,19 @@ export default function NewConsultation() {
   const [consultationId, setConsultationId] = useState<string | null>(null)
   const [selectedDoctorId, setSelectedDoctorId] = useState('khalid')
   const [form, setForm] = useState<FormData>({
-    patient_name: '', patient_phone: '', patient_age: '',
-    chief_complaint: '', medical_history: '', current_medications: '', files: [],
+    patient_name: '',
+    patient_phone: '',
+    patient_age: '',
+    chief_complaint: '',
+    medical_history: '',
+    current_medications: '',
+    id_file: null,
+    has_previous_tests: '',
+    xray_files: [],
+    blood_files: [],
+    pain_duration: 'أقل من أسبوع',
+    pain_type: 'ألم متقطع مع الحركة',
+    joint_swelling_stiffness: 'لا',
   })
 
   // Custom scheduling calendar states
@@ -48,7 +66,7 @@ export default function NewConsultation() {
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [docSettings, setDocSettings] = useState<any>(null)
 
-  const set = (k: keyof FormData, v: string) => setForm(f => ({ ...f, [k]: v }))
+  const set = (k: keyof FormData, v: any) => setForm(f => ({ ...f, [k]: v }))
   const isDemo = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')
 
   useEffect(() => {
@@ -61,9 +79,22 @@ export default function NewConsultation() {
     }
   }, [])
 
-  async function submitStep1() {
+  function nextFromStep0() {
+    if (!form.patient_name || !form.patient_phone || !form.patient_age || !form.id_file) {
+      alert('الرجاء إدخال الاسم، رقم الجوال، العمر، وإرفاق صورة الهوية الشخصية للمتابعة.')
+      return
+    }
+    setStep(1)
+  }
+
+  async function submitComplaint() {
+    if (!form.chief_complaint) {
+      alert('الرجاء شرح الشكوى الرئيسية للمتابعة.')
+      return
+    }
     setLoading(true)
     try {
+      // 1. Create the consultation database record
       const data = await createConsultation({
         patient_name: form.patient_name,
         patient_phone: form.patient_phone,
@@ -72,40 +103,90 @@ export default function NewConsultation() {
         medical_history: form.medical_history,
         current_medications: form.current_medications,
         doctor_id: selectedDoctorId,
+        pain_duration: form.pain_duration,
+        pain_type: form.pain_type,
+        joint_swelling_stiffness: form.joint_swelling_stiffness,
       })
       setConsultationId(data.id)
-      setStep(1)
+
+      // 2. Upload the ID file linked to the consultation ID
+      if (form.id_file) {
+        if (isDemo) {
+          await saveLocalUploadedFile(data.id, `هوية_${form.patient_name}_${form.id_file.name}`, 'id_card')
+        } else {
+          const file = form.id_file
+          const path = `${data.id}/id_card-${Date.now()}-${file.name}`
+          const { error: uploadError } = await supabase.storage.from('consultation-files').upload(path, file)
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabase.storage.from('consultation-files').getPublicUrl(path)
+            await supabase.from('consultation_files').insert({
+              consultation_id: data.id,
+              file_name: `هوية_${form.patient_name}_${file.name}`,
+              file_url: publicUrl,
+              file_type: 'id_card'
+            })
+          }
+        }
+      }
+      setStep(2)
     } catch (err) {
-      alert('حصل خطأ، حاول مجدداً')
+      alert('حصل خطأ أثناء حفظ البيانات، يرجى المحاولة مجدداً.')
+      console.error(err)
     } finally {
       setLoading(false)
     }
   }
 
-  async function uploadFiles() {
+  async function uploadTestsAndFiles() {
     setLoading(true)
     if (!consultationId) return
     try {
-      if (isDemo) {
-        await new Promise(r => setTimeout(r, 900))
-        for (const file of form.files) {
-          await saveLocalUploadedFile(consultationId, file.name, file.type)
+      if (form.has_previous_tests === 'yes') {
+        if (isDemo) {
+          await new Promise(r => setTimeout(r, 900))
+          for (const file of form.xray_files) {
+            await saveLocalUploadedFile(consultationId, `أشعة_${file.name}`, 'xray')
+          }
+          for (const file of form.blood_files) {
+            await saveLocalUploadedFile(consultationId, `تحليل_${file.name}`, 'blood_analytics')
+          }
+          setStep(3)
+          return
         }
-        setStep(2)
-        return
-      }
 
-      for (const file of form.files) {
-        const path = `${consultationId}/${Date.now()}-${file.name}`
-        const { error: uploadError } = await supabase.storage.from('consultation-files').upload(path, file)
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage.from('consultation-files').getPublicUrl(path)
-          await supabase.from('consultation_files').insert({ consultation_id: consultationId, file_name: file.name, file_url: publicUrl, file_type: file.type })
+        // Upload X-rays
+        for (const file of form.xray_files) {
+          const path = `${consultationId}/xray-${Date.now()}-${file.name}`
+          const { error: uploadError } = await supabase.storage.from('consultation-files').upload(path, file)
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabase.storage.from('consultation-files').getPublicUrl(path)
+            await supabase.from('consultation_files').insert({
+              consultation_id: consultationId,
+              file_name: `أشعة_${file.name}`,
+              file_url: publicUrl,
+              file_type: 'xray'
+            })
+          }
+        }
+
+        // Upload Blood tests
+        for (const file of form.blood_files) {
+          const path = `${consultationId}/blood-${Date.now()}-${file.name}`
+          const { error: uploadError } = await supabase.storage.from('consultation-files').upload(path, file)
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabase.storage.from('consultation-files').getPublicUrl(path)
+            await supabase.from('consultation_files').insert({
+              consultation_id: consultationId,
+              file_name: `تحليل_${file.name}`,
+              file_url: publicUrl,
+              file_type: 'blood_analytics'
+            })
+          }
         }
       }
-      setStep(2)
+      setStep(3)
     } catch (err) {
-      alert('خطأ أثناء رفع الملفات')
+      alert('خطأ أثناء رفع الفحوصات والتحاليل الطبية.')
     } finally {
       setLoading(false)
     }
@@ -381,7 +462,7 @@ export default function NewConsultation() {
                 </div>
               </Field>
 
-              <Field label="الاسم الكامل" required>
+              <Field label="الاسم الكامل للمريض" required>
                 <input
                   className="input"
                   placeholder="محمد عبدالله"
@@ -412,14 +493,124 @@ export default function NewConsultation() {
                 </Field>
               </div>
 
-              <Field label="سبب الاستشارة" required>
+              <Field label="إثبات الهوية الشخصية (بطاقة الأحوال / الإقامة / جواز السفر)" required>
+                <IdDropZone
+                  file={form.id_file}
+                  onChange={file => set('id_file', file)}
+                />
+              </Field>
+
+              <button
+                className="btn-primary"
+                style={{ justifyContent: 'center', marginTop: '0.5rem' }}
+                disabled={!form.patient_name || !form.patient_phone || !form.patient_age || !form.id_file || loading}
+                onClick={nextFromStep0}
+              >
+                التالي
+              </button>
+            </div>
+          )}
+
+          {/* ── STEP 1 ── */}
+          {step === 1 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <Field label="ما هي الشكوى الرئيسية التي تعاني منها؟" required>
                 <textarea
                   className="input"
-                  placeholder="اشرح سبب الاستشارة بالتفصيل..."
+                  placeholder="مثال: ألم حاد في الركبة اليسرى يزداد عند صعود الدرج..."
                   value={form.chief_complaint}
                   onChange={e => set('chief_complaint', e.target.value)}
-                  style={{ minHeight: '100px' }}
+                  style={{ minHeight: '100px', fontWeight: 500 }}
                 />
+              </Field>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <Field label="منذ متى بدأت هذه الشكوى؟" required>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                    {['أقل من أسبوع', 'من أسبوع إلى شهر', 'من شهر إلى 6 أشهر', 'أكثر من 6 أشهر'].map(opt => {
+                      const isSelected = form.pain_duration === opt
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => set('pain_duration', opt)}
+                          style={{
+                            padding: '0.65rem 0.5rem',
+                            borderRadius: 'var(--r-sm)',
+                            border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
+                            background: isSelected ? 'var(--primary-soft)' : 'var(--surface)',
+                            color: isSelected ? 'var(--primary)' : 'var(--fg)',
+                            fontWeight: isSelected ? 700 : 500,
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                            transition: 'all 150ms'
+                          }}
+                        >
+                          {opt}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </Field>
+
+                <Field label="كيف تصف طبيعة الألم؟" required>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.4rem' }}>
+                    {['ألم حاد ومفاجئ', 'ألم مستمر وضئيل (باهت)', 'ألم متقطع مع الحركة'].map(opt => {
+                      const isSelected = form.pain_type === opt
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => set('pain_type', opt)}
+                          style={{
+                            padding: '0.55rem 0.5rem',
+                            borderRadius: 'var(--r-sm)',
+                            border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
+                            background: isSelected ? 'var(--primary-soft)' : 'var(--surface)',
+                            color: isSelected ? 'var(--primary)' : 'var(--fg)',
+                            fontWeight: isSelected ? 700 : 500,
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                            transition: 'all 150ms',
+                            textAlign: 'right',
+                            paddingRight: '1rem'
+                          }}
+                        >
+                          {isSelected ? '● ' : '○ '} {opt}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </Field>
+              </div>
+
+              <Field label="هل تعاني من تورم أو تيبس في المفاصل؟" required>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  {['نعم', 'لا'].map(opt => {
+                    const isSelected = form.joint_swelling_stiffness === opt
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => set('joint_swelling_stiffness', opt)}
+                        style={{
+                          flex: 1,
+                          padding: '0.65rem 1.5rem',
+                          borderRadius: 'var(--r-sm)',
+                          border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
+                          background: isSelected ? 'var(--primary-soft)' : 'var(--surface)',
+                          color: isSelected ? 'var(--primary)' : 'var(--fg)',
+                          fontWeight: isSelected ? 700 : 500,
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                          transition: 'all 150ms'
+                        }}
+                      >
+                        {opt}
+                      </button>
+                    )
+                  })}
+                </div>
               </Field>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -446,44 +637,124 @@ export default function NewConsultation() {
               <button
                 className="btn-primary"
                 style={{ justifyContent: 'center', marginTop: '0.5rem' }}
-                disabled={!form.patient_name || !form.patient_phone || !form.patient_age || !form.chief_complaint || loading}
-                onClick={submitStep1}
+                disabled={!form.chief_complaint || loading}
+                onClick={submitComplaint}
               >
-                {loading ? <Spinner /> : 'التالي'}
+                {loading ? <Spinner /> : 'التالي (حفظ البيانات)'}
               </button>
-            </div>
-          )}
-
-          {/* ── STEP 1 ── */}
-          {step === 1 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <DropZone
-                files={form.files}
-                onAdd={newFiles => setForm(f => ({ ...f, files: [...f.files, ...newFiles] }))}
-                onRemove={i => setForm(f => ({ ...f, files: f.files.filter((_, j) => j !== i) }))}
-              />
-              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-                <button
-                  className="btn-ghost"
-                  onClick={() => setStep(2)}
-                  style={{ flex: 1, justifyContent: 'center' }}
-                >
-                  تخطى
-                </button>
-                <button
-                  className="btn-primary"
-                  onClick={uploadFiles}
-                  disabled={loading}
-                  style={{ flex: 2, justifyContent: 'center' }}
-                >
-                  {loading ? <Spinner /> : form.files.length > 0 ? `رفع ${form.files.length} ملف` : 'التالي'}
-                </button>
-              </div>
             </div>
           )}
 
           {/* ── STEP 2 ── */}
           {step === 2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--fg)' }}>
+                  هل لديك أي صور أشعة أو تحاليل طبية سابقة؟
+                </h3>
+                <p style={{ fontSize: '0.82rem', color: 'var(--fg-dim)', marginTop: '0.25rem' }}>
+                  مشاركة الفحوصات السابقة تساعد الطبيب على تشخيص الحالة بشكل أدق.
+                </p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <button
+                  type="button"
+                  onClick={() => set('has_previous_tests', 'yes')}
+                  style={{
+                    padding: '1.25rem 1rem',
+                    borderRadius: 'var(--r)',
+                    border: `1.8px solid ${form.has_previous_tests === 'yes' ? 'var(--primary)' : 'var(--border)'}`,
+                    background: form.has_previous_tests === 'yes' ? 'var(--primary-soft)' : 'var(--surface)',
+                    color: form.has_previous_tests === 'yes' ? 'var(--primary)' : 'var(--fg)',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 200ms',
+                    textAlign: 'center',
+                    boxShadow: form.has_previous_tests === 'yes' ? '0 4px 12px var(--primary-glow)' : 'var(--shadow-sm)'
+                  }}
+                >
+                  <div style={{ fontSize: '1.8rem', marginBottom: '0.35rem' }}>📁</div>
+                  نعم، لدي ملفات سابقة
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    set('has_previous_tests', 'no')
+                    setForm(f => ({ ...f, xray_files: [], blood_files: [], has_previous_tests: 'no' }))
+                  }}
+                  style={{
+                    padding: '1.25rem 1rem',
+                    borderRadius: 'var(--r)',
+                    border: `1.8px solid ${form.has_previous_tests === 'no' ? 'var(--primary)' : 'var(--border)'}`,
+                    background: form.has_previous_tests === 'no' ? 'var(--primary-soft)' : 'var(--surface)',
+                    color: form.has_previous_tests === 'no' ? 'var(--primary)' : 'var(--fg)',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 200ms',
+                    textAlign: 'center',
+                    boxShadow: form.has_previous_tests === 'no' ? '0 4px 12px var(--primary-glow)' : 'var(--shadow-sm)'
+                  }}
+                >
+                  <div style={{ fontSize: '1.8rem', marginBottom: '0.35rem' }}>❌</div>
+                  لا، لا توجد لدي ملفات
+                </button>
+              </div>
+
+              {form.has_previous_tests === 'yes' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', animation: 'scaleIn 0.3s var(--ease-out)' }}>
+                  <Field label="تحميل صور الأشعة الطبية (X-Ray / MRI / CT)" optional>
+                    <DropZone
+                      files={form.xray_files}
+                      onAdd={newFiles => setForm(f => ({ ...f, xray_files: [...f.xray_files, ...newFiles] }))}
+                      onRemove={i => setForm(f => ({ ...f, xray_files: f.xray_files.filter((_, j) => j !== i) }))}
+                    />
+                  </Field>
+
+                  <Field label="تحميل نتائج تحاليل الدم والتحاليل المخبرية" optional>
+                    <DropZone
+                      files={form.blood_files}
+                      onAdd={newFiles => setForm(f => ({ ...f, blood_files: [...f.blood_files, ...newFiles] }))}
+                      onRemove={i => setForm(f => ({ ...f, blood_files: f.blood_files.filter((_, j) => j !== i) }))}
+                    />
+                  </Field>
+                </div>
+              )}
+
+              {form.has_previous_tests === 'no' && (
+                <button
+                  className="btn-primary"
+                  onClick={() => setStep(3)}
+                  style={{ width: '100%', justifyContent: 'center', marginTop: '0.5rem' }}
+                >
+                  التالي
+                </button>
+              )}
+
+              {form.has_previous_tests === 'yes' && (
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                  <button
+                    className="btn-ghost"
+                    onClick={() => setStep(3)}
+                    style={{ flex: 1, justifyContent: 'center' }}
+                  >
+                    تخطى
+                  </button>
+                  <button
+                    className="btn-primary"
+                    onClick={uploadTestsAndFiles}
+                    disabled={loading}
+                    style={{ flex: 2, justifyContent: 'center' }}
+                  >
+                    {loading ? <Spinner /> : 'التالي (رفع ومتابعة)'}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── STEP 3 ── */}
+          {step === 3 && (
             <div>
               {/* Price - enhanced */}
               <div style={{
@@ -537,7 +808,7 @@ export default function NewConsultation() {
                     fontSize: '4.5rem',
                     fontWeight: 900,
                     letterSpacing: '-0.04em',
-                    background: 'linear-gradient(135deg, var(--primary) 0%, oklch(55% 0.22 260) 50%, var(--primary-down) 100%)',
+                    background: 'linear-gradient(135deg, var(--primary) 0%, oklch(52% 0.14 162) 50%, var(--primary-down) 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -676,7 +947,7 @@ export default function NewConsultation() {
                   if (consultationId) {
                     await updateConsultation(consultationId, { status: 'pending_booking', payment_id: 'pay_demo_' + Date.now() })
                   }
-                  setStep(3)
+                  setStep(4)
                 }}
               >
                 ادفع {price} ريال
@@ -717,8 +988,8 @@ export default function NewConsultation() {
             </div>
           )}
 
-          {/* ── STEP 3 ── */}
-          {step === 3 && (
+          {/* ── STEP 4 ── */}
+          {step === 4 && (
             <div>
               <div style={{
                 display: 'flex',
@@ -904,7 +1175,7 @@ export default function NewConsultation() {
                 <h3 style={{ fontSize: '0.9rem', fontWeight: 800, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span style={{ width: '4px', height: '14px', borderRadius: '2px', background: 'var(--gold)' }} />
                   الأوقات المتاحة ليوم {selectedDate ? (
-                    <span className="num" style={{ color: 'var(--primary)' }}>{new Date(selectedDate).toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    <span className="num" style={{ color: 'var(--primary)' }}>{new Date(selectedDate).toLocaleDateString('ar-SA-u-nu-latn', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
                   ) : '...'}
                 </h3>
 
@@ -990,7 +1261,7 @@ export default function NewConsultation() {
                   justifyContent: 'space-between'
                 }}>
                   <span>
-                    📌 الموعد المختار: {new Date(selectedDate).toLocaleDateString('ar-SA', { weekday: 'long', day: 'numeric', month: 'long' })} في تمام الساعة <span className="num">{selectedTime}</span>
+                    📌 الموعد المختار: {new Date(selectedDate).toLocaleDateString('ar-SA-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' })} في تمام الساعة <span className="num">{selectedTime}</span>
                   </span>
                   <span className="num" style={{ fontSize: '0.72rem', color: 'var(--fg-dim)', fontWeight: 400 }}>بانتظار موافقة الطبيب</span>
                 </div>
@@ -1051,6 +1322,137 @@ function Field({ label, optional, required, children }: { label: string; optiona
         {optional && <span style={{ color: 'var(--fg-dim)', fontWeight: 400, marginRight: '0.35rem', fontSize: '0.78rem' }}>(اختياري)</span>}
       </label>
       {children}
+    </div>
+  )
+}
+
+function IdDropZone({ file, onChange }: { file: File | null; onChange: (f: File | null) => void }) {
+  const [dragOver, setDragOver] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOver(false)
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      onChange(e.dataTransfer.files[0])
+    }
+  }, [onChange])
+
+  return (
+    <div
+      style={{
+        border: `1.5px dashed ${dragOver ? 'var(--primary)' : 'var(--border-accent)'}`,
+        borderRadius: 'var(--r-lg)',
+        padding: '2rem 1.5rem',
+        textAlign: 'center',
+        cursor: 'pointer',
+        background: dragOver ? 'var(--primary-soft)' : 'var(--primary-subtle)',
+        transition: 'all 200ms var(--ease-out)',
+        position: 'relative'
+      }}
+      onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={handleDrop}
+      onClick={() => inputRef.current?.click()}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".pdf,.jpg,.jpeg,.png"
+        style={{ display: 'none' }}
+        onChange={e => {
+          if (e.target.files && e.target.files[0]) {
+            onChange(e.target.files[0])
+          }
+        }}
+      />
+      {file ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', direction: 'rtl' }} onClick={e => e.stopPropagation()}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', overflow: 'hidden' }}>
+            <span style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              background: 'var(--ok-soft)',
+              border: '1px solid oklch(50% 0.15 155 / 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.2rem',
+              flexShrink: 0,
+            }}>
+              🪪
+            </span>
+            <div style={{ overflow: 'hidden', textAlign: 'right' }}>
+              <span style={{
+                fontSize: '0.85rem',
+                color: 'var(--fg)',
+                fontWeight: 600,
+                display: 'block',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '220px'
+              }}>
+                {file.name}
+              </span>
+              <span style={{ fontSize: '0.68rem', color: 'var(--fg-dim)' }}>
+                {(file.size / 1024 / 1024).toFixed(1)} MB
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => onChange(null)}
+            style={{
+              background: 'var(--err-soft)',
+              border: '1px solid oklch(50% 0.22 28 / 0.15)',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              color: 'var(--err)',
+              fontSize: '0.82rem',
+              padding: '0.3rem 0.6rem',
+              fontWeight: 700,
+              flexShrink: 0,
+              transition: 'all 200ms',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--err)'; e.currentTarget.style.color = 'white' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--err-soft)'; e.currentTarget.style.color = 'var(--err)' }}
+          >
+            حذف
+          </button>
+        </div>
+      ) : (
+        <div>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            background: 'var(--primary-soft)',
+            border: '1px solid var(--border-accent)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 0.75rem',
+            color: 'var(--primary)',
+            fontSize: '1.3rem',
+          }}>
+            🪪
+          </div>
+          <span style={{
+            color: 'var(--primary)',
+            cursor: 'pointer',
+            fontWeight: 700,
+            fontSize: '0.88rem',
+            textDecoration: 'underline',
+            textUnderlineOffset: '3px',
+          }}>
+            اسحب صورة الهوية أو جواز السفر هنا أو اختر من جهازك
+          </span>
+          <p style={{ fontSize: '0.7rem', color: 'var(--fg-dim)', marginTop: '0.5rem' }}>
+            PDF · JPG · PNG — الحد الأقصى 10MB
+          </p>
+        </div>
+      )}
     </div>
   )
 }

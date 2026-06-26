@@ -211,7 +211,7 @@ function AnimatedCounter({ end, suffix = '' }: { end: number; suffix?: string })
 }
 
 const ORB_COLORS = [
-  'radial-gradient(circle, oklch(46% 0.19 260 / 0.12) 0%, transparent 70%)',
+  'radial-gradient(circle, oklch(42% 0.13 162 / 0.12) 0%, transparent 70%)',
   'radial-gradient(circle, oklch(68% 0.17 70 / 0.08) 0%, transparent 70%)',
   'radial-gradient(circle, oklch(50% 0.15 155 / 0.06) 0%, transparent 70%)',
 ]
@@ -250,7 +250,7 @@ function MouseGlow() {
       if (!ref.current) return
       const x = e.clientX / window.innerWidth
       const y = e.clientY / window.innerHeight
-      ref.current.style.background = `radial-gradient(600px at ${x * 100}% ${y * 100}%, oklch(46% 0.19 260 / 0.04) 0%, transparent 70%)`
+      ref.current.style.background = `radial-gradient(600px at ${x * 100}% ${y * 100}%, oklch(42% 0.13 162 / 0.04) 0%, transparent 70%)`
     }
     window.addEventListener('mousemove', handleMouse)
     return () => window.removeEventListener('mousemove', handleMouse)
@@ -354,7 +354,7 @@ export default function Home() {
                 استشارات د. خالد بترجي{' '}
                 <br />
                 <span style={{
-                  background: 'linear-gradient(135deg, var(--primary) 0%, oklch(55% 0.22 260) 50%, var(--primary-down) 100%)',
+                  background: 'linear-gradient(135deg, var(--primary) 0%, oklch(52% 0.14 162) 50%, var(--primary-down) 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
@@ -604,7 +604,7 @@ export default function Home() {
               gridTemplateColumns: 'repeat(4, 1fr)',
               gap: '1rem',
               padding: '3rem',
-              background: 'linear-gradient(135deg, oklch(46% 0.19 260 / 0.03), oklch(68% 0.17 70 / 0.03))',
+              background: 'linear-gradient(135deg, oklch(42% 0.13 162 / 0.03), oklch(68% 0.17 70 / 0.03))',
               borderRadius: 'var(--r-xl)',
               border: '1px solid var(--border-accent)',
             }}>
@@ -917,7 +917,7 @@ export default function Home() {
                       <div style={{
                         position: 'absolute', top: 0, right: 0,
                         width: '120px', height: '120px',
-                        background: 'radial-gradient(circle at top right, oklch(46% 0.19 260 / 0.06), transparent 70%)',
+                        background: 'radial-gradient(circle at top right, oklch(42% 0.13 162 / 0.06), transparent 70%)',
                         pointerEvents: 'none',
                       }} />
                     </>
@@ -1083,7 +1083,7 @@ export default function Home() {
                     <div style={{
                       width: '2.75rem', height: '2.75rem',
                       borderRadius: 'var(--r)',
-                      background: 'linear-gradient(135deg, var(--primary-subtle) 0%, oklch(46% 0.19 260 / 0.08) 100%)',
+                      background: 'linear-gradient(135deg, var(--primary-subtle) 0%, oklch(42% 0.13 162 / 0.08) 100%)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       color: 'var(--primary)',
                       marginBottom: '0.75rem',
@@ -1412,7 +1412,7 @@ export default function Home() {
             <div style={{
               padding: '5rem 4rem',
               borderRadius: 'var(--r-xl)',
-              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-up) 50%, oklch(35% 0.22 260) 100%)',
+              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-up) 50%, oklch(32% 0.11 162) 100%)',
               textAlign: 'center',
               position: 'relative',
               overflow: 'hidden',

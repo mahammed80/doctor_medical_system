@@ -169,7 +169,7 @@ export default function Dashboard() {
                 background: status === 'pending_payment'
                   ? 'linear-gradient(90deg, var(--gold), oklch(68% 0.17 70 / 0.3))'
                   : status === 'pending_booking'
-                  ? 'linear-gradient(90deg, var(--primary), oklch(46% 0.19 260 / 0.3))'
+                  ? 'linear-gradient(90deg, var(--primary), oklch(42% 0.13 162 / 0.3))'
                   : 'linear-gradient(90deg, var(--ok), oklch(50% 0.15 155 / 0.3))',
               }} />
               <div style={{
@@ -490,7 +490,7 @@ export default function Dashboard() {
                           whiteSpace: 'nowrap',
                           direction: 'ltr',
                         }}>
-                          {new Date(c.created_at).toLocaleDateString('ar-SA')}
+                          {new Date(c.created_at).toLocaleDateString('ar-SA-u-nu-latn')}
                         </td>
 
                         {/* View Button */}
