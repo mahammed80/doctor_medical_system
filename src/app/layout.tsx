@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
-import { Tajawal, Inter } from 'next/font/google'
+import { IBM_Plex_Sans_Arabic, Inter } from 'next/font/google'
 import Link from 'next/link'
 import Image from 'next/image'
 import './globals.css'
 
-const tajawal = Tajawal({
+const tajawal = IBM_Plex_Sans_Arabic({
   subsets: ['arabic'],
-  weight: ['300', '400', '500', '700', '800', '900'],
+  weight: ['300', '400', '500', '600', '700'],
   variable: '--font-tajawal',
 })
 
