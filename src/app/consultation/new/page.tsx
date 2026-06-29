@@ -50,44 +50,23 @@ const ARABIC_MONTHS = [
 ]
 
 function PaymobPaymentForm({
-  iframeUrl,
+  checkoutUrl,
   price,
 }: {
-  iframeUrl: string
+  checkoutUrl: string
   price: string
 }) {
-  const [iframeHeight, setIframeHeight] = useState(680)
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-      <div style={{
-        background: 'var(--bg)',
-        borderRadius: 'var(--r-lg)',
-        padding: '0.5rem',
-        border: '1px solid var(--border-faint)',
-        direction: 'ltr',
-        overflow: 'hidden',
-      }}>
-        <iframe
-          src={iframeUrl}
-          title="Paymob secure payment"
-          width="100%"
-          height={iframeHeight}
-          frameBorder={0}
-          scrolling="auto"
-          style={{ border: 'none', borderRadius: 'var(--r-md)', display: 'block' }}
-          onLoad={(e) => {
-            try {
-              const iframe = e.currentTarget
-              if (iframe.contentWindow?.document?.body?.scrollHeight) {
-                setIframeHeight(Math.min(900, Math.max(560, iframe.contentWindow.document.body.scrollHeight + 24)))
-              }
-            } catch {
-              // Cross-origin — ignore (Paymob iframe is on a different origin)
-            }
-          }}
-        />
-      </div>
+      <a
+        href={checkoutUrl}
+        target="_top"
+        rel="noopener"
+        className="btn-primary"
+        style={{ width: '100%', justifyContent: 'center', padding: '1rem', fontSize: '1rem', textDecoration: 'none' }}
+      >
+        ادفع {price} ريال عبر Paymob
+      </a>
 
       <p style={{
         fontSize: '0.78rem',
@@ -95,7 +74,8 @@ function PaymobPaymentForm({
         textAlign: 'center',
         lineHeight: 1.7,
       }}>
-        🔒 الدفع مشفر وآمن عبر Paymob — اضغط زر الدفع داخل النموذج أعلاه لإكمال عملية سداد رسوم الاستشارة ({price} ر.س).
+        🔒 الدفع مشفر وآمن عبر Paymob — اضغط الزر أعلاه لإكمال سداد رسوم الاستشارة ({price} ر.س).
+        سيتم تحويلك إلى بوابة Paymob الآمنة، ثم تعود تلقائياً إلى هنا بعد إتمام الدفع.
       </p>
     </div>
   )
@@ -139,7 +119,7 @@ export default function NewConsultation() {
   const [docSettings, setDocSettings] = useState<any>(null)
 
   const price = process.env.NEXT_PUBLIC_CONSULTATION_PRICE || '899'
-  const [iframeUrl, setIframeUrl] = useState<string | null>(null)
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
   const [paymentLoading, setPaymentLoading] = useState(false)
 
   const set = (k: keyof FormData, v: any) => setForm(f => ({ ...f, [k]: v }))
@@ -172,7 +152,7 @@ export default function NewConsultation() {
   }, [])
 
   useEffect(() => {
-    if (step === 3 && consultationId && !iframeUrl) {
+    if (step === 3 && consultationId && !checkoutUrl) {
       setPaymentLoading(true)
       fetch('/api/payment', {
         method: 'POST',
@@ -188,8 +168,8 @@ export default function NewConsultation() {
       })
         .then(res => res.json())
         .then(data => {
-          if (data.iframeUrl) {
-            setIframeUrl(data.iframeUrl)
+          if (data.checkoutUrl) {
+            setCheckoutUrl(data.checkoutUrl)
           } else {
             console.error('Failed to initialize Paymob payment:', data.error)
             alert('خطأ في إعداد بوابة الدفع الإلكتروني.')
@@ -203,7 +183,7 @@ export default function NewConsultation() {
           setPaymentLoading(false)
         })
     }
-  }, [step, consultationId, price, iframeUrl, form.patient_name, form.patient_phone])
+  }, [step, consultationId, price, checkoutUrl, form.patient_name, form.patient_phone])
 
   function nextFromStep0() {
     if (!form.patient_name || !form.patient_phone || !form.patient_age || !form.id_file) {
@@ -1004,17 +984,17 @@ export default function NewConsultation() {
                 <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent, var(--border), transparent)' }} />
               </div>
 
-              {/* Paymob Payment iframe container */}
+              {/* Paymob Payment — redirect to hosted checkout */}
               {paymentLoading ? (
                 <div style={{ textAlign: 'center', padding: '3rem 0' }}>
                   <Spinner />
                   <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--fg-dim)' }}>
-                    جاري تحميل بوابة الدفع الآمنة من Paymob...
+                    جاري تجهيز رابط الدفع الآمن عبر Paymob...
                   </p>
                 </div>
-              ) : iframeUrl && consultationId ? (
+              ) : checkoutUrl && consultationId ? (
                 <PaymobPaymentForm
-                  iframeUrl={iframeUrl}
+                  checkoutUrl={checkoutUrl}
                   price={price}
                 />
               ) : (

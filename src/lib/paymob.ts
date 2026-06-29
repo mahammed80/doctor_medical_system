@@ -1,22 +1,31 @@
-// Paymob is region-scoped. Use the KSA base URL by default (the merchant
-// account in this project is in Saudi Arabia). Override with PAYMOB_BASE_URL
-// if you need to point at a different region.
-//   Egypt  → https://accept.paymob.com/
-//   KSA    → https://ksa.paymob.com/
-//   Oman   → https://oman.paymob.com/
-//   UAE    → https://uae.paymob.com/
+// Paymob KSA uses the new "next/v1" platform whose primary checkout
+// integration is a Payment Link (https://ksa.paymob.com/standalone/?token=…).
+// The legacy "payment_keys + iframe" flow from accept.paymob.com is not
+// available on KSA.
+//
+// Flow:
+//   1. Server: POST /api/ecommerce/payment-links   → returns { url, id, token }
+//   2. Client: redirect (or iframe) to the returned URL.
+//   3. After payment, Paymob redirects to our `redirection_url` with
+//      `?token=…&success=true&…` so the client can mark the consultation paid.
+
 const PAYMOB_BASE = (process.env.PAYMOB_BASE_URL || 'https://ksa.paymob.com').replace(/\/+$/, '')
 
-type PaymobAuthResponse = { token: string }
-type PaymobOrderResponse = { id: number }
-type PaymobPaymentKeyResponse = { token: string }
+type PaymobAuthResponse = { token: string; profile: unknown }
+type PaymobOrderResponse = { id: number; url: string; token: string }
+type PaymobPaymentLinkResponse = {
+  id: number
+  url: string
+  token: string
+  client_url: string
+}
 
 let cachedToken: { value: string; expiresAt: number } | null = null
 
-async function postJson<T>(url: string, body: unknown): Promise<T> {
+async function postJson<T>(url: string, body: unknown, headers: Record<string, string> = {}): Promise<T> {
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...headers },
     body: JSON.stringify(body),
     cache: 'no-store',
   })
@@ -44,20 +53,8 @@ export async function getPaymobAuthToken(): Promise<string> {
   return data.token
 }
 
-export async function createPaymobOrder(
-  authToken: string,
-  amountCents: number,
-  consultationId: string,
-): Promise<number> {
-  const data = await postJson<PaymobOrderResponse>(`${PAYMOB_BASE}/api/ecommerce/orders`, {
-    auth_token: authToken,
-    amount_cents: amountCents,
-    currency: 'SAR',
-    delivery_needed: false,
-    items: [],
-    merchant_order_id: consultationId,
-  })
-  return data.id
+function authHeader(token: string): Record<string, string> {
+  return { Authorization: `Bearer ${token}` }
 }
 
 export type PaymobBillingData = {
@@ -75,35 +72,47 @@ export type PaymobBillingData = {
   postal_code: string
 }
 
-export async function createPaymobPaymentKey(params: {
-  authToken: string
-  orderId: number
+export type CreatePaymobCheckoutParams = {
   amountCents: number
+  currency?: string
   consultationId: string
   billingData: PaymobBillingData
   redirectUrl: string
-}): Promise<string> {
-  const integrationId = process.env.PAYMOB_INTEGRATION_ID
-  if (!integrationId) throw new Error('PAYMOB_INTEGRATION_ID is not set')
-
-  const data = await postJson<PaymobPaymentKeyResponse>(`${PAYMOB_BASE}/api/payment_keys`, {
-    auth_token: params.authToken,
-    amount_cents: params.amountCents,
-    expiration: 3600,
-    order_id: params.orderId,
-    billing_data: params.billingData,
-    currency: 'SAR',
-    integration_id: Number(integrationId),
-    lock_order_when_paid: true,
-    redirection_url: params.redirectUrl,
-    merchant_redirect_url: params.redirectUrl,
-    extras: { consultation_id: params.consultationId },
-  })
-  return data.token
 }
 
-export function buildPaymobIframeUrl(paymentToken: string): string {
-  const iframeId = process.env.PAYMOB_IFRAME_ID
-  if (!iframeId) throw new Error('PAYMOB_IFRAME_ID is not set')
-  return `${PAYMOB_BASE}/api/acceptance/iframes/${iframeId}?payment_token=${encodeURIComponent(paymentToken)}`
+/**
+ * Creates a Paymob Payment Link and returns the hosted checkout URL the
+ * customer should be redirected to. Works on the KSA "next/v1" platform.
+ */
+export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParams): Promise<{
+  url: string
+  paymentId: string
+  token: string
+}> {
+  const token = await getPaymobAuthToken()
+  const currency = params.currency || 'SAR'
+
+  const body = {
+    amount_cents: params.amountCents,
+    currency,
+    payment_methods: process.env.PAYMOB_INTEGRATION_ID ? [Number(process.env.PAYMOB_INTEGRATION_ID)] : undefined,
+    billing_data: params.billingData,
+    extras: { consultation_id: params.consultationId },
+    redirection_url: params.redirectUrl,
+    merchant_order_id: params.consultationId,
+    is_live: false,
+  }
+
+  const data = await postJson<PaymobPaymentLinkResponse>(
+    `${PAYMOB_BASE}/api/ecommerce/payment-links`,
+    body,
+    authHeader(token),
+  )
+
+  const url = data.client_url || data.url
+  if (!url) {
+    throw new Error('Paymob payment link response did not include a URL.')
+  }
+
+  return { url, paymentId: String(data.id), token: data.token }
 }

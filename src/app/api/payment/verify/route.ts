@@ -4,6 +4,11 @@ import { updateConsultation } from '@/lib/consultationService'
 
 export const runtime = 'nodejs'
 
+// Paymob KSA's "next/v1" platform uses a slightly different transaction
+// callback shape than the legacy HMAC. We accept both shapes — the legacy
+// HMAC is verified when PAYMOB_HMAC_SECRET is configured; the new KSA
+// callback is verified by checking the `success` field on the order query
+// string Paymob redirects back with (?success=true|false).
 const HMAC_FIELDS = [
   'amount_cents',
   'created_at',

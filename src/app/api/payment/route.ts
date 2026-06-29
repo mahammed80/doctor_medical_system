@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server'
 import {
-  getPaymobAuthToken,
-  createPaymobOrder,
-  createPaymobPaymentKey,
-  buildPaymobIframeUrl,
+  createPaymobCheckoutLink,
   type PaymobBillingData,
 } from '@/lib/paymob'
 
@@ -15,11 +12,7 @@ export async function POST(request: Request) {
     const { amount, consultationId, patient } = body as {
       amount: number
       consultationId: string
-      patient?: {
-        name?: string
-        phone?: string
-        email?: string
-      }
+      patient?: { name?: string; phone?: string; email?: string }
     }
 
     if (!amount || !consultationId) {
@@ -37,13 +30,12 @@ export async function POST(request: Request) {
       )
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
-      || (request.headers.get('origin') ?? 'http://localhost:3000')
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      request.headers.get('origin') ||
+      'http://localhost:3000'
 
     const redirectUrl = `${baseUrl}/consultation/new?step=4&consultation=${encodeURIComponent(consultationId)}&from=paymob`
-
-    const authToken = await getPaymobAuthToken()
-    const orderId = await createPaymobOrder(authToken, amountCents, consultationId)
 
     const [first = 'Patient', ...rest] = (patient?.name ?? '').split(' ')
     const last = rest.join(' ') || 'NA'
@@ -63,24 +55,20 @@ export async function POST(request: Request) {
       postal_code: 'NA',
     }
 
-    const paymentToken = await createPaymobPaymentKey({
-      authToken,
-      orderId,
+    const checkout = await createPaymobCheckoutLink({
       amountCents,
       consultationId,
       billingData,
       redirectUrl,
     })
 
-    const iframeUrl = buildPaymobIframeUrl(paymentToken)
-
     return NextResponse.json({
-      iframeUrl,
-      paymentToken,
-      orderId,
+      checkoutUrl: checkout.url,
+      paymentId: checkout.paymentId,
+      paymentToken: checkout.token,
     })
   } catch (error: any) {
-    console.error('Paymob payment initialization failed:', error)
+    console.error('Paymob checkout link creation failed:', error)
     return NextResponse.json(
       { error: error?.message ?? 'تعذّر تهيئة الدفع عبر Paymob.' },
       { status: 500 },
