@@ -3,19 +3,29 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { getConsultations, getDoctorSettings, saveDoctorSettings, DoctorScheduleSettings, EnhancedConsultation } from '@/lib/consultationService'
+import { getCachedSession, signOut, AuthSession } from '@/lib/auth'
 import { DOCTORS } from '@/lib/doctors'
+import { STATUS_CONFIG, type ConsultationStatus } from '@/lib/supabase'
 
-const STATUS_CONFIG: Record<string, { label: string; badge: string }> = {
-  pending_payment:  { label: 'في انتظار الدفع', badge: 'badge-gold' },
-  pending_booking:  { label: 'في انتظار الحجز', badge: 'badge-primary' },
-  pending_approval: { label: 'بانتظار موافقة الطبيب', badge: 'badge-gold' },
-  approved:         { label: 'مقبول ومؤكد', badge: 'badge-ok' },
-  declined:         { label: 'مرفوض', badge: 'badge-err' },
-  booked:           { label: 'محجوز', badge: 'badge-ok' },
-}
+// Re-use the shared STATUS_CONFIG from supabase.ts.
+// (We re-declare a non-const variant here so the type widens to include
+// every key in ConsultationStatus, allowing safe `in` checks elsewhere.)
+
+// Compact set used for the dashboard overview cards.
+const OVERVIEW_STATUSES: ConsultationStatus[] = [
+  'submitted',
+  'needs_info',
+  'patient_replied',
+  'approved',
+  'completed',
+]
 
 export default function Dashboard() {
+  const router = useRouter()
+  const [session, setSession] = useState<AuthSession | null>(null)
+  const [authChecked, setAuthChecked] = useState(false)
   const [consultations, setConsultations] = useState<EnhancedConsultation[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -29,6 +39,17 @@ export default function Dashboard() {
   const [saveSuccess, setSaveSuccess] = useState(false)
 
   useEffect(() => {
+    const cached = getCachedSession()
+    if (!cached) {
+      router.replace('/dashboard/login')
+      return
+    }
+    setSession(cached)
+    setAuthChecked(true)
+  }, [router])
+
+  useEffect(() => {
+    if (!authChecked) return
     async function loadData() {
       try {
         const data = await getConsultations()
@@ -40,7 +61,7 @@ export default function Dashboard() {
       }
     }
     loadData()
-  }, [])
+  }, [authChecked])
 
   // Load schedule settings when dashboard loads or doctor filter changes
   useEffect(() => {
@@ -53,7 +74,7 @@ export default function Dashboard() {
   }, [selectedDoctorFilter])
 
   // Calculate status counts based on loaded data
-  const statusCounts = (['pending_payment', 'pending_booking', 'pending_approval', 'approved', 'declined'] as const).map(s => ({
+  const statusCounts = OVERVIEW_STATUSES.map(s => ({
     status: s,
     count: consultations.filter(c => c.status === s || (s === 'approved' && c.status === 'booked')).length,
     ...STATUS_CONFIG[s],
@@ -75,7 +96,7 @@ export default function Dashboard() {
   })
 
   // Loading Skeleton
-  if (loading) {
+  if (!authChecked || loading) {
     return (
       <div className="geo-bg" style={{ minHeight: '100vh', padding: '3rem 0' }}>
         <div className="container" style={{ textAlign: 'center', paddingTop: '10rem' }}>
@@ -90,7 +111,9 @@ export default function Dashboard() {
               animation: 'spin 1.7s linear infinite',
               marginBottom: '1rem',
             }} />
-            <p style={{ fontWeight: 700, color: 'var(--fg-muted)', fontFamily: 'var(--font-tajawal)' }}>جاري تحميل الاستشارات...</p>
+            <p style={{ fontWeight: 700, color: 'var(--fg-muted)', fontFamily: 'var(--font-tajawal)' }}>
+              {authChecked ? 'جاري تحميل الاستشارات...' : 'جاري التحقق من تسجيل الدخول...'}
+            </p>
           </div>
         </div>
       </div>
@@ -125,14 +148,39 @@ export default function Dashboard() {
               مركز بترجي للاستشارات الطبية — متابعة طلبات وحجوزات الاستشارات
             </p>
           </div>
-          <div style={{
-            fontSize: '0.72rem', color: 'var(--fg-dim)',
-            padding: '0.4rem 0.85rem',
-            background: 'var(--surface)',
-            borderRadius: 'var(--r-sm)',
-            border: '1px solid var(--border-faint)',
-          }}>
-            إجمالي: {consultations.length} استشارة
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            {session && (
+              <span style={{
+                fontSize: '0.72rem',
+                color: 'var(--primary)',
+                fontWeight: 700,
+                padding: '0.4rem 0.85rem',
+                background: 'var(--primary-soft)',
+                borderRadius: 'var(--r-sm)',
+                border: '1px solid var(--border-accent)',
+              }}>
+                {session.display_name || session.email}
+              </span>
+            )}
+            <span style={{
+              fontSize: '0.72rem', color: 'var(--fg-dim)',
+              padding: '0.4rem 0.85rem',
+              background: 'var(--surface)',
+              borderRadius: 'var(--r-sm)',
+              border: '1px solid var(--border-faint)',
+            }}>
+              إجمالي: {consultations.length} استشارة
+            </span>
+            <button
+              onClick={async () => {
+                await signOut()
+                router.replace('/dashboard/login')
+              }}
+              className="btn-ghost"
+              style={{ fontSize: '0.78rem', padding: '0.4rem 0.9rem' }}
+            >
+              تسجيل الخروج
+            </button>
           </div>
         </div>
 
@@ -318,11 +366,16 @@ export default function Dashboard() {
                 onChange={e => setSelectedStatusFilter(e.target.value)}
               >
                 <option value="all">الكل</option>
+                <option value="submitted">بانتظار المراجعة</option>
+                <option value="under_review">قيد المراجعة</option>
+                <option value="needs_info">يحتاج معلومات</option>
+                <option value="patient_replied">رد المريض</option>
+                <option value="approved">مقبول ومؤكد</option>
+                <option value="completed">مكتمل</option>
+                <option value="declined">مرفوض</option>
+                <option value="cancelled">ملغي</option>
                 <option value="pending_payment">في انتظار الدفع</option>
                 <option value="pending_booking">في انتظار الحجز</option>
-                <option value="pending_approval">بانتظار موافقة الطبيب</option>
-                <option value="approved">مقبول ومؤكد</option>
-                <option value="declined">مرفوض</option>
               </select>
             </div>
 

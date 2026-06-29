@@ -1,17 +1,14 @@
-import { supabase, Consultation, ConsultationFile } from './supabase'
+import { supabase, Consultation, ConsultationFile, FileCategory, ConsultationStatus } from './supabase'
 import { DOCTORS } from './doctors'
+import { sendMessage } from './chatService'
 
-// Extended type with doctor and specialty info
-export type EnhancedConsultation = Consultation & {
-  doctor_id?: string
-  doctor_name?: string
-  specialty?: string
-}
+// Extended type — same shape as Consultation plus legacy local-only props.
+export type EnhancedConsultation = Consultation
 
 const isBrowser = typeof window !== 'undefined'
 const isDemo = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')
 
-// Initial mock data to seed the dashboard
+// ── Initial mock data ───────────────────────────────────────────────────────
 const MOCK_CONSULTATIONS: EnhancedConsultation[] = [
   {
     id: 'mock-1',
@@ -29,7 +26,17 @@ const MOCK_CONSULTATIONS: EnhancedConsultation[] = [
     specialty: 'جراحة العظام والمفاصل',
     appointment_date: '2026-06-11',
     appointment_time: '10:00',
-    created_at: new Date(Date.now() - 3600000 * 2).toISOString(), // 2 hours ago
+    pain_severity: 7,
+    pain_natures: ['sharp', 'continuous'],
+    pain_locations: ['knee'],
+    spinal_areas: [],
+    symptom_start: 'قبل أسبوعين بعد رياضة الجري',
+    previous_treatments: 'مسكنات فقط',
+    previous_surgeries: 'لا يوجد',
+    aggravating_factors: 'صعود الدرج والجري',
+    relieving_factors: 'الراحة والكمادات الباردة',
+    doctor_notes: 'يحتاج فحص MRI لتقييم الغضروف.',
+    created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
   },
   {
     id: 'mock-2',
@@ -39,7 +46,7 @@ const MOCK_CONSULTATIONS: EnhancedConsultation[] = [
     chief_complaint: 'خشونة وتورم في مفاصل الركبة وتصلب حركي خاصة في الصباح الباكر.',
     medical_history: 'تاريخ عائلي للإصابة بخشونة المفاصل.',
     current_medications: 'لا يوجد.',
-    status: 'pending_approval',
+    status: 'under_review',
     payment_id: 'pay_visa_9918273',
     calendly_event_url: null,
     doctor_id: 'khalid',
@@ -47,7 +54,16 @@ const MOCK_CONSULTATIONS: EnhancedConsultation[] = [
     specialty: 'جراحة العظام والمفاصل',
     appointment_date: '2026-06-12',
     appointment_time: '14:30',
-    created_at: new Date(Date.now() - 3600000 * 24).toISOString(), // 1 day ago
+    pain_severity: 5,
+    pain_natures: ['dull', 'intermittent'],
+    pain_locations: ['knee'],
+    spinal_areas: [],
+    symptom_start: 'منذ 3 أشهر',
+    previous_treatments: 'مسكنات موضعية',
+    previous_surgeries: 'لا يوجد',
+    aggravating_factors: 'البرودة والجلوس لفترات طويلة',
+    relieving_factors: 'التمارين الخفيفة',
+    created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
   },
   {
     id: 'mock-3',
@@ -63,9 +79,12 @@ const MOCK_CONSULTATIONS: EnhancedConsultation[] = [
     doctor_id: 'khalid',
     doctor_name: 'د. خالد بترجي',
     specialty: 'جراحة العظام والمفاصل',
-    appointment_date: null,
-    appointment_time: null,
-    created_at: new Date(Date.now() - 3600000 * 48).toISOString(), // 2 days ago
+    pain_severity: 9,
+    pain_natures: ['continuous', 'radiating'],
+    pain_locations: ['hip', 'knee'],
+    spinal_areas: [],
+    symptom_start: 'منذ أكثر من 6 أشهر',
+    created_at: new Date(Date.now() - 3600000 * 48).toISOString(),
   },
   {
     id: 'mock-4',
@@ -83,11 +102,16 @@ const MOCK_CONSULTATIONS: EnhancedConsultation[] = [
     specialty: 'جراحة العظام والمفاصل',
     appointment_date: '2026-06-10',
     appointment_time: '15:00',
-    created_at: new Date(Date.now() - 3600000 * 72).toISOString(), // 3 days ago
-  }
+    pain_severity: 3,
+    pain_natures: ['dull'],
+    pain_locations: ['shoulder'],
+    spinal_areas: [],
+    symptom_start: 'قبل 4 أسابيع (حادث سيارة)',
+    created_at: new Date(Date.now() - 3600000 * 72).toISOString(),
+  },
 ]
 
-// Fetch all from localStorage (only for client-side demo mode)
+// ── Local storage helpers ───────────────────────────────────────────────────
 function getLocalConsultations(): EnhancedConsultation[] {
   if (!isBrowser) return MOCK_CONSULTATIONS
   const saved = localStorage.getItem('demo_consultations')
@@ -95,7 +119,7 @@ function getLocalConsultations(): EnhancedConsultation[] {
     localStorage.setItem('demo_consultations', JSON.stringify(MOCK_CONSULTATIONS))
     return MOCK_CONSULTATIONS
   }
-  return JSON.parse(saved)
+  try { return JSON.parse(saved) as EnhancedConsultation[] } catch { return MOCK_CONSULTATIONS }
 }
 
 function saveLocalConsultations(list: EnhancedConsultation[]) {
@@ -103,20 +127,20 @@ function saveLocalConsultations(list: EnhancedConsultation[]) {
   localStorage.setItem('demo_consultations', JSON.stringify(list))
 }
 
+// ── Read ────────────────────────────────────────────────────────────────────
 export async function getConsultations(): Promise<EnhancedConsultation[]> {
   if (isDemo) {
-    // Return sorted descending by created_at
-    return getLocalConsultations().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    return getLocalConsultations()
+      .slice()
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
   }
-
   try {
     const { data, error } = await supabase
       .from('consultations')
       .select('*')
       .order('created_at', { ascending: false })
-
     if (error) throw error
-    return data || []
+    return (data || []) as EnhancedConsultation[]
   } catch (err) {
     console.error('Supabase fetch failed, falling back to local mock data:', err)
     return getLocalConsultations()
@@ -125,28 +149,29 @@ export async function getConsultations(): Promise<EnhancedConsultation[]> {
 
 export async function getConsultationById(id: string): Promise<EnhancedConsultation | null> {
   if (isDemo || id.startsWith('demo-') || id.startsWith('mock-')) {
-    const list = getLocalConsultations()
-    return list.find(c => c.id === id) || null
+    return getLocalConsultations().find(c => c.id === id) || null
   }
-
   try {
     const { data, error } = await supabase
       .from('consultations')
       .select('*')
       .eq('id', id)
       .single()
-
     if (error) throw error
-    return data
+    return data as EnhancedConsultation
   } catch (err) {
     console.error(`Supabase fetch detail failed for ID ${id}, searching locally:`, err)
     return getLocalConsultations().find(c => c.id === id) || null
   }
 }
 
-export async function createConsultation(data: Omit<EnhancedConsultation, 'id' | 'created_at' | 'status' | 'payment_id' | 'calendly_event_url'> & { doctor_id: string }): Promise<EnhancedConsultation> {
+// ── Create ──────────────────────────────────────────────────────────────────
+type CreateInput = Omit<EnhancedConsultation, 'id' | 'created_at' | 'status' | 'payment_id' | 'calendly_event_url' | 'doctor_name' | 'specialty'>
+  & { doctor_id: string; pain_type?: string | null; pain_duration?: string | null; joint_swelling_stiffness?: string | null }
+
+export async function createConsultation(data: CreateInput): Promise<EnhancedConsultation> {
   const selectedDoctor = DOCTORS.find(d => d.id === data.doctor_id) || DOCTORS[0]
-  
+
   const newRecord: EnhancedConsultation = {
     ...data,
     id: 'demo-' + Date.now(),
@@ -155,7 +180,7 @@ export async function createConsultation(data: Omit<EnhancedConsultation, 'id' |
     specialty: selectedDoctor.specialty,
     created_at: new Date().toISOString(),
     payment_id: null,
-    calendly_event_url: null
+    calendly_event_url: null,
   }
 
   if (isDemo) {
@@ -166,48 +191,34 @@ export async function createConsultation(data: Omit<EnhancedConsultation, 'id' |
   }
 
   try {
-    // Insert into Supabase (will ignore doctor_id / doctor_name / specialty if they don't exist in SQL schema yet)
-    // To ensure compatibility, we insert standard fields and store doctor info if schema matches
-    const detailedComplaint = `${data.chief_complaint}${
-      data.pain_duration || data.pain_type || data.joint_swelling_stiffness
-        ? `\n\n[تفاصيل إضافية عن الشكوى]:\n- مدة الشكوى: ${data.pain_duration || 'غير محدد'}\n- طبيعة الألم: ${data.pain_type || 'غير محدد'}\n- تورم أو تيبس المفاصل: ${data.joint_swelling_stiffness || 'غير محدد'}`
-        : ''
-    }`
-
-    const supabasePayload: any = {
-      patient_name: data.patient_name,
-      patient_phone: data.patient_phone,
-      patient_age: data.patient_age,
-      chief_complaint: detailedComplaint,
-      medical_history: data.medical_history,
-      current_medications: data.current_medications,
-      status: 'pending_payment',
-    }
-
-    // Try sending doctor info. Supabase will ignore if columns don't exist yet (or fail if strict)
-    // We add them dynamically:
-    try {
-      supabasePayload.doctor_id = data.doctor_id
-      supabasePayload.doctor_name = selectedDoctor.name
-      supabasePayload.specialty = selectedDoctor.specialty
-      supabasePayload.pain_duration = data.pain_duration
-      supabasePayload.pain_type = data.pain_type
-      supabasePayload.joint_swelling_stiffness = data.joint_swelling_stiffness
-    } catch {}
-
     const { data: insertedData, error } = await supabase
       .from('consultations')
-      .insert(supabasePayload)
+      .insert({
+        patient_name:        data.patient_name,
+        patient_phone:       data.patient_phone,
+        patient_age:         data.patient_age,
+        chief_complaint:     data.chief_complaint,
+        medical_history:     data.medical_history,
+        current_medications: data.current_medications,
+        doctor_id:           data.doctor_id,
+        doctor_name:         selectedDoctor.name,
+        specialty:           selectedDoctor.specialty,
+        pain_severity:       data.pain_severity ?? null,
+        pain_natures:        data.pain_natures ?? [],
+        pain_locations:      data.pain_locations ?? [],
+        spinal_areas:        data.spinal_areas ?? [],
+        symptom_start:       data.symptom_start ?? null,
+        previous_treatments: data.previous_treatments ?? null,
+        previous_surgeries:  data.previous_surgeries ?? null,
+        aggravating_factors: data.aggravating_factors ?? null,
+        relieving_factors:   data.relieving_factors ?? null,
+        status:              'pending_payment',
+      })
       .select()
       .single()
 
     if (error) throw error
-    
-    // Merge the local properties just in case the Supabase table doesn't have the columns yet
-    return {
-      ...newRecord,
-      ...insertedData
-    }
+    return { ...newRecord, ...insertedData } as EnhancedConsultation
   } catch (err) {
     console.error('Supabase insert failed, storing locally in demo mode:', err)
     const list = getLocalConsultations()
@@ -217,7 +228,11 @@ export async function createConsultation(data: Omit<EnhancedConsultation, 'id' |
   }
 }
 
-export async function updateConsultation(id: string, updates: Partial<EnhancedConsultation>): Promise<EnhancedConsultation | null> {
+// ── Update ──────────────────────────────────────────────────────────────────
+export async function updateConsultation(
+  id: string,
+  updates: Partial<EnhancedConsultation>
+): Promise<EnhancedConsultation | null> {
   if (isDemo || id.startsWith('demo-') || id.startsWith('mock-')) {
     const list = getLocalConsultations()
     const index = list.findIndex(c => c.id === id)
@@ -234,9 +249,8 @@ export async function updateConsultation(id: string, updates: Partial<EnhancedCo
       .eq('id', id)
       .select()
       .single()
-
     if (error) throw error
-    return data
+    return data as EnhancedConsultation
   } catch (err) {
     console.error(`Supabase update failed for ID ${id}, updating locally:`, err)
     const list = getLocalConsultations()
@@ -248,31 +262,48 @@ export async function updateConsultation(id: string, updates: Partial<EnhancedCo
   }
 }
 
+/**
+ * Update consultation status with the appropriate side-effects
+ * (timestamps, system chat message, etc.) so the rest of the app
+ * doesn't have to know about the timestamps.
+ */
+export async function transitionStatus(
+  id: string,
+  next: ConsultationStatus,
+  extra: Partial<EnhancedConsultation> = {},
+  systemMessage?: string
+): Promise<EnhancedConsultation | null> {
+  const now = new Date().toISOString()
+  const patches: Partial<EnhancedConsultation> = { ...extra, status: next }
+
+  if (next === 'under_review') patches.reviewed_at = now
+  if (next === 'approved')      patches.approved_at = now
+  if (next === 'cancelled')     patches.cancelled_at = now
+  if (next === 'completed')     patches.completed_at = now
+
+  const updated = await updateConsultation(id, patches)
+
+  if (systemMessage) {
+    try {
+      await sendMessage(id, systemMessage, 'system')
+    } catch (e) {
+      console.warn('Failed to post system message:', e)
+    }
+  }
+  return updated
+}
+
+// ── Files ───────────────────────────────────────────────────────────────────
 export async function getConsultationFiles(consultationId: string): Promise<ConsultationFile[]> {
   if (isDemo || consultationId.startsWith('demo-') || consultationId.startsWith('mock-')) {
-    // Mock files stored in session or static mock
     if (isBrowser) {
       const savedFiles = localStorage.getItem(`files_${consultationId}`)
-      if (savedFiles) return JSON.parse(savedFiles)
+      if (savedFiles) return JSON.parse(savedFiles) as ConsultationFile[]
     }
-    
-    // Static mock files for mock-1
     if (consultationId === 'mock-1') {
       return [
-        {
-          id: 'file-1',
-          consultation_id: 'mock-1',
-          file_name: 'التقرير_الطبي_الركبة.pdf',
-          file_url: '#',
-          file_type: 'application/pdf'
-        },
-        {
-          id: 'file-2',
-          consultation_id: 'mock-1',
-          file_name: 'أشعة_رنين_مغناطيسي_MRI.png',
-          file_url: '#',
-          file_type: 'image/png'
-        }
+        { id: 'file-1', consultation_id: 'mock-1', file_name: 'MRI_Knee.pdf', file_url: '#', file_type: 'application/pdf', category: 'mri' },
+        { id: 'file-2', consultation_id: 'mock-1', file_name: 'X-Ray_Left_Knee.png', file_url: '#', file_type: 'image/png', category: 'xray' },
       ]
     }
     return []
@@ -283,51 +314,99 @@ export async function getConsultationFiles(consultationId: string): Promise<Cons
       .from('consultation_files')
       .select('*')
       .eq('consultation_id', consultationId)
-
+      .order('created_at', { ascending: true })
     if (error) throw error
-    return data || []
+    return (data || []) as ConsultationFile[]
   } catch (err) {
     console.error(`Supabase files fetch failed for consultation ${consultationId}:`, err)
     return []
   }
 }
 
-export async function saveLocalUploadedFile(consultationId: string, fileName: string, fileType: string) {
-  if (!isBrowser) return
-  const key = `files_${consultationId}`
-  const existingRaw = localStorage.getItem(key)
-  const existing = existingRaw ? JSON.parse(existingRaw) : []
-  
-  const newFile: ConsultationFile = {
+export async function addConsultationFile(
+  consultationId: string,
+  fileName: string,
+  fileUrl: string,
+  fileType: string,
+  category: FileCategory = 'other',
+  sizeBytes?: number
+): Promise<ConsultationFile | null> {
+  const record: ConsultationFile = {
     id: 'file-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
     consultation_id: consultationId,
     file_name: fileName,
-    file_url: '#', // mock url
-    file_type: fileType
+    file_url: fileUrl,
+    file_type: fileType,
+    category,
+    size_bytes: sizeBytes,
+    created_at: new Date().toISOString(),
   }
-  
-  existing.push(newFile)
-  localStorage.setItem(key, JSON.stringify(existing))
+
+  if (isDemo || consultationId.startsWith('demo-') || consultationId.startsWith('mock-')) {
+    if (isBrowser) {
+      const key = `files_${consultationId}`
+      const existing = localStorage.getItem(key)
+      const list: ConsultationFile[] = existing ? JSON.parse(existing) : []
+      list.push(record)
+      localStorage.setItem(key, JSON.stringify(list))
+    }
+    return record
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('consultation_files')
+      .insert({
+        consultation_id: consultationId,
+        file_name: fileName,
+        file_url: fileUrl,
+        file_type: fileType,
+        category,
+        size_bytes: sizeBytes ?? null,
+      })
+      .select()
+      .single()
+    if (error) throw error
+    return data as ConsultationFile
+  } catch (err) {
+    console.error('File insert failed, saving locally:', err)
+    if (isBrowser) {
+      const key = `files_${consultationId}`
+      const existing = localStorage.getItem(key)
+      const list: ConsultationFile[] = existing ? JSON.parse(existing) : []
+      list.push(record)
+      localStorage.setItem(key, JSON.stringify(list))
+    }
+    return record
+  }
 }
 
-// ── CUSTOM SCHEDULING CALENDAR SERVICES ──
+// Backwards-compatible wrapper — preserves the old call signature.
+export async function saveLocalUploadedFile(
+  consultationId: string,
+  fileName: string,
+  fileType: string
+) {
+  return addConsultationFile(consultationId, fileName, '#', fileType)
+}
 
+// ── Scheduling ──────────────────────────────────────────────────────────────
 export type DoctorScheduleSettings = {
-  workingDays: number[] // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
-  startTime: string // "09:00"
-  endTime: string // "17:00"
-  slotDuration: number // 30
-  lunchStart: string // "12:00"
-  lunchEnd: string // "13:00"
+  workingDays: number[]
+  startTime: string
+  endTime: string
+  slotDuration: number
+  lunchStart: string
+  lunchEnd: string
 }
 
 const DEFAULT_SETTINGS: DoctorScheduleSettings = {
-  workingDays: [0, 1, 2, 3, 4], // Sun - Thu
+  workingDays: [0, 1, 2, 3, 4],
   startTime: '09:00',
   endTime: '17:00',
   slotDuration: 30,
   lunchStart: '12:00',
-  lunchEnd: '13:00'
+  lunchEnd: '13:00',
 }
 
 export async function getDoctorSettings(doctorId: string): Promise<DoctorScheduleSettings> {
@@ -336,20 +415,18 @@ export async function getDoctorSettings(doctorId: string): Promise<DoctorSchedul
     const saved = localStorage.getItem(`doctor_settings_${doctorId}`)
     return saved ? JSON.parse(saved) : DEFAULT_SETTINGS
   }
-
   try {
     const { data, error } = await supabase
       .from('doctor_settings')
       .select('*')
       .eq('doctor_id', doctorId)
       .single()
-
     if (error) throw error
-    return data.settings || DEFAULT_SETTINGS
-  } catch (err) {
+    return (data?.settings as DoctorScheduleSettings) || DEFAULT_SETTINGS
+  } catch {
     if (isBrowser) {
       const saved = localStorage.getItem(`doctor_settings_${doctorId}`)
-      if (saved) return JSON.parse(saved)
+      if (saved) return JSON.parse(saved) as DoctorScheduleSettings
     }
     return DEFAULT_SETTINGS
   }
@@ -362,12 +439,10 @@ export async function saveDoctorSettings(doctorId: string, settings: DoctorSched
     }
     return settings
   }
-
   try {
     const { error } = await supabase
       .from('doctor_settings')
       .upsert({ doctor_id: doctorId, settings, updated_at: new Date().toISOString() })
-
     if (error) throw error
     return settings
   } catch (err) {
@@ -380,32 +455,22 @@ export async function saveDoctorSettings(doctorId: string, settings: DoctorSched
 }
 
 export type TimeSlot = {
-  time: string // "09:00"
+  time: string
   available: boolean
-  status: 'available' | 'pending_approval' | 'approved' | 'declined' | 'booked'
+  status: 'available' | 'pending_approval' | 'approved' | 'declined' | 'booked' | 'needs_info' | 'under_review' | 'submitted' | 'patient_replied'
   consultationId?: string
 }
 
-// Generate slots for a doctor on a specific date (dateStr format: 'YYYY-MM-DD')
 export async function getDoctorSlots(doctorId: string, dateStr: string): Promise<TimeSlot[]> {
   const settings = await getDoctorSettings(doctorId)
-  
-  // Parse date
   const date = new Date(dateStr)
-  const dayOfWeek = date.getDay() // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+  const dayOfWeek = date.getDay()
+  if (!settings.workingDays.includes(dayOfWeek)) return []
 
-  // If not a working day, return empty array
-  if (!settings.workingDays.includes(dayOfWeek)) {
-    return []
-  }
-
-  // Helper to convert time string to minutes since midnight
   const timeToMinutes = (t: string) => {
     const [h, m] = t.split(':').map(Number)
     return h * 60 + m
   }
-
-  // Helper to format minutes as "HH:MM"
   const minutesToTime = (m: number) => {
     const h = Math.floor(m / 60)
     const min = m % 60
@@ -419,33 +484,23 @@ export async function getDoctorSlots(doctorId: string, dateStr: string): Promise
   const duration = settings.slotDuration
 
   const slots: TimeSlot[] = []
-  
-  // Generate potential slots
   for (let m = startMin; m + duration <= endMin; m += duration) {
-    if (m >= lunchStartMin && m < lunchEndMin) {
-      continue
-    }
-    slots.push({
-      time: minutesToTime(m),
-      available: true,
-      status: 'available'
-    })
+    if (m >= lunchStartMin && m < lunchEndMin) continue
+    slots.push({ time: minutesToTime(m), available: true, status: 'available' })
   }
 
-  // Load all consultations for this doctor on this day
   const consultations = await getConsultations()
-  const dayConsultations = consultations.filter(c => 
-    (c.doctor_id || 'khalid') === doctorId && 
+  const dayConsultations = consultations.filter(c =>
+    (c.doctor_id || 'khalid') === doctorId &&
     c.appointment_date === dateStr &&
-    (c.status === 'booked' || c.status === 'pending_approval' || c.status === 'approved')
+    (c.status === 'booked' || c.status === 'submitted' || c.status === 'approved')
   )
 
-  // Mark booked/pending slots
   slots.forEach(slot => {
     const match = dayConsultations.find(c => c.appointment_time === slot.time)
     if (match) {
       slot.available = false
-      slot.status = match.status === 'pending_approval' ? 'pending_approval' : 'booked'
+      slot.status = match.status === 'submitted' ? 'submitted' : 'booked'
       slot.consultationId = match.id
     }
   })

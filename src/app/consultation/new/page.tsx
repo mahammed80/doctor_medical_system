@@ -5,9 +5,13 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import { DOCTORS } from '@/lib/doctors'
-import { createConsultation, updateConsultation, saveLocalUploadedFile, getDoctorSlots, getDoctorSettings } from '@/lib/consultationService'
+import { createConsultation, updateConsultation, addConsultationFile, getDoctorSlots, getDoctorSettings } from '@/lib/consultationService'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import BodyMap from '@/components/BodyMap'
+import PainSeveritySlider from '@/components/PainSeveritySlider'
+import PainNatureChips from '@/components/PainNatureChips'
+import CategoryFileDropZone, { FileWithCategory } from '@/components/CategoryFileDropZone'
 
 // Initialize Stripe with the publishable key from environment variables
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
@@ -21,10 +25,19 @@ type FormData = {
   current_medications: string
   id_file: File | null
   has_previous_tests: 'yes' | 'no' | ''
-  xray_files: File[]
-  blood_files: File[]
+  uploaded_files: FileWithCategory[]
+  // New pain assessment
+  pain_severity: number
+  pain_natures: string[]
+  pain_locations: string[]
+  spinal_areas: string[]
+  symptom_start: string
+  previous_treatments: string
+  previous_surgeries: string
+  aggravating_factors: string
+  relieving_factors: string
+  // Legacy (kept for back-compat with mock data)
   pain_duration: string
-  pain_type: string
   joint_swelling_stiffness: string
 }
 
@@ -152,10 +165,17 @@ export default function NewConsultation() {
     current_medications: '',
     id_file: null,
     has_previous_tests: '',
-    xray_files: [],
-    blood_files: [],
+    uploaded_files: [],
+    pain_severity: 5,
+    pain_natures: [],
+    pain_locations: [],
+    spinal_areas: [],
+    symptom_start: '',
+    previous_treatments: '',
+    previous_surgeries: '',
+    aggravating_factors: '',
+    relieving_factors: '',
     pain_duration: 'أقل من أسبوع',
-    pain_type: 'ألم متقطع مع الحركة',
     joint_swelling_stiffness: 'لا',
   })
 
@@ -254,6 +274,10 @@ export default function NewConsultation() {
       alert('الرجاء شرح الشكوى الرئيسية للمتابعة.')
       return
     }
+    if (form.pain_locations.length === 0) {
+      alert('الرجاء تحديد مكان الألم على الخريطة.')
+      return
+    }
     setLoading(true)
     try {
       // 1. Create the consultation database record
@@ -265,8 +289,18 @@ export default function NewConsultation() {
         medical_history: form.medical_history,
         current_medications: form.current_medications,
         doctor_id: selectedDoctorId,
+        pain_severity: form.pain_severity,
+        pain_natures: form.pain_natures,
+        pain_locations: form.pain_locations,
+        spinal_areas: form.spinal_areas,
+        symptom_start: form.symptom_start,
+        previous_treatments: form.previous_treatments,
+        previous_surgeries: form.previous_surgeries,
+        aggravating_factors: form.aggravating_factors,
+        relieving_factors: form.relieving_factors,
+        // legacy
         pain_duration: form.pain_duration,
-        pain_type: form.pain_type,
+        pain_type: form.pain_natures.join(', '),
         joint_swelling_stiffness: form.joint_swelling_stiffness,
       })
       setConsultationId(data.id)
@@ -274,19 +308,14 @@ export default function NewConsultation() {
       // 2. Upload the ID file linked to the consultation ID
       if (form.id_file) {
         if (isDemo) {
-          await saveLocalUploadedFile(data.id, `هوية_${form.patient_name}_${form.id_file.name}`, 'id_card')
+          await addConsultationFile(data.id, form.id_file.name, '#', 'id_card', 'other')
         } else {
           const file = form.id_file
           const path = `${data.id}/id_card-${Date.now()}-${file.name}`
           const { error: uploadError } = await supabase.storage.from('consultation-files').upload(path, file)
           if (!uploadError) {
             const { data: { publicUrl } } = supabase.storage.from('consultation-files').getPublicUrl(path)
-            await supabase.from('consultation_files').insert({
-              consultation_id: data.id,
-              file_name: `هوية_${form.patient_name}_${file.name}`,
-              file_url: publicUrl,
-              file_type: 'id_card'
-            })
+            await addConsultationFile(data.id, file.name, publicUrl, file.type, 'other', file.size)
           }
         }
       }
@@ -303,52 +332,28 @@ export default function NewConsultation() {
     setLoading(true)
     if (!consultationId) return
     try {
-      if (form.has_previous_tests === 'yes') {
-        if (isDemo) {
-          await new Promise(r => setTimeout(r, 900))
-          for (const file of form.xray_files) {
-            await saveLocalUploadedFile(consultationId, `أشعة_${file.name}`, 'xray')
+      if (form.has_previous_tests === 'yes' && form.uploaded_files.length > 0) {
+        for (const fwc of form.uploaded_files) {
+          const file = fwc.file
+          if (isDemo) {
+            await addConsultationFile(consultationId, file.name, '#', file.type, fwc.category, file.size)
+            continue
           }
-          for (const file of form.blood_files) {
-            await saveLocalUploadedFile(consultationId, `تحليل_${file.name}`, 'blood_analytics')
-          }
-          setStep(3)
-          return
-        }
-
-        // Upload X-rays
-        for (const file of form.xray_files) {
-          const path = `${consultationId}/xray-${Date.now()}-${file.name}`
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+          const path = `${consultationId}/${fwc.category}-${Date.now()}-${safeName}`
           const { error: uploadError } = await supabase.storage.from('consultation-files').upload(path, file)
           if (!uploadError) {
             const { data: { publicUrl } } = supabase.storage.from('consultation-files').getPublicUrl(path)
-            await supabase.from('consultation_files').insert({
-              consultation_id: consultationId,
-              file_name: `أشعة_${file.name}`,
-              file_url: publicUrl,
-              file_type: 'xray'
-            })
-          }
-        }
-
-        // Upload Blood tests
-        for (const file of form.blood_files) {
-          const path = `${consultationId}/blood-${Date.now()}-${file.name}`
-          const { error: uploadError } = await supabase.storage.from('consultation-files').upload(path, file)
-          if (!uploadError) {
-            const { data: { publicUrl } } = supabase.storage.from('consultation-files').getPublicUrl(path)
-            await supabase.from('consultation_files').insert({
-              consultation_id: consultationId,
-              file_name: `تحليل_${file.name}`,
-              file_url: publicUrl,
-              file_type: 'blood_analytics'
-            })
+            await addConsultationFile(consultationId, file.name, publicUrl, file.type, fwc.category, file.size)
+          } else {
+            console.warn('Upload failed for', file.name, uploadError)
           }
         }
       }
       setStep(3)
     } catch (err) {
       alert('خطأ أثناء رفع الفحوصات والتحاليل الطبية.')
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -528,9 +533,9 @@ export default function NewConsultation() {
             marginTop: '0.3rem',
           }}>
             {step === 0 && 'أدخل معلوماتك الأساسية لبدء الاستشارة'}
-            {step === 1 && 'ارفع ملفاتك الطبية إن وجدت (اختياري)'}
-            {step === 2 && 'رسوم الاستشارة 300 ريال'}
-            {step === 3 && 'اختر الوقت المناسب لجلستك مع الدكتور'}
+            {step === 1 && 'صف حالتك الصحية بدقة حتى يساعدك الطبيب بشكل أفضل'}
+            {step === 2 && 'ارفع ملفاتك الطبية إن وجدت (اختياري)'}
+            {step === 3 && 'ادفع رسوم الاستشaranse'}
           </p>
         </div>
 
@@ -673,20 +678,51 @@ export default function NewConsultation() {
 
           {/* ── STEP 1 ── */}
           {step === 1 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.4rem' }}>
               <Field label="ما هي الشكوى الرئيسية التي تعاني منها؟" required>
                 <textarea
                   className="input"
                   placeholder="مثال: ألم حاد في الركبة اليسرى يزداد عند صعود الدرج..."
                   value={form.chief_complaint}
                   onChange={e => set('chief_complaint', e.target.value)}
-                  style={{ minHeight: '100px', fontWeight: 500 }}
+                  style={{ minHeight: '90px', fontWeight: 500 }}
                 />
               </Field>
 
+              {/* Pain severity (0-10) */}
+              <div className="card-warm" style={{ padding: '1rem 1.25rem', background: 'var(--bg)' }}>
+                <Field label="شدّة الألم" required>
+                  <PainSeveritySlider
+                    value={form.pain_severity}
+                    onChange={v => set('pain_severity', v)}
+                  />
+                </Field>
+              </div>
+
+              {/* Pain natures (multi-select chips) */}
+              <Field label="طبيعة الألم (يمكن اختيار أكثر من وصف)" required>
+                <PainNatureChips
+                  selected={form.pain_natures}
+                  onChange={v => set('pain_natures', v)}
+                />
+              </Field>
+
+              {/* Body map */}
+              <Field label="مكان الألم على الجسم" required>
+                <BodyMap
+                  selected={form.pain_locations as never}
+                  spinalSelected={form.spinal_areas as never}
+                  onChange={(locs, spinal) => {
+                    set('pain_locations', locs)
+                    set('spinal_areas', spinal)
+                  }}
+                />
+              </Field>
+
+              {/* Duration quick-select (legacy) + free-text start */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <Field label="منذ متى بدأت هذه الشكوى؟" required>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                <Field label="مدة الشكوى (سريعة)" optional>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
                     {['أقل من أسبوع', 'من أسبوع إلى شهر', 'من شهر إلى 6 أشهر', 'أكثر من 6 أشهر'].map(opt => {
                       const isSelected = form.pain_duration === opt
                       return (
@@ -695,15 +731,15 @@ export default function NewConsultation() {
                           type="button"
                           onClick={() => set('pain_duration', opt)}
                           style={{
-                            padding: '0.65rem 0.5rem',
+                            padding: '0.55rem 0.4rem',
                             borderRadius: 'var(--r-sm)',
                             border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
                             background: isSelected ? 'var(--primary-soft)' : 'var(--surface)',
                             color: isSelected ? 'var(--primary)' : 'var(--fg)',
                             fontWeight: isSelected ? 700 : 500,
-                            fontSize: '0.8rem',
+                            fontSize: '0.78rem',
                             cursor: 'pointer',
-                            transition: 'all 150ms'
+                            transition: 'all 150ms',
                           }}
                         >
                           {opt}
@@ -713,34 +749,53 @@ export default function NewConsultation() {
                   </div>
                 </Field>
 
-                <Field label="كيف تصف طبيعة الألم؟" required>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.4rem' }}>
-                    {['ألم حاد ومفاجئ', 'ألم مستمر وضئيل (باهت)', 'ألم متقطع مع الحركة'].map(opt => {
-                      const isSelected = form.pain_type === opt
-                      return (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => set('pain_type', opt)}
-                          style={{
-                            padding: '0.55rem 0.5rem',
-                            borderRadius: 'var(--r-sm)',
-                            border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
-                            background: isSelected ? 'var(--primary-soft)' : 'var(--surface)',
-                            color: isSelected ? 'var(--primary)' : 'var(--fg)',
-                            fontWeight: isSelected ? 700 : 500,
-                            fontSize: '0.8rem',
-                            cursor: 'pointer',
-                            transition: 'all 150ms',
-                            textAlign: 'right',
-                            paddingRight: '1rem'
-                          }}
-                        >
-                          {isSelected ? '● ' : '○ '} {opt}
-                        </button>
-                      )
-                    })}
-                  </div>
+                <Field label="كيف بدأت الأعراض؟" optional>
+                  <input
+                    className="input"
+                    placeholder="مثال: بعد رفع ثقل، أو بدون سبب واضح"
+                    value={form.symptom_start}
+                    onChange={e => set('symptom_start', e.target.value)}
+                  />
+                </Field>
+              </div>
+
+              {/* Additional free-text fields */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <Field label="علاجات سابقة" optional>
+                  <textarea
+                    className="input"
+                    style={{ minHeight: '70px' }}
+                    placeholder="أدوية، علاج طبيعي، جبائر..."
+                    value={form.previous_treatments}
+                    onChange={e => set('previous_treatments', e.target.value)}
+                  />
+                </Field>
+                <Field label="عمليات جراحية سابقة" optional>
+                  <textarea
+                    className="input"
+                    style={{ minHeight: '70px' }}
+                    placeholder="نوع العملية وتاريخها..."
+                    value={form.previous_surgeries}
+                    onChange={e => set('previous_surgeries', e.target.value)}
+                  />
+                </Field>
+                <Field label="العوامل التي تزيد الألم" optional>
+                  <textarea
+                    className="input"
+                    style={{ minHeight: '70px' }}
+                    placeholder="مثال: صعود الدرج، الجلوس طويلاً..."
+                    value={form.aggravating_factors}
+                    onChange={e => set('aggravating_factors', e.target.value)}
+                  />
+                </Field>
+                <Field label="العوامل التي تخفف الألم" optional>
+                  <textarea
+                    className="input"
+                    style={{ minHeight: '70px' }}
+                    placeholder="مثال: الراحة، الكمادات، مسكنات..."
+                    value={form.relieving_factors}
+                    onChange={e => set('relieving_factors', e.target.value)}
+                  />
                 </Field>
               </div>
 
@@ -763,7 +818,7 @@ export default function NewConsultation() {
                           fontWeight: isSelected ? 700 : 500,
                           fontSize: '0.85rem',
                           cursor: 'pointer',
-                          transition: 'all 150ms'
+                          transition: 'all 150ms',
                         }}
                       >
                         {opt}
@@ -777,8 +832,8 @@ export default function NewConsultation() {
                 <Field label="التاريخ المرضي" optional>
                   <textarea
                     className="input"
-                    style={{ minHeight: '80px' }}
-                    placeholder="أمراض مزمنة، عمليات سابقة..."
+                    style={{ minHeight: '70px' }}
+                    placeholder="أمراض مزمنة، حساسية..."
                     value={form.medical_history}
                     onChange={e => set('medical_history', e.target.value)}
                   />
@@ -786,7 +841,7 @@ export default function NewConsultation() {
                 <Field label="الأدوية الحالية" optional>
                   <textarea
                     className="input"
-                    style={{ minHeight: '80px' }}
+                    style={{ minHeight: '70px' }}
                     placeholder="اسم الدواء والجرعة..."
                     value={form.current_medications}
                     onChange={e => set('current_medications', e.target.value)}
@@ -797,7 +852,12 @@ export default function NewConsultation() {
               <button
                 className="btn-primary"
                 style={{ justifyContent: 'center', marginTop: '0.5rem' }}
-                disabled={!form.chief_complaint || loading}
+                disabled={
+                  !form.chief_complaint ||
+                  form.pain_natures.length === 0 ||
+                  form.pain_locations.length === 0 ||
+                  loading
+                }
                 onClick={submitComplaint}
               >
                 {loading ? <Spinner /> : 'التالي (حفظ البيانات)'}
@@ -810,7 +870,7 @@ export default function NewConsultation() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--fg)' }}>
-                  هل لديك أي صور أشعة أو تحاليل طبية سابقة؟
+                  هل لديك أي ملفات طبية سابقة (أشعة، تحاليل، روشتات)؟
                 </h3>
                 <p style={{ fontSize: '0.82rem', color: 'var(--fg-dim)', marginTop: '0.25rem' }}>
                   مشاركة الفحوصات السابقة تساعد الطبيب على تشخيص الحالة بشكل أدق.
@@ -841,7 +901,7 @@ export default function NewConsultation() {
                   type="button"
                   onClick={() => {
                     set('has_previous_tests', 'no')
-                    setForm(f => ({ ...f, xray_files: [], blood_files: [], has_previous_tests: 'no' }))
+                    setForm(f => ({ ...f, uploaded_files: [], has_previous_tests: 'no' }))
                   }}
                   style={{
                     padding: '1.25rem 1rem',
@@ -862,20 +922,11 @@ export default function NewConsultation() {
               </div>
 
               {form.has_previous_tests === 'yes' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', animation: 'scaleIn 0.3s var(--ease-out)' }}>
-                  <Field label="تحميل صور الأشعة الطبية (X-Ray / MRI / CT)" optional>
-                    <DropZone
-                      files={form.xray_files}
-                      onAdd={newFiles => setForm(f => ({ ...f, xray_files: [...f.xray_files, ...newFiles] }))}
-                      onRemove={i => setForm(f => ({ ...f, xray_files: f.xray_files.filter((_, j) => j !== i) }))}
-                    />
-                  </Field>
-
-                  <Field label="تحميل نتائج تحاليل الدم والتحاليل المخبرية" optional>
-                    <DropZone
-                      files={form.blood_files}
-                      onAdd={newFiles => setForm(f => ({ ...f, blood_files: [...f.blood_files, ...newFiles] }))}
-                      onRemove={i => setForm(f => ({ ...f, blood_files: f.blood_files.filter((_, j) => j !== i) }))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', animation: 'scaleIn 0.3s var(--ease-out)' }}>
+                  <Field label="رفع الملفات الطبية" optional>
+                    <CategoryFileDropZone
+                      files={form.uploaded_files}
+                      onChange={list => setForm(f => ({ ...f, uploaded_files: list }))}
                     />
                   </Field>
                 </div>
@@ -913,7 +964,6 @@ export default function NewConsultation() {
             </div>
           )}
 
-          {/* ── STEP 3 ── */}
           {/* ── STEP 3 ── */}
           {step === 3 && (
             <div>
@@ -1367,11 +1417,11 @@ export default function NewConsultation() {
                     setLoading(true)
                     try {
                       await updateConsultation(consultationId, {
-                        status: 'pending_approval',
+                        status: 'submitted',
                         appointment_date: selectedDate,
                         appointment_time: selectedTime,
                       })
-                      router.push(`/consultation/success?doctor=${selectedDoctorId}`)
+                      router.push(`/patient/consultation/${consultationId}`)
                     } catch (err) {
                       alert('حدث خطأ أثناء حجز الموعد')
                     } finally {
@@ -1380,7 +1430,7 @@ export default function NewConsultation() {
                   }
                 }}
               >
-                {loading ? <Spinner /> : 'تأكيد وحجز الموعد'}
+                {loading ? <Spinner /> : 'تأكيد وإرسال للطبيب للمراجعة'}
               </button>
             </div>
           )}

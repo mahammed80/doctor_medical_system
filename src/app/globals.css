@@ -602,6 +602,16 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   color: var(--ok);
   border: 1px solid oklch(50% 0.15 155 / 0.25);
 }
+.badge-err {
+  background: var(--err-soft);
+  color: var(--err);
+  border: 1px solid oklch(60% 0.2 25 / 0.25);
+}
+.badge-warn {
+  background: oklch(95% 0.05 80);
+  color: oklch(40% 0.15 60);
+  border: 1px solid oklch(70% 0.15 70 / 0.3);
+}
 
 /* ── Dividers ── */
 .divider {
