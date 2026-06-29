@@ -1,4 +1,11 @@
-const PAYMOB_BASE = 'https://accept.paymob.com'
+// Paymob is region-scoped. Use the KSA base URL by default (the merchant
+// account in this project is in Saudi Arabia). Override with PAYMOB_BASE_URL
+// if you need to point at a different region.
+//   Egypt  → https://accept.paymob.com/
+//   KSA    → https://ksa.paymob.com/
+//   Oman   → https://oman.paymob.com/
+//   UAE    → https://uae.paymob.com/
+const PAYMOB_BASE = (process.env.PAYMOB_BASE_URL || 'https://ksa.paymob.com').replace(/\/+$/, '')
 
 type PaymobAuthResponse = { token: string }
 type PaymobOrderResponse = { id: number }
