@@ -6,15 +6,10 @@ import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import { DOCTORS } from '@/lib/doctors'
 import { createConsultation, updateConsultation, addConsultationFile, getDoctorSlots, getDoctorSettings } from '@/lib/consultationService'
-import { loadStripe } from '@stripe/stripe-js'
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import BodyMap from '@/components/BodyMap'
 import PainSeveritySlider from '@/components/PainSeveritySlider'
 import PainNatureChips from '@/components/PainNatureChips'
 import CategoryFileDropZone, { FileWithCategory } from '@/components/CategoryFileDropZone'
-
-// Initialize Stripe with the publishable key from environment variables
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
 
 type FormData = {
   patient_name: string
@@ -54,99 +49,55 @@ const ARABIC_MONTHS = [
   'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
 ]
 
-function StripePaymentForm({
-  clientSecret,
+function PaymobPaymentForm({
+  iframeUrl,
   price,
-  consultationId,
-  onSuccess,
 }: {
-  clientSecret: string
+  iframeUrl: string
   price: string
-  consultationId: string
-  onSuccess: (paymentId: string) => void
 }) {
-  const stripe = useStripe()
-  const elements = useElements()
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!stripe || !elements) {
-      return
-    }
-
-    setLoading(true)
-    setErrorMessage(null)
-
-    const { error: submitError } = await elements.submit()
-    if (submitError) {
-      setErrorMessage(submitError.message || 'خطأ في معالجة معلومات الدفع.')
-      setLoading(false)
-      return
-    }
-
-    try {
-      const { paymentIntent, error } = await stripe.confirmPayment({
-        elements,
-        clientSecret,
-        confirmParams: {
-          return_url: `${window.location.origin}/consultation/new?step=4&consultation=${consultationId}`,
-        },
-        redirect: 'if_required',
-      })
-
-      if (error) {
-        setErrorMessage(error.message || 'فشلت عملية الدفع.')
-      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        onSuccess(paymentIntent.id)
-      } else {
-        setErrorMessage('حالة الدفع غير معروفة.')
-      }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'حدث خطأ غير متوقع أثناء الدفع.')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [iframeHeight, setIframeHeight] = useState(680)
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       <div style={{
         background: 'var(--bg)',
         borderRadius: 'var(--r-lg)',
-        padding: '1.25rem',
+        padding: '0.5rem',
         border: '1px solid var(--border-faint)',
         direction: 'ltr',
+        overflow: 'hidden',
       }}>
-        <PaymentElement options={{ layout: 'tabs' }} />
+        <iframe
+          src={iframeUrl}
+          title="Paymob secure payment"
+          width="100%"
+          height={iframeHeight}
+          frameBorder={0}
+          scrolling="auto"
+          style={{ border: 'none', borderRadius: 'var(--r-md)', display: 'block' }}
+          onLoad={(e) => {
+            try {
+              const iframe = e.currentTarget
+              if (iframe.contentWindow?.document?.body?.scrollHeight) {
+                setIframeHeight(Math.min(900, Math.max(560, iframe.contentWindow.document.body.scrollHeight + 24)))
+              }
+            } catch {
+              // Cross-origin — ignore (Paymob iframe is on a different origin)
+            }
+          }}
+        />
       </div>
 
-      {errorMessage && (
-        <div style={{
-          color: 'var(--err)',
-          background: 'var(--err-soft)',
-          border: '1px solid var(--err)',
-          padding: '0.75rem 1rem',
-          borderRadius: 'var(--radius-md)',
-          fontSize: '0.85rem',
-          fontWeight: 700,
-          textAlign: 'right',
-        }}>
-          ⚠️ {errorMessage}
-        </div>
-      )}
-
-      <button
-        type="submit"
-        className="btn-primary"
-        disabled={!stripe || loading}
-        style={{ width: '100%', justifyContent: 'center', padding: '1rem', fontSize: '1rem' }}
-      >
-        {loading ? <Spinner /> : `ادفع ${price} ريال أونلاين`}
-      </button>
-    </form>
+      <p style={{
+        fontSize: '0.78rem',
+        color: 'var(--fg-dim)',
+        textAlign: 'center',
+        lineHeight: 1.7,
+      }}>
+        🔒 الدفع مشفر وآمن عبر Paymob — اضغط زر الدفع داخل النموذج أعلاه لإكمال عملية سداد رسوم الاستشارة ({price} ر.س).
+      </p>
+    </div>
   )
 }
 
@@ -188,7 +139,7 @@ export default function NewConsultation() {
   const [docSettings, setDocSettings] = useState<any>(null)
 
   const price = process.env.NEXT_PUBLIC_CONSULTATION_PRICE || '899'
-  const [clientSecret, setClientSecret] = useState<string | null>(null)
+  const [iframeUrl, setIframeUrl] = useState<string | null>(null)
   const [paymentLoading, setPaymentLoading] = useState(false)
 
   const set = (k: keyof FormData, v: any) => setForm(f => ({ ...f, [k]: v }))
@@ -202,38 +153,45 @@ export default function NewConsultation() {
         setSelectedDoctorId(doc)
       }
 
-      // Check if redirected from Stripe (e.g. after 3D Secure verification)
+      // Check if redirected from Paymob after payment
       const urlStep = params.get('step')
       const urlConsultationId = params.get('consultation')
       if (urlStep === '4' && urlConsultationId) {
         setStep(4)
         setConsultationId(urlConsultationId)
-        
-        const paymentIntentId = params.get('payment_intent')
-        if (paymentIntentId) {
+        const success = params.get('success')
+        const transactionId = params.get('id')
+        if (success === 'true' && transactionId) {
           updateConsultation(urlConsultationId, {
             status: 'pending_booking',
-            payment_id: paymentIntentId,
-          })
+            payment_id: transactionId,
+          }).catch(e => console.error('Failed to mark consultation as paid:', e))
         }
       }
     }
   }, [])
 
   useEffect(() => {
-    if (step === 3 && consultationId && !clientSecret) {
+    if (step === 3 && consultationId && !iframeUrl) {
       setPaymentLoading(true)
       fetch('/api/payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: parseInt(price), consultationId }),
+        body: JSON.stringify({
+          amount: parseInt(price),
+          consultationId,
+          patient: {
+            name: form.patient_name,
+            phone: form.patient_phone,
+          },
+        }),
       })
         .then(res => res.json())
         .then(data => {
-          if (data.clientSecret) {
-            setClientSecret(data.clientSecret)
+          if (data.iframeUrl) {
+            setIframeUrl(data.iframeUrl)
           } else {
-            console.error('Failed to get client secret:', data.error)
+            console.error('Failed to initialize Paymob payment:', data.error)
             alert('خطأ في إعداد بوابة الدفع الإلكتروني.')
           }
         })
@@ -245,21 +203,7 @@ export default function NewConsultation() {
           setPaymentLoading(false)
         })
     }
-  }, [step, consultationId, price, clientSecret])
-
-  async function handlePaymentSuccess(paymentId: string) {
-    if (consultationId) {
-      try {
-        await updateConsultation(consultationId, {
-          status: 'pending_booking',
-          payment_id: paymentId,
-        })
-      } catch (e) {
-        console.error('Error updating consultation status:', e)
-      }
-    }
-    setStep(4)
-  }
+  }, [step, consultationId, price, iframeUrl, form.patient_name, form.patient_phone])
 
   function nextFromStep0() {
     if (!form.patient_name || !form.patient_phone || !form.patient_age || !form.id_file) {
@@ -1060,23 +1004,19 @@ export default function NewConsultation() {
                 <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent, var(--border), transparent)' }} />
               </div>
 
-              {/* Stripe Payment Form container */}
+              {/* Paymob Payment iframe container */}
               {paymentLoading ? (
                 <div style={{ textAlign: 'center', padding: '3rem 0' }}>
                   <Spinner />
                   <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--fg-dim)' }}>
-                    جاري تحميل بوابة الدفع الآمنة من Stripe...
+                    جاري تحميل بوابة الدفع الآمنة من Paymob...
                   </p>
                 </div>
-              ) : clientSecret && consultationId ? (
-                <Elements stripe={stripePromise} options={{ clientSecret, locale: 'ar' }}>
-                  <StripePaymentForm
-                    clientSecret={clientSecret}
-                    price={price}
-                    consultationId={consultationId}
-                    onSuccess={handlePaymentSuccess}
-                  />
-                </Elements>
+              ) : iframeUrl && consultationId ? (
+                <PaymobPaymentForm
+                  iframeUrl={iframeUrl}
+                  price={price}
+                />
               ) : (
                 <div style={{
                   textAlign: 'center',
@@ -1122,7 +1062,7 @@ export default function NewConsultation() {
                   background: 'var(--border)', display: 'inline-block',
                 }} />
                 <span style={{ fontSize: '0.75rem', color: 'var(--fg-dim)' }}>
-                  مدعوم من Stripe
+                  مدعوم من Paymob
                 </span>
               </div>
             </div>

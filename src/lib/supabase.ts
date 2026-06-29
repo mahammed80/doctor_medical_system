@@ -13,7 +13,7 @@ export const supabase = getSupabase()
 // Pre-consultation flow: submitted -> under_review -> needs_info -> patient_replied -> approved
 // Plus payment, booking, decline, cancel, complete.
 export type ConsultationStatus =
-  | 'pending_payment'   // waiting for stripe payment
+  | 'pending_payment'   // waiting for paymob payment
   | 'pending_booking'   // paid, choosing appointment
   | 'submitted'         // payment + booking done, awaiting doctor review
   | 'under_review'      // doctor is reviewing
