@@ -103,16 +103,18 @@ export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParam
 
   // KSA's payment-links endpoint requires `payment_methods` to be a non-null
   // array of integration IDs. We always send a single-element array with the
-  // configured card integration ID.
-  const body = {
+  // configured card integration ID. We also include `integration_id` (singular)
+  // as a defensive fallback for older Paymob KSA validator versions that
+  // expect that field name. The API silently ignores unknown fields.
+  const body: Record<string, unknown> = {
     amount_cents: params.amountCents,
     currency,
     payment_methods: [Number(integrationId)],
+    integration_id: Number(integrationId),
     billing_data: params.billingData,
     extras: { consultation_id: params.consultationId },
     redirection_url: params.redirectUrl,
     merchant_order_id: params.consultationId,
-    is_live: false,
   }
 
   console.log('[paymob] creating checkout link', {
@@ -120,6 +122,7 @@ export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParam
     integrationId,
     amountCents: params.amountCents,
     currency,
+    bodyKeys: Object.keys(body),
   })
 
   const data = await postJson<PaymobPaymentLinkResponse>(
