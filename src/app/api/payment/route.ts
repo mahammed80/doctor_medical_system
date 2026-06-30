@@ -71,6 +71,14 @@ export async function POST(request: Request) {
     console.error('[paymob] checkout link creation failed:', {
       message: error?.message,
       stack: error?.stack,
+      env: {
+        PAYMOB_API_KEY_set: Boolean(process.env.PAYMOB_API_KEY),
+        PAYMOB_API_KEY_first8: process.env.PAYMOB_API_KEY?.slice(0, 8),
+        PAYMOB_INTEGRATION_ID_raw: process.env.PAYMOB_INTEGRATION_ID,
+        PAYMOB_INTEGRATION_ID_trimmed: process.env.PAYMOB_INTEGRATION_ID?.trim(),
+        PAYMOB_INTEGRATION_ID_asNumber: Number(process.env.PAYMOB_INTEGRATION_ID),
+        PAYMOB_BASE_URL: process.env.PAYMOB_BASE_URL,
+      },
     })
     const raw = error?.message ?? ''
     const friendly = raw.includes('Integration ID does not exist')
@@ -78,6 +86,19 @@ export async function POST(request: Request) {
       : raw.includes('PAYMOB_INTEGRATION_ID is not configured')
         ? 'PAYMOB_INTEGRATION_ID غير مهيأ في بيئة Vercel. أضف رقم Integration ID من لوحة Paymob في Settings → Environment Variables ثم أعد النشر.'
         : (raw || 'تعذّر تهيئة الدفع عبر Paymob.')
-    return NextResponse.json({ error: friendly }, { status: 500 })
+
+    // Debug payload so the user can see exactly what Vercel is sending.
+    // Remove this block once payment is working in production.
+    const debug = {
+      env: {
+        PAYMOB_INTEGRATION_ID_raw: process.env.PAYMOB_INTEGRATION_ID,
+        PAYMOB_INTEGRATION_ID_trimmed: process.env.PAYMOB_INTEGRATION_ID?.trim(),
+        PAYMOB_INTEGRATION_ID_asNumber: Number(process.env.PAYMOB_INTEGRATION_ID),
+        PAYMOB_API_KEY_first8: process.env.PAYMOB_API_KEY?.slice(0, 8),
+        PAYMOB_BASE_URL: process.env.PAYMOB_BASE_URL || 'https://ksa.paymob.com',
+      },
+    }
+
+    return NextResponse.json({ error: friendly, debug }, { status: 500 })
   }
 }
