@@ -68,10 +68,16 @@ export async function POST(request: Request) {
       paymentToken: checkout.token,
     })
   } catch (error: any) {
-    console.error('Paymob checkout link creation failed:', error)
-    return NextResponse.json(
-      { error: error?.message ?? 'تعذّر تهيئة الدفع عبر Paymob.' },
-      { status: 500 },
-    )
+    console.error('[paymob] checkout link creation failed:', {
+      message: error?.message,
+      stack: error?.stack,
+    })
+    const raw = error?.message ?? ''
+    const friendly = raw.includes('Integration ID does not exist')
+      ? 'Integration ID غير موجود في نظام Paymob. تأكد أنك تستخدم رقم Integration ID الخاص بالحساب نفسه ولبيئة الـ test (يجب أن يكون مطابقاً للحساب في https://ksa.paymob.com/portal).'
+      : raw.includes('PAYMOB_INTEGRATION_ID is not configured')
+        ? 'PAYMOB_INTEGRATION_ID غير مهيأ في بيئة Vercel. أضف رقم Integration ID من لوحة Paymob في Settings → Environment Variables ثم أعد النشر.'
+        : (raw || 'تعذّر تهيئة الدفع عبر Paymob.')
+    return NextResponse.json({ error: friendly }, { status: 500 })
   }
 }

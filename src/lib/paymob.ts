@@ -89,7 +89,8 @@ export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParam
   paymentId: string
   token: string
 }> {
-  const integrationId = process.env.PAYMOB_INTEGRATION_ID
+  const integrationIdRaw = process.env.PAYMOB_INTEGRATION_ID
+  const integrationId = integrationIdRaw?.trim()
   if (!integrationId || integrationId === 'replace_with_card_integration_id') {
     throw new Error(
       'PAYMOB_INTEGRATION_ID is not configured. Get the card integration ID from ' +
@@ -113,6 +114,13 @@ export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParam
     merchant_order_id: params.consultationId,
     is_live: false,
   }
+
+  console.log('[paymob] creating checkout link', {
+    consultationId: params.consultationId,
+    integrationId,
+    amountCents: params.amountCents,
+    currency,
+  })
 
   const data = await postJson<PaymobPaymentLinkResponse>(
     `${PAYMOB_BASE}/api/ecommerce/payment-links`,
