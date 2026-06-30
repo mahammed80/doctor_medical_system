@@ -95,7 +95,13 @@ export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParam
   const body = {
     amount_cents: params.amountCents,
     currency,
-    payment_methods: process.env.PAYMOB_INTEGRATION_ID ? [Number(process.env.PAYMOB_INTEGRATION_ID)] : undefined,
+    // KSA's payment-links endpoint requires `payment_methods` to be present
+    // and non-null. When PAYMOB_INTEGRATION_ID is configured we restrict the
+    // link to that single method; otherwise we send an empty array so Paymob
+    // falls back to the merchant's default enabled methods.
+    payment_methods: process.env.PAYMOB_INTEGRATION_ID
+      ? [Number(process.env.PAYMOB_INTEGRATION_ID)]
+      : [],
     billing_data: params.billingData,
     extras: { consultation_id: params.consultationId },
     redirection_url: params.redirectUrl,
