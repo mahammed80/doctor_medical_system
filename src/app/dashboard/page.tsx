@@ -9,12 +9,8 @@ import { getCachedSession, signOut, AuthSession } from '@/lib/auth'
 import { DOCTORS } from '@/lib/doctors'
 import { STATUS_CONFIG, type ConsultationStatus } from '@/lib/supabase'
 import { useToasts } from '@/components/Toaster'
+import './dashboard.css'
 
-// Re-use the shared STATUS_CONFIG from supabase.ts.
-// (We re-declare a non-const variant here so the type widens to include
-// every key in ConsultationStatus, allowing safe `in` checks elsewhere.)
-
-// Compact set used for the dashboard overview cards.
 const OVERVIEW_STATUSES: ConsultationStatus[] = [
   'submitted',
   'needs_info',
@@ -23,9 +19,34 @@ const OVERVIEW_STATUSES: ConsultationStatus[] = [
   'completed',
 ]
 
+const STATUS_META: Record<ConsultationStatus, { icon: string; color: string; soft: string; border: string }> = {
+  submitted:       { icon: '📥', color: 'var(--accent)',      soft: 'var(--accent-50)',      border: 'var(--border-accent)' },
+  under_review:    { icon: '🔍', color: 'var(--primary)',     soft: 'var(--primary-50)',     border: 'var(--primary-100)' },
+  needs_info:      { icon: '❓', color: 'var(--warn)',        soft: 'var(--warn-soft)',      border: 'rgba(184, 134, 75, 0.25)' },
+  patient_replied: { icon: '💬', color: 'var(--primary-500)', soft: 'rgba(26, 60, 47, 0.08)', border: 'rgba(26, 60, 47, 0.14)' },
+  approved:        { icon: '✅', color: 'var(--ok)',          soft: 'var(--ok-soft)',        border: 'rgba(26, 60, 47, 0.18)' },
+  completed:       { icon: '✔',  color: 'var(--primary)',     soft: 'var(--primary-50)',     border: 'var(--primary-100)' },
+  declined:        { icon: '❌', color: 'var(--err)',         soft: 'var(--err-soft)',       border: 'rgba(165, 62, 62, 0.2)' },
+  cancelled:       { icon: '🚫', color: 'var(--err)',         soft: 'var(--err-soft)',       border: 'rgba(165, 62, 62, 0.2)' },
+  pending_payment: { icon: '💳', color: 'var(--accent)',      soft: 'var(--accent-50)',      border: 'var(--border-accent)' },
+  pending_booking: { icon: '📅', color: 'var(--primary)',     soft: 'var(--primary-50)',     border: 'var(--primary-100)' },
+  booked:          { icon: '✅', color: 'var(--ok)',          soft: 'var(--ok-soft)',        border: 'rgba(26, 60, 47, 0.18)' },
+}
+
+const DAYS = [
+  { val: 0, label: 'الأحد (Sunday)' },
+  { val: 1, label: 'الاثنين (Monday)' },
+  { val: 2, label: 'الثلاثاء (Tuesday)' },
+  { val: 3, label: 'الأربعاء (Wednesday)' },
+  { val: 4, label: 'الخميس (Thursday)' },
+  { val: 5, label: 'الجمعة (Friday)' },
+  { val: 6, label: 'السبت (Saturday)' },
+]
+
 export default function Dashboard() {
   const router = useRouter()
   const toasts = useToasts()
+
   const [session, setSession] = useState<AuthSession | null>(null)
   const [authChecked, setAuthChecked] = useState(false)
   const [consultations, setConsultations] = useState<EnhancedConsultation[]>([])
@@ -34,7 +55,6 @@ export default function Dashboard() {
   const [selectedDoctorFilter, setSelectedDoctorFilter] = useState('all')
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('all')
 
-  // Custom scheduling settings states
   const [activeTab, setActiveTab] = useState<'requests' | 'settings'>('requests')
   const [scheduleSettings, setScheduleSettings] = useState<DoctorScheduleSettings | null>(null)
   const [savingSettings, setSavingSettings] = useState(false)
@@ -67,7 +87,6 @@ export default function Dashboard() {
     loadData()
   }, [authChecked])
 
-  // Load schedule settings when dashboard loads or doctor filter changes
   useEffect(() => {
     async function loadSettings() {
       const docId = selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter
@@ -77,47 +96,59 @@ export default function Dashboard() {
     loadSettings()
   }, [selectedDoctorFilter])
 
-  // Calculate status counts based on loaded data
-  const statusCounts = OVERVIEW_STATUSES.map(s => ({
-    status: s,
-    count: consultations.filter(c => c.status === s || (s === 'approved' && c.status === 'booked')).length,
-    ...STATUS_CONFIG[s],
-  }))
+  const statusCounts = OVERVIEW_STATUSES.map((status) => {
+    const count = consultations.filter(
+      (c) => c.status === status || (status === 'approved' && c.status === 'booked')
+    ).length
+    return { status, count, ...STATUS_CONFIG[status], ...STATUS_META[status] }
+  })
 
-  // Filter logic
-  const filteredConsultations = consultations.filter(c => {
-    const matchesSearch = c.patient_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          c.patient_phone.includes(searchQuery) ||
-                          (c.chief_complaint || '').toLowerCase().includes(searchQuery.toLowerCase())
-    
-    // Support fallback for older data that doesn't have doctor_id
+  const filteredConsultations = consultations.filter((c) => {
+    const matchesSearch =
+      c.patient_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.patient_phone.includes(searchQuery) ||
+      (c.chief_complaint || '').toLowerCase().includes(searchQuery.toLowerCase())
     const doctorId = c.doctor_id || 'khalid'
     const matchesDoctor = selectedDoctorFilter === 'all' || doctorId === selectedDoctorFilter
-    
     const matchesStatus = selectedStatusFilter === 'all' || c.status === selectedStatusFilter
-
     return matchesSearch && matchesDoctor && matchesStatus
   })
 
-  // Loading Skeleton
+  const activeFilters = searchQuery || selectedDoctorFilter !== 'all' || selectedStatusFilter !== 'all'
+
+  function resetFilters() {
+    setSearchQuery('')
+    setSelectedDoctorFilter('all')
+    setSelectedStatusFilter('all')
+  }
+
+  async function handleSaveSettings() {
+    if (!scheduleSettings) return
+    setSavingSettings(true)
+    setSaveSuccess(false)
+    const docId = selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter
+    try {
+      await saveDoctorSettings(docId, scheduleSettings)
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 4000)
+    } catch {
+      toasts.push('خطأ أثناء حفظ الإعدادات', 'error')
+    } finally {
+      setSavingSettings(false)
+    }
+  }
+
   if (!authChecked || loading) {
     return (
-      <div className="geo-bg" style={{ minHeight: '100vh', padding: '3rem 0' }}>
-        <div className="container" style={{ textAlign: 'center', paddingTop: '10rem' }}>
-          <div className="card-warm" style={{ maxWidth: '400px', margin: '0 auto', padding: '3rem' }}>
-            <span style={{
-              display: 'inline-block',
-              width: '40px',
-              height: '40px',
-              border: '3px solid var(--primary-soft)',
-              borderTopColor: 'var(--primary)',
-              borderRadius: '50%',
-              animation: 'spin 1.7s linear infinite',
-              marginBottom: '1rem',
-            }} />
-            <p style={{ fontWeight: 700, color: 'var(--fg-muted)', fontFamily: 'var(--font-tajawal)' }}>
-              {authChecked ? 'جاري تحميل الاستشارات...' : 'جاري التحقق من تسجيل الدخول...'}
-            </p>
+      <div className="dashboard-shell">
+        <div className="container">
+          <div className="dashboard-skeleton">
+            <div className="dashboard-skeleton-card">
+              <div className="dashboard-skeleton-spinner" />
+              <p className="dashboard-skeleton-text">
+                {authChecked ? 'جاري تحميل الاستشارات...' : 'جاري التحقق من تسجيل الدخول...'}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -125,597 +156,324 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="geo-bg" style={{ minHeight: '100vh', padding: '3rem 0' }}>
+    <div className="dashboard-shell">
       <div className="container">
-
-        {/* Header with decorative accent */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-          marginBottom: '2.5rem',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          position: 'relative',
-        }}>
-          <div style={{ position: 'relative' }}>
-            <div style={{
-              position: 'absolute', right: '-0.75rem', top: '0.25rem',
-              width: '4px', height: '28px',
-              borderRadius: '2px',
-              background: 'linear-gradient(180deg, var(--primary), var(--gold))',
-            }} />
-            <h1 style={{ fontSize: '1.6rem', fontWeight: 900, letterSpacing: '-0.02em', marginRight: '0.75rem' }}>
-              لوحة التحكم المشتركة
-            </h1>
-            <p style={{ color: 'var(--fg-muted)', fontSize: '0.9rem', marginTop: '0.2rem', marginRight: '0.75rem' }}>
-              مركز بترجي للاستشارات الطبية — متابعة طلبات وحجوزات الاستشارات
-            </p>
+        {/* Header */}
+        <header className="dashboard-header">
+          <div className="dashboard-header-start">
+            <span className="dashboard-eyebrow">لوحة التحكم المشتركة</span>
+            <h1 className="dashboard-title">مركز بترجي للاستشارات الطبية</h1>
+            <p className="dashboard-subtitle">متابعة طلبات وحجوزات الاستشارات بكفاءة ورؤية واضحة.</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <div className="dashboard-header-end">
             {session && (
-              <span style={{
-                fontSize: '0.72rem',
-                color: 'var(--primary)',
-                fontWeight: 700,
-                padding: '0.4rem 0.85rem',
-                background: 'var(--primary-soft)',
-                borderRadius: 'var(--r-sm)',
-                border: '1px solid var(--border-accent)',
-              }}>
-                {session.display_name || session.email}
+              <span className="dashboard-pill dashboard-pill-user">
+                👤 {session.display_name || session.email}
               </span>
             )}
-            <span style={{
-              fontSize: '0.72rem', color: 'var(--fg-dim)',
-              padding: '0.4rem 0.85rem',
-              background: 'var(--surface)',
-              borderRadius: 'var(--r-sm)',
-              border: '1px solid var(--border-faint)',
-            }}>
-              إجمالي: {consultations.length} استشارة
+            <span className="dashboard-pill">
+              إجمالي: <strong>{consultations.length}</strong> استشارة
             </span>
             <button
               onClick={async () => {
                 await signOut()
                 router.replace('/dashboard/login')
               }}
-              className="btn-ghost"
-              style={{ fontSize: '0.78rem', padding: '0.4rem 0.9rem' }}
+              className="dashboard-btn-ghost"
             >
               تسجيل الخروج
             </button>
           </div>
-        </div>
+        </header>
 
-        {/* Stat cards */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '1rem',
-          marginBottom: '2rem',
-        }}>
-          {statusCounts.map(({ status, count, label }, i) => {
+        {/* Stats */}
+        <div className="dashboard-stats">
+          {statusCounts.map(({ status, count, label, icon, color, soft, border }, i) => {
             const isActive = selectedStatusFilter === status
             return (
-            <div
-              key={status}
-              className="card-warm"
-              role="button"
-              tabIndex={0}
-              aria-pressed={isActive}
-              aria-label={`تصفية حسب حالة: ${label}`}
-              style={{
-                padding: '1.25rem 1.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1.1rem',
-                animation: `fadeUp 0.5s var(--ease-out) ${i * 0.1}s both`,
-                position: 'relative',
-                overflow: 'hidden',
-                cursor: 'pointer',
-                transition: 'transform 300ms var(--ease-spring), box-shadow 300ms, border-color 200ms',
-                border: isActive ? '2px solid var(--primary)' : '1px solid var(--border-faint)',
-                outline: 'none',
-              }}
-              onClick={() => setSelectedStatusFilter(isActive ? 'all' : status)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  setSelectedStatusFilter(isActive ? 'all' : status)
-                }
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.boxShadow = '0 0 0 3px var(--primary-soft), var(--shadow-lg)'
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.boxShadow = isActive ? 'var(--shadow-lg)' : 'var(--shadow-warm)'
-              }}
-              onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)' }}
-              onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isActive ? 'var(--shadow-lg)' : 'var(--shadow-warm)' }}
-            >
-              {/* Top accent bar */}
-              <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0,
-                height: '3px',
-                background: status === 'pending_payment'
-                  ? 'linear-gradient(90deg, var(--gold), rgba(194, 154, 104, 0.3))'
-                  : status === 'pending_booking'
-                  ? 'linear-gradient(90deg, var(--primary), rgba(12, 90, 66, 0.3))'
-                  : 'linear-gradient(90deg, var(--ok), rgba(12, 90, 66, 0.3))',
-              }} />
-              <div style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '14px',
-                background: status === 'pending_payment' ? 'var(--gold-soft)' : status === 'pending_booking' ? 'var(--primary-soft)' : 'var(--ok-soft)',
-                border: `1px solid ${
-                  status === 'pending_payment' ? 'rgba(194, 154, 104, 0.25)' :
-                  status === 'pending_booking' ? 'var(--border-accent)' :
-                  'rgba(12, 90, 66, 0.25)'
-                }`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-                // Highlight active status filter
-                boxShadow: selectedStatusFilter === status ? `0 0 12px ${status === 'pending_payment' ? 'var(--gold)' : status === 'pending_booking' ? 'var(--primary)' : 'var(--ok)'}` : 'none'
-              }}>
-                <span className="num" style={{
-                  fontSize: '1.3rem',
-                  fontWeight: 900,
-                  color: status === 'pending_payment' ? 'var(--gold)' : status === 'pending_booking' ? 'var(--primary)' : 'var(--ok)',
-                }}>
-                  {count}
-                </span>
-              </div>
-              <div>
-                <div style={{
-                  fontSize: '0.85rem',
-                  fontWeight: 700,
-                  color: 'var(--fg)',
-                }}>
-                  {label}
-                </div>
-                <div style={{
-                  fontSize: '0.72rem',
-                  color: 'var(--fg-dim)',
-                  marginTop: '0.05rem',
-                }}>
-                  {count === 0 ? 'لا توجد' : count === 1 ? 'استشارة واحدة' : `${count} استشارات`}
+              <div
+                key={status}
+                className={`dashboard-stat ${isActive ? 'dashboard-stat-active' : ''}`}
+                role="button"
+                tabIndex={0}
+                aria-pressed={isActive}
+                aria-label={`تصفية حسب حالة: ${label}`}
+                style={{
+                  '--stat-color': color,
+                  '--stat-soft': soft,
+                  '--stat-border': border,
+                  animationDelay: `${i * 0.06}s`,
+                } as React.CSSProperties}
+                onClick={() => setSelectedStatusFilter(isActive ? 'all' : status)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    setSelectedStatusFilter(isActive ? 'all' : status)
+                  }
+                }}
+              >
+                <div className="dashboard-stat-icon">{icon}</div>
+                <div className="dashboard-stat-body">
+                  <span className="dashboard-stat-value">{count}</span>
+                  <span className="dashboard-stat-label">{label}</span>
+                  <span className="dashboard-stat-hint">
+                    {count === 0 ? 'لا توجد' : count === 1 ? 'استشارة واحدة' : `${count} استشارات`}
+                  </span>
                 </div>
               </div>
-            </div>
             )
           })}
         </div>
 
-        {/* Tab buttons */}
-        <div style={{
-          display: 'flex',
-          gap: '1rem',
-          marginBottom: '1.5rem',
-          borderBottom: '1px solid var(--border)',
-          paddingBottom: '0.5rem',
-        }}>
+        {/* Tabs */}
+        <div className="dashboard-tabs" role="tablist">
           <button
+            role="tab"
+            aria-selected={activeTab === 'requests'}
+            className={`dashboard-tab ${activeTab === 'requests' ? 'dashboard-tab-active' : ''}`}
             onClick={() => setActiveTab('requests')}
-            style={{
-              padding: '0.6rem 1.25rem',
-              fontSize: '0.9rem',
-              fontWeight: activeTab === 'requests' ? 800 : 500,
-              color: activeTab === 'requests' ? 'var(--primary)' : 'var(--fg-muted)',
-              border: 'none',
-              background: 'none',
-              borderBottom: activeTab === 'requests' ? '2.5px solid var(--primary)' : 'none',
-              cursor: 'pointer',
-              transition: 'all 200ms',
-            }}
           >
             📥 طلبات الاستشارات
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'settings'}
+            className={`dashboard-tab ${activeTab === 'settings' ? 'dashboard-tab-active' : ''}`}
             onClick={() => setActiveTab('settings')}
-            style={{
-              padding: '0.6rem 1.25rem',
-              fontSize: '0.9rem',
-              fontWeight: activeTab === 'settings' ? 800 : 500,
-              color: activeTab === 'settings' ? 'var(--primary)' : 'var(--fg-muted)',
-              border: 'none',
-              background: 'none',
-              borderBottom: activeTab === 'settings' ? '2.5px solid var(--primary)' : 'none',
-              cursor: 'pointer',
-              transition: 'all 200ms',
-            }}
           >
-            ⚙ إعدادات أوقات العمل والمواعيد
+            ⚙ إعدادات العيادة
           </button>
         </div>
 
         {activeTab === 'requests' && (
           <>
-            {/* Filters and Search Bar */}
-            <div className="card-warm" style={{
-              padding: '1.25rem 1.5rem',
-              marginBottom: '1.5rem',
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '1rem',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}>
-          {/* Search box */}
-          <div style={{ flex: '1 1 300px', position: 'relative' }}>
-            <input
-              className="input"
-              placeholder="ابحث باسم المريض، الجوال، أو سبب الشكوى..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              style={{ paddingLeft: '2.5rem' }}
-            />
-            <span style={{
-              position: 'absolute',
-              left: '1rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--fg-dim)',
-              pointerEvents: 'none'
-            }}>
-              🔍
-            </span>
-          </div>
-
-          {/* Selector filters */}
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--fg-muted)' }}>الطبيب الاستشاري:</span>
-              <select
-                className="input"
-                style={{ width: '160px', padding: '0.5rem 1rem', fontSize: '0.85rem' }}
-                value={selectedDoctorFilter}
-                onChange={e => setSelectedDoctorFilter(e.target.value)}
-              >
-                <option value="all">الكل</option>
-                {DOCTORS.map(d => (
-                  <option key={d.id} value={d.id}>{d.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--fg-muted)' }}>الحالة:</span>
-              <select
-                className="input"
-                style={{ width: '175px', padding: '0.5rem 1rem', fontSize: '0.85rem' }}
-                value={selectedStatusFilter}
-                onChange={e => setSelectedStatusFilter(e.target.value)}
-              >
-                <option value="all">الكل</option>
-                <option value="submitted">بانتظار المراجعة</option>
-                <option value="under_review">قيد المراجعة</option>
-                <option value="needs_info">يحتاج معلومات</option>
-                <option value="patient_replied">رد المريض</option>
-                <option value="approved">مقبول ومؤكد</option>
-                <option value="completed">مكتمل</option>
-                <option value="declined">مرفوض</option>
-                <option value="cancelled">ملغي</option>
-                <option value="pending_payment">في انتظار الدفع</option>
-                <option value="pending_booking">في انتظار الحجز</option>
-              </select>
-            </div>
-
-            {(searchQuery || selectedDoctorFilter !== 'all' || selectedStatusFilter !== 'all') && (
-              <button
-                className="btn-ghost"
-                onClick={() => {
-                  setSearchQuery('')
-                  setSelectedDoctorFilter('all')
-                  setSelectedStatusFilter('all')
-                }}
-                style={{ fontSize: '0.78rem', padding: '0.5rem 1rem' }}
-              >
-                إعادة ضبط
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Table card */}
-        <div className="card-warm" style={{
-          padding: 0,
-          overflow: 'hidden',
-          position: 'relative',
-        }}>
-          {/* Subtle top border accent */}
-          <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0,
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent, var(--primary), transparent)',
-            opacity: 0.15,
-          }} />
-          {!filteredConsultations.length ? (
-            <div style={{
-              padding: '5rem 2rem',
-              textAlign: 'center',
-            }}>
-              <div style={{
-                width: '64px',
-                height: '64px',
-                borderRadius: '50%',
-                background: 'var(--bg)',
-                border: '1px solid var(--border-faint)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 1.25rem',
-                color: 'var(--fg-dim)',
-                fontSize: '1.5rem',
-              }}>
-                —
+            {/* Filters */}
+            <div className="dashboard-filters">
+              <div className="dashboard-search">
+                <input
+                  type="text"
+                  placeholder="ابحث باسم المريض، الجوال، أو سبب الشكوى..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <span className="dashboard-search-icon">🔍</span>
               </div>
-              <p style={{ color: 'var(--fg-muted)', fontSize: '0.95rem', fontWeight: 600 }}>
-                لا توجد استشارات مطابقة لمعايير البحث
-              </p>
-              <p style={{ color: 'var(--fg-dim)', fontSize: '0.82rem', marginTop: '0.3rem' }}>
-                جرب تعديل خيارات التصفية أو البحث في الأعلى
-              </p>
+
+              <div className="dashboard-filter-group">
+                <span className="dashboard-filter-label">الطبيب:</span>
+                <select
+                  className="dashboard-select"
+                  value={selectedDoctorFilter}
+                  onChange={(e) => setSelectedDoctorFilter(e.target.value)}
+                >
+                  <option value="all">الكل</option>
+                  {DOCTORS.map((d) => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="dashboard-filter-group">
+                <span className="dashboard-filter-label">الحالة:</span>
+                <select
+                  className="dashboard-select"
+                  value={selectedStatusFilter}
+                  onChange={(e) => setSelectedStatusFilter(e.target.value)}
+                >
+                  <option value="all">الكل</option>
+                  <option value="submitted">بانتظار المراجعة</option>
+                  <option value="under_review">قيد المراجعة</option>
+                  <option value="needs_info">يحتاج معلومات</option>
+                  <option value="patient_replied">رد المريض</option>
+                  <option value="approved">مقبول ومؤكد</option>
+                  <option value="completed">مكتمل</option>
+                  <option value="declined">مرفوض</option>
+                  <option value="cancelled">ملغي</option>
+                  <option value="pending_payment">في انتظار الدفع</option>
+                  <option value="pending_booking">في انتظار الحجز</option>
+                </select>
+              </div>
+
+              {activeFilters && (
+                <button className="dashboard-reset" onClick={resetFilters}>
+                  إعادة ضبط
+                </button>
+              )}
             </div>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['المريض', 'الطبيب المختص', 'سبب الاستشارة', 'الحالة', 'التاريخ', ''].map(h => (
-                      <th key={h} style={{
-                        padding: '1rem 1.25rem',
-                        textAlign: 'right',
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                        color: 'var(--fg-dim)',
-                        letterSpacing: '0.06em',
-                        whiteSpace: 'nowrap',
-                        background: 'var(--surface-up)',
-                        textTransform: 'uppercase',
-                      }}>
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredConsultations.map((c, i) => {
-                    const config = STATUS_CONFIG[c.status]
-                    
-                    // Match assigned doctor
-                    const doctorId = c.doctor_id || 'khalid'
-                    const assignedDoc = DOCTORS.find(d => d.id === doctorId) || DOCTORS[0]
-                    
-                    return (
-                      <tr key={c.id} style={{
-                        borderBottom: i < filteredConsultations.length - 1 ? '1px solid var(--border-faint)' : 'none',
-                        transition: 'background 200ms',
-                        animation: `fadeUp 0.4s var(--ease-out) ${i * 0.03}s both`,
-                      }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-up)' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
-                        
-                        {/* Patient */}
-                        <td style={{ padding: '1rem 1.25rem' }}>
-                          <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--fg)' }}>
-                            {c.patient_name}
-                          </div>
-                          <div style={{ fontSize: '0.72rem', color: 'var(--fg-dim)', direction: 'ltr', textAlign: 'right', marginTop: '0.15rem' }}>
-                            {c.patient_phone} • {c.patient_age} سنة
-                          </div>
-                        </td>
 
-                        {/* Doctor */}
-                        <td style={{ padding: '1rem 1.25rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <div style={{
-                              width: '28px',
-                              height: '28px',
-                              borderRadius: '50%',
-                              overflow: 'hidden',
-                              border: '1px solid var(--border)',
-                              position: 'relative',
-                              flexShrink: 0
-                            }}>
-                              <Image
-                                src={assignedDoc.image}
-                                alt={assignedDoc.name}
-                                fill
-                                sizes="28px"
-                                style={{ objectFit: 'cover' }}
-                              />
-                            </div>
-                            <div>
-                              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--fg)' }}>
-                                {c.doctor_name || assignedDoc.name}
-                              </div>
-                              <div style={{ fontSize: '0.68rem', color: 'var(--primary)', fontWeight: 500 }}>
-                                {c.specialty || assignedDoc.specialty}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Complaint */}
-                        <td style={{
-                          padding: '1rem 1.25rem',
-                          color: 'var(--fg-muted)',
-                          fontSize: '0.82rem',
-                          maxWidth: '220px',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}>
-                          {c.chief_complaint}
-                        </td>
-
-                        {/* Status */}
-                        <td style={{ padding: '1rem 1.25rem' }}>
-                          <span className={config?.badge || 'badge-primary'}>
-                            {config?.label}
-                          </span>
-                        </td>
-
-                        {/* Date */}
-                        <td className="num" style={{
-                          padding: '1rem 1.25rem',
-                          color: 'var(--fg-dim)',
-                          fontSize: '0.8rem',
-                          whiteSpace: 'nowrap',
-                          direction: 'ltr',
-                        }}>
-                          {new Date(c.created_at).toLocaleDateString('ar-SA-u-nu-latn')}
-                        </td>
-
-                        {/* View Button */}
-                        <td style={{ padding: '1rem 1.25rem' }}>
-                          <Link
-                            href={`/dashboard/${c.id}`}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '0.35rem',
-                              color: 'var(--primary)',
-                              fontSize: '0.8rem',
-                              fontWeight: 700,
-                              textDecoration: 'none',
-                              padding: '0.4rem 0.85rem',
-                              borderRadius: 'var(--r-sm)',
-                              background: 'var(--primary-soft)',
-                              border: '1px solid var(--border-accent)',
-                              transition: 'all 250ms var(--ease-spring)',
-                            }}
-                          >
-                            عرض التفاصيل
-                          </Link>
-                        </td>
+            {/* Table */}
+            <div className="dashboard-table-card">
+              {!filteredConsultations.length ? (
+                <div className="dashboard-empty">
+                  <div className="dashboard-empty-icon">—</div>
+                  <p className="dashboard-empty-title">لا توجد استشارات مطابقة</p>
+                  <p className="dashboard-empty-desc">جرب تعديل خيارات التصفية أو البحث في الأعلى</p>
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="dashboard-table">
+                    <thead>
+                      <tr>
+                        <th>المريض</th>
+                        <th>الطبيب المختص</th>
+                        <th>سبب الاستشارة</th>
+                        <th>الحالة</th>
+                        <th>التاريخ</th>
+                        <th></th>
                       </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody>
+                      {filteredConsultations.map((c) => {
+                        const config = STATUS_CONFIG[c.status]
+                        const doctorId = c.doctor_id || 'khalid'
+                        const assignedDoc = DOCTORS.find((d) => d.id === doctorId) || DOCTORS[0]
+                        return (
+                          <tr key={c.id}>
+                            <td>
+                              <div className="dashboard-patient">
+                                <span className="dashboard-patient-name">{c.patient_name}</span>
+                                <span className="dashboard-patient-meta">
+                                  {c.patient_phone} • {c.patient_age} سنة
+                                </span>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="dashboard-doctor">
+                                <div className="dashboard-doctor-avatar">
+                                  <Image
+                                    src={assignedDoc.image}
+                                    alt={assignedDoc.name}
+                                    fill
+                                    sizes="34px"
+                                    style={{ objectFit: 'cover' }}
+                                  />
+                                </div>
+                                <div>
+                                  <div className="dashboard-doctor-name">{c.doctor_name || assignedDoc.name}</div>
+                                  <div className="dashboard-doctor-specialty">{c.specialty || assignedDoc.specialty}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <span className="dashboard-complaint">{c.chief_complaint}</span>
+                            </td>
+                            <td>
+                              <span className={`dashboard-badge dashboard-badge-${c.status}`}>
+                                {config?.label}
+                              </span>
+                            </td>
+                            <td>
+                              <span className="dashboard-date">
+                                {new Date(c.created_at).toLocaleDateString('ar-SA-u-nu-latn')}
+                              </span>
+                            </td>
+                            <td>
+                              <Link href={`/dashboard/${c.id}`} className="dashboard-action">
+                                عرض التفاصيل
+                              </Link>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        </>
+          </>
         )}
 
         {activeTab === 'settings' && scheduleSettings && (
-          <div className="card-warm" style={{ padding: '2rem', animation: 'fadeUp 0.4s var(--ease-out)', position: 'relative' }}>
-            <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0,
-              height: '3px',
-              background: 'linear-gradient(90deg, var(--primary), var(--gold))',
-            }} />
-            
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 900, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              🗓 ضبط جدول العمل والعيادة ({DOCTORS.find(d => d.id === (selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter))?.name})
+          <div className="dashboard-settings">
+            <h2 className="dashboard-settings-title">
+              🗓 ضبط جدول العمل والعيادة
+              <span style={{ color: 'var(--fg-dim)', fontSize: '0.85rem', fontWeight: 500 }}>
+                ({DOCTORS.find((d) => d.id === (selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter))?.name})
+              </span>
             </h2>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
-              {/* Working Days Checkboxes */}
+            {saveSuccess && (
+              <div className="dashboard-success">
+                <span>✓</span>
+                تم حفظ إعدادات المواعيد وجدول العمل بنجاح!
+              </div>
+            )}
+
+            <div className="dashboard-settings-grid">
               <div>
-                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--fg)', marginBottom: '1rem' }}>
-                  أيام العمل الأسبوعية
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {[
-                    { val: 0, label: 'الأحد (Sunday)' },
-                    { val: 1, label: 'الاثنين (Monday)' },
-                    { val: 2, label: 'الثلاثاء (Tuesday)' },
-                    { val: 3, label: 'الأربعاء (Wednesday)' },
-                    { val: 4, label: 'الخميس (Thursday)' },
-                    { val: 5, label: 'الجمعة (Friday)' },
-                    { val: 6, label: 'السبت (Saturday)' },
-                  ].map(day => {
+                <h3 className="dashboard-settings-group-title">أيام العمل الأسبوعية</h3>
+                <div className="dashboard-checkbox-list">
+                  {DAYS.map((day) => {
                     const isChecked = scheduleSettings.workingDays.includes(day.val)
                     return (
-                      <label key={day.val} style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer', fontSize: '0.88rem', fontWeight: isChecked ? 700 : 400 }}>
+                      <label key={day.val} className="dashboard-checkbox">
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={(e) => {
                             const newList = e.target.checked
                               ? [...scheduleSettings.workingDays, day.val].sort()
-                              : scheduleSettings.workingDays.filter(v => v !== day.val)
+                              : scheduleSettings.workingDays.filter((v) => v !== day.val)
                             setScheduleSettings({ ...scheduleSettings, workingDays: newList })
                           }}
-                          style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                         />
-                        {day.label}
+                        <span style={{ fontWeight: isChecked ? 700 : 500, color: isChecked ? 'var(--fg)' : undefined }}>
+                          {day.label}
+                        </span>
                       </label>
                     )
                   })}
                 </div>
               </div>
 
-              {/* Working Hours Settings */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--fg)', marginBottom: '0.25rem' }}>
-                  ساعات الدوام اليومي
-                </h3>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--fg-dim)', marginBottom: '0.35rem', fontWeight: 600 }}>بداية الدوام</label>
+              <div>
+                <h3 className="dashboard-settings-group-title">ساعات الدوام اليومي</h3>
+                <div className="dashboard-field-row">
+                  <div className="dashboard-field">
+                    <label>بداية الدوام</label>
                     <input
                       type="time"
-                      className="input num"
                       value={scheduleSettings.startTime}
                       onChange={(e) => setScheduleSettings({ ...scheduleSettings, startTime: e.target.value })}
-                      style={{ width: '100%' }}
                     />
                   </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--fg-dim)', marginBottom: '0.35rem', fontWeight: 600 }}>نهاية الدوام</label>
+                  <div className="dashboard-field">
+                    <label>نهاية الدوام</label>
                     <input
                       type="time"
-                      className="input num"
                       value={scheduleSettings.endTime}
                       onChange={(e) => setScheduleSettings({ ...scheduleSettings, endTime: e.target.value })}
-                      style={{ width: '100%' }}
                     />
                   </div>
                 </div>
 
-                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--fg)', marginTop: '0.5rem', marginBottom: '0.25rem' }}>
+                <h3 className="dashboard-settings-group-title" style={{ marginTop: '1rem' }}>
                   فترة الاستراحة / الغداء
                 </h3>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--fg-dim)', marginBottom: '0.35rem', fontWeight: 600 }}>بداية الاستراحة</label>
+                <div className="dashboard-field-row">
+                  <div className="dashboard-field">
+                    <label>بداية الاستراحة</label>
                     <input
                       type="time"
-                      className="input num"
                       value={scheduleSettings.lunchStart}
                       onChange={(e) => setScheduleSettings({ ...scheduleSettings, lunchStart: e.target.value })}
-                      style={{ width: '100%' }}
                     />
                   </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--fg-dim)', marginBottom: '0.35rem', fontWeight: 600 }}>نهاية الاستراحة</label>
+                  <div className="dashboard-field">
+                    <label>نهاية الاستراحة</label>
                     <input
                       type="time"
-                      className="input num"
                       value={scheduleSettings.lunchEnd}
                       onChange={(e) => setScheduleSettings({ ...scheduleSettings, lunchEnd: e.target.value })}
-                      style={{ width: '100%' }}
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--fg-dim)', marginBottom: '0.35rem', fontWeight: 600 }}>مدة الاستشارة (دقيقة)</label>
+                <div className="dashboard-field" style={{ marginTop: '1rem' }}>
+                  <label>مدة الاستشارة (دقيقة)</label>
                   <select
-                    className="input num"
                     value={scheduleSettings.slotDuration}
                     onChange={(e) => setScheduleSettings({ ...scheduleSettings, slotDuration: parseInt(e.target.value) })}
-                    style={{ width: '100%', padding: '0.6rem 1rem' }}
                   >
                     <option value="15">15 دقيقة</option>
                     <option value="30">30 دقيقة</option>
@@ -726,40 +484,10 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {saveSuccess && (
-              <div style={{
-                padding: '0.85rem 1.25rem',
-                background: 'var(--ok-soft)',
-                border: '1.5px solid var(--ok)',
-                borderRadius: 'var(--r)',
-                color: 'var(--ok)',
-                fontWeight: 700,
-                fontSize: '0.85rem',
-                marginBottom: '1.5rem',
-                animation: 'scaleIn 0.3s var(--ease-out)'
-              }}>
-                ✔ تم حفظ إعدادات المواعيد وجدول العمل بنجاح!
-              </div>
-            )}
-
             <button
-              className="btn-primary"
+              className="dashboard-save-btn"
               disabled={savingSettings}
-              style={{ width: '100%', justifyContent: 'center', padding: '1rem' }}
-              onClick={async () => {
-                setSavingSettings(true)
-                setSaveSuccess(false)
-                const docId = selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter
-                try {
-                  await saveDoctorSettings(docId, scheduleSettings)
-                  setSaveSuccess(true)
-                  setTimeout(() => setSaveSuccess(false), 4000)
-                } catch {
-                  toasts.push('خطأ أثناء حفظ الإعدادات', 'error')
-                } finally {
-                  setSavingSettings(false)
-                }
-              }}
+              onClick={handleSaveSettings}
             >
               {savingSettings ? 'جاري الحفظ...' : 'حفظ التعديلات وإعدادات الدوام'}
             </button>

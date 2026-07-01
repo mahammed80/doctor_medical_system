@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signIn, getCachedSession } from '@/lib/auth'
+import '../dashboard.css'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -37,106 +38,52 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="geo-bg" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
-      <div className="card-warm" style={{
-        maxWidth: '440px',
-        width: '100%',
-        padding: '2.5rem 2rem',
-        position: 'relative',
-        overflow: 'hidden',
-        animation: 'scaleIn 0.4s var(--ease-out)',
-      }}>
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0,
-          height: '3px',
-          background: 'linear-gradient(90deg, var(--primary), var(--gold))',
-        }} />
+    <div className="dashboard-login-page">
+      <div className="dashboard-login-card">
+        <div className="dashboard-login-logo">🩺</div>
+        <h1 className="dashboard-login-title">لوحة تحكم الطبيب</h1>
+        <p className="dashboard-login-subtitle">سجّل دخولك للوصول إلى الاستشارات وإدارة المواعيد</p>
 
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{
-            width: '64px',
-            height: '64px',
-            margin: '0 auto 1rem',
-            borderRadius: '16px',
-            background: 'var(--primary-soft)',
-            border: '1.5px solid var(--primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--primary)',
-            fontSize: '1.6rem',
-            fontWeight: 900,
-          }}>🩺</div>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--fg)' }}>
-            لوحة تحكم الطبيب
-          </h1>
-          <p style={{ fontSize: '0.85rem', color: 'var(--fg-muted)', marginTop: '0.4rem' }}>
-            سجّل دخولك للوصول إلى الاستشارات
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--fg-muted)', marginBottom: '0.4rem' }}>
-              البريد الإلكتروني
-            </label>
+        <form onSubmit={handleSubmit} className="dashboard-login-form">
+          <div className="dashboard-login-field">
+            <label>البريد الإلكتروني</label>
             <input
               type="email"
-              className="input"
               placeholder="doctor@example.com"
               dir="ltr"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
-              style={{ textAlign: 'left' }}
             />
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--fg-muted)', marginBottom: '0.4rem' }}>
-              كلمة المرور
-            </label>
+          <div className="dashboard-login-field">
+            <label>كلمة المرور</label>
             <input
               type="password"
-              className="input"
               placeholder="••••••••"
               dir="ltr"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
-              style={{ textAlign: 'left' }}
             />
           </div>
 
           {error && (
-            <div style={{
-              background: 'var(--err-soft)',
-              border: '1.5px solid var(--err)',
-              borderRadius: 'var(--r)',
-              padding: '0.7rem 0.9rem',
-              color: 'var(--err)',
-              fontSize: '0.82rem',
-              fontWeight: 600,
-            }}>
-              ⚠️ {error}
+            <div className="dashboard-login-error">
+              <span>⚠</span>
+              {error}
             </div>
           )}
 
-          <button
-            type="submit"
-            className="btn-primary"
-            disabled={loading}
-            style={{ justifyContent: 'center', marginTop: '0.4rem', padding: '0.85rem' }}
-          >
+          <button type="submit" className="dashboard-login-btn" disabled={loading}>
             {loading ? 'جاري الدخول...' : 'تسجيل الدخول'}
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-          <Link href="/" style={{ fontSize: '0.82rem', color: 'var(--fg-dim)', textDecoration: 'none', fontWeight: 600 }}>
-            العودة للصفحة الرئيسية →
-          </Link>
-        </div>
+        <Link href="/" className="dashboard-login-back">
+          العودة للصفحة الرئيسية →
+        </Link>
       </div>
     </div>
   )
