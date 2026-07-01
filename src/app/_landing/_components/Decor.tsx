@@ -4,23 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 export function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <div
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.45rem',
-        fontSize: '0.72rem',
-        fontWeight: 700,
-        letterSpacing: '0.06em',
-        color: 'var(--primary)',
-        padding: '0.35rem 1rem',
-        borderRadius: 9999,
-        border: '1px solid var(--border-accent)',
-        background: 'var(--primary-subtle)',
-        marginBottom: '1.25rem',
-      }}
-    >
-      <span style={{ fontSize: '0.55rem' }}>◇</span>
+    <div className="section-label">
       {children}
     </div>
   )
@@ -28,10 +12,26 @@ export function SectionLabel({ children }: { children: ReactNode }) {
 
 export function SectionDivider() {
   return (
-    <div className="section-divider">
-      <span className="diamond" />
-      <span className="diamond" style={{ width: 6, height: 6, opacity: 0.25 }} />
-      <span className="diamond" />
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '1rem',
+        padding: '3rem 0',
+      }}
+    >
+      <div style={{ flex: 1, height: '1px', background: 'var(--border-faint)' }} />
+      <div
+        style={{
+          width: 32,
+          height: 2,
+          background: 'var(--accent)',
+          borderRadius: 2,
+          opacity: 0.5,
+        }}
+      />
+      <div style={{ flex: 1, height: '1px', background: 'var(--border-faint)' }} />
     </div>
   )
 }
@@ -58,7 +58,7 @@ export function ScrollReveal({
           observer.disconnect()
         }
       },
-      { threshold: 0.08 },
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' },
     )
     observer.observe(el)
     return () => observer.disconnect()
@@ -96,7 +96,7 @@ export function AnimatedCounter({ end, suffix = '' }: { end: number; suffix?: st
     const el = ref.current
     if (!el) return
     let current = 0
-    const step = Math.max(1, Math.floor(end / 60))
+    const step = Math.max(1, Math.floor(end / 50))
     const interval = setInterval(() => {
       current += step
       if (current >= end) {
@@ -104,115 +104,86 @@ export function AnimatedCounter({ end, suffix = '' }: { end: number; suffix?: st
         clearInterval(interval)
       }
       el.textContent = current.toLocaleString('en-US') + suffix
-    }, 25)
+    }, 30)
     return () => clearInterval(interval)
   }, [started, end, suffix])
 
   return (
-    <span ref={ref} style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
+    <span ref={ref} className="num">
       0{suffix}
     </span>
   )
 }
 
-const ORB_COLORS = [
-  'radial-gradient(circle, rgba(12, 90, 66, 0.12) 0%, transparent 70%)',
-  'radial-gradient(circle, rgba(194, 154, 104, 0.08) 0%, transparent 70%)',
-  'radial-gradient(circle, rgba(30, 139, 98, 0.06) 0%, transparent 70%)',
-]
-
-export function FloatingOrbs() {
-  const orbs = [
-    { size: '400px', top: '10%',   insetInlineEnd: '-5%',  anim: 'floatOrb 18s ease-in-out infinite',            color: ORB_COLORS[0] },
-    { size: '300px', top: '50%',   insetInlineStart: '-8%', anim: 'floatOrb2 22s ease-in-out infinite',           color: ORB_COLORS[1] },
-    { size: '200px', top: '70%',   insetInlineEnd: '15%',  anim: 'floatOrb 15s ease-in-out infinite reverse',   color: ORB_COLORS[2] },
-    { size: '500px', top: '-15%',  insetInlineStart: '20%', anim: 'floatOrb2 25s ease-in-out infinite',           color: ORB_COLORS[0] },
-  ]
-  return (
-    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
-      {orbs.map((orb, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            width: orb.size,
-            height: orb.size,
-            top: orb.top,
-            insetInlineStart: orb.insetInlineStart,
-            insetInlineEnd: orb.insetInlineEnd,
-            borderRadius: '50%',
-            background: orb.color,
-            animation: orb.anim,
-            willChange: 'transform',
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-export function MouseGlow() {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handleMouse = (e: MouseEvent) => {
-      if (!ref.current) return
-      const x = e.clientX / window.innerWidth
-      const y = e.clientY / window.innerHeight
-      ref.current.style.background = `radial-gradient(600px at ${x * 100}% ${y * 100}%, rgba(12, 90, 66, 0.04) 0%, transparent 70%)`
-    }
-    window.addEventListener('mousemove', handleMouse)
-    return () => window.removeEventListener('mousemove', handleMouse)
-  }, [])
-
+export function HeroBackdrop() {
   return (
     <div
-      ref={ref}
+      aria-hidden
       style={{
         position: 'fixed',
         inset: 0,
         pointerEvents: 'none',
-        zIndex: 1,
-        transition: 'background 0.4s',
+        zIndex: 0,
+        overflow: 'hidden',
       }}
-    />
+    >
+      {/* Warm gradient wash */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background:
+            'radial-gradient(ellipse at 20% 10%, rgba(212, 185, 150, 0.14) 0%, transparent 45%), radial-gradient(ellipse at 85% 25%, rgba(196, 106, 79, 0.08) 0%, transparent 40%), radial-gradient(ellipse at 50% 95%, rgba(26, 60, 47, 0.06) 0%, transparent 45%)',
+        }}
+      />
+
+      {/* Subtle organic blob */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '8%',
+          insetInlineStart: '-8%',
+          width: '42vw',
+          height: '42vw',
+          maxWidth: 520,
+          maxHeight: 520,
+          background: 'rgba(196, 106, 79, 0.04)',
+          borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%',
+          animation: 'morphBlob 18s ease-in-out infinite',
+          filter: 'blur(40px)',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '12%',
+          insetInlineEnd: '-6%',
+          width: '34vw',
+          height: '34vw',
+          maxWidth: 420,
+          maxHeight: 420,
+          background: 'rgba(26, 60, 47, 0.05)',
+          borderRadius: '30% 60% 70% 40% / 50% 60% 30% 60%',
+          animation: 'morphBlob 22s ease-in-out infinite reverse',
+          filter: 'blur(48px)',
+        }}
+      />
+    </div>
   )
 }
 
-export function DiamondShower() {
-  const diamonds = [
-    { x: '8%',  size: '6px',  delay: '2s',  duration: '22s', color: 'var(--primary)' },
-    { x: '22%', size: '10px', delay: '6s',  duration: '28s', color: 'var(--gold)' },
-    { x: '38%', size: '5px',  delay: '1s',  duration: '18s', color: 'var(--ok)' },
-    { x: '52%', size: '8px',  delay: '9s',  duration: '24s', color: 'var(--primary)' },
-    { x: '68%', size: '12px', delay: '4s',  duration: '30s', color: 'var(--gold)' },
-    { x: '82%', size: '7px',  delay: '11s', duration: '20s', color: 'var(--ok)' },
-    { x: '15%', size: '9px',  delay: '14s', duration: '26s', color: 'var(--gold)' },
-    { x: '45%', size: '11px', delay: '3s',  duration: '32s', color: 'var(--primary)' },
-    { x: '75%', size: '5px',  delay: '8s',  duration: '17s', color: 'var(--ok)' },
-    { x: '90%', size: '14px', delay: '12s', duration: '34s', color: 'var(--primary)' },
-    { x: '60%', size: '7px',  delay: '16s', duration: '23s', color: 'var(--gold)' },
-    { x: '35%', size: '9px',  delay: '5s',  duration: '19s', color: 'var(--ok)' },
-  ]
-
+export function SectionTexture() {
   return (
-    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
-      {diamonds.map((d, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            bottom: '-20px',
-            insetInlineStart: d.x,
-            width: d.size,
-            height: d.size,
-            background: d.color,
-            clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-            opacity: 0,
-            animation: `driftDiamond ${d.duration} ${d.delay} linear infinite`,
-          }}
-        />
-      ))}
-    </div>
+    <div
+      aria-hidden
+      style={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        background:
+          'radial-gradient(ellipse at 100% 0%, rgba(196, 106, 79, 0.05) 0%, transparent 35%)',
+        zIndex: 0,
+      }}
+    />
   )
 }
