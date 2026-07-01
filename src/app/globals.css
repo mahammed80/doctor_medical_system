@@ -732,6 +732,15 @@ details summary::-webkit-details-marker {
   .patient-id-row {
     grid-template-columns: 1fr !important;
   }
+  /* Stack the body-map two-column layout on narrow screens */
+  .body-map-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+@media (max-width: 900px) {
+  .body-map-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 /* ── Top bar ── */

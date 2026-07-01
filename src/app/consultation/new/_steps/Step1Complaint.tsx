@@ -45,14 +45,46 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
       </Field>
 
       <Field label="مكان الألم على الجسم" required>
-        <BodyMap
-          selected={form.pain_locations as never}
-          spinalSelected={form.spinal_areas as never}
-          onChange={(locs, spinal) => {
-            set('pain_locations', locs)
-            set('spinal_areas', spinal)
+        <div
+          style={{
+            background: 'linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%)',
+            border: '1.5px solid var(--border-faint)',
+            borderRadius: 'var(--r-lg)',
+            padding: '1rem 1rem 1.1rem',
+            boxShadow: 'var(--shadow-sm)',
+            position: 'relative',
+            overflow: 'hidden',
           }}
-        />
+        >
+          <div
+            style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: '3px',
+              background: 'linear-gradient(90deg, var(--primary), var(--gold))',
+              opacity: 0.6,
+            }}
+            aria-hidden
+          />
+          <div
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              fontSize: '0.78rem', color: 'var(--fg-muted)', marginBottom: '0.85rem',
+              padding: '0 0.25rem',
+            }}
+          >
+            <span aria-hidden style={{ fontSize: '1rem' }}>👆</span>
+            انقر على المنطقة في الجسم أو اختر من القائمة السريعة. للجانب الأيمن والأيسر، انقر على النقطة المناسبة.
+          </div>
+          <BodyMap
+            selected={form.pain_locations as never}
+            spinalSelected={form.spinal_areas as never}
+            widespread={form.pain_widespread}
+            onChange={(locs, spinal) => {
+              set('pain_locations', locs)
+              set('spinal_areas', spinal)
+            }}
+            onWidespreadChange={(v) => set('pain_widespread', v)}
+          />
+        </div>
       </Field>
 
       <div className="complaint-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -190,7 +222,7 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
         disabled={
           !form.chief_complaint ||
           form.pain_natures.length === 0 ||
-          form.pain_locations.length === 0 ||
+          (form.pain_locations.length === 0 && !form.pain_widespread) ||
           !form.joint_swelling_stiffness ||
           loading
         }

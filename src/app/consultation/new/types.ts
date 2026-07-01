@@ -13,6 +13,8 @@ export type FormData = {
   pain_severity: number
   pain_natures: string[]
   pain_locations: string[]
+  pain_sides: ('left' | 'right' | 'both')[]
+  pain_widespread: boolean
   spinal_areas: string[]
   symptom_start: string
   previous_treatments: string
@@ -38,6 +40,8 @@ export const FORM_INITIAL: FormData = {
   pain_severity: 5,
   pain_natures: [],
   pain_locations: [],
+  pain_sides: [],
+  pain_widespread: false,
   spinal_areas: [],
   symptom_start: '',
   previous_treatments: '',

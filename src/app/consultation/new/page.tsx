@@ -130,8 +130,8 @@ export default function NewConsultation() {
       toasts.push('الرجاء شرح الشكوى الرئيسية للمتابعة.', 'warn')
       return
     }
-    if (form.pain_locations.length === 0) {
-      toasts.push('الرجاء تحديد مكان الألم على الخريطة.', 'warn')
+    if (form.pain_locations.length === 0 && !form.pain_widespread) {
+      toasts.push('الرجاء تحديد مكان الألم على الخريطة أو اختيار "ألم منتشر".', 'warn')
       return
     }
     setLoading(true)
