@@ -61,120 +61,44 @@ export function Step4Schedule({
 
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
-          padding: '1rem 1.25rem',
-          background: 'var(--ok-soft)',
-          border: '1px solid var(--border-accent)',
-          borderRadius: 'var(--r)',
-          marginBottom: '1.5rem',
-          animation: 'scaleIn 0.4s var(--ease-out)',
-        }}
-      >
-        <div
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: '50%',
-            background: 'var(--ok)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: '0.85rem',
-            fontWeight: 700,
-            flexShrink: 0,
-          }}
-        >
-          ✓
-        </div>
+      <div className="alert alert-success">
+        <div className="alert-icon">✓</div>
         <div>
-          <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--fg)' }}>
-            تم استلام الدفع بنجاح
-          </div>
-          <div style={{ fontSize: '0.82rem', color: 'var(--fg-muted)', marginTop: '0.1rem' }}>
-            اختر الوقت المناسب لجلستك مع الدكتور
-          </div>
+          <div className="alert-title">تم استلام الدفع بنجاح</div>
+          <div className="alert-text">اختر الوقت المناسب لجلستك مع الدكتور</div>
         </div>
       </div>
 
-      <div
-        className="card-warm"
-        style={{
-          padding: '1.5rem',
-          border: '1px solid var(--border-faint)',
-          borderRadius: 'var(--r-lg)',
-          background: 'var(--surface)',
-          boxShadow: 'var(--shadow-sm)',
-          marginBottom: '1.5rem',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '1.25rem',
-          }}
-        >
+      <div className="calendar-card">
+        <div className="calendar-header">
           <button
             type="button"
-            className="btn-ghost"
-            style={{ padding: '0.4rem 0.85rem', fontSize: '0.82rem' }}
+            className="btn-ghost calendar-nav"
             onClick={() => onChangeMonth(-1)}
           >
-            → السابق
+            السابق
           </button>
-          <span
-            className="num"
-            style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--fg)' }}
-          >
+          <span className="calendar-month num">
             {ARABIC_MONTHS[currentMonth.getMonth()]} {currentMonth.getFullYear()}
           </span>
           <button
             type="button"
-            className="btn-ghost"
-            style={{ padding: '0.4rem 0.85rem', fontSize: '0.82rem' }}
+            className="btn-ghost calendar-nav"
             onClick={() => onChangeMonth(1)}
           >
-            التالي ←
+            التالي
           </button>
         </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(7, 1fr)',
-            gap: '0.35rem',
-            textAlign: 'center',
-            marginBottom: '0.5rem',
-          }}
-        >
+        <div className="calendar-grid" style={{ marginBottom: '0.5rem' }}>
           {ARABIC_WEEKDAYS.map((w) => (
-            <div
-              key={w}
-              style={{
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                color: 'var(--fg-dim)',
-                paddingBottom: '0.25rem',
-              }}
-            >
+            <div key={w} className="calendar-weekday">
               {w}
             </div>
           ))}
         </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(7, 1fr)',
-            gap: '0.35rem',
-          }}
-        >
+        <div className="calendar-grid">
           {days.map((day, idx) => {
             if (!day) return <div key={`empty-${idx}`} />
             const dateStr = formatDateStr(day)
@@ -188,57 +112,17 @@ export function Step4Schedule({
                 type="button"
                 disabled={disabled}
                 onClick={() => onSelectDate(dateStr)}
-                className="num"
-                style={{
-                  aspectRatio: '1',
-                  borderRadius: 8,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: isSelected
-                    ? '1.5px solid var(--primary)'
-                    : '1px solid var(--border-faint)',
-                  background: isSelected
-                    ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-down) 100%)'
-                    : disabled
-                      ? 'var(--surface-up)'
-                      : 'var(--bg)',
-                  color: isSelected
-                    ? 'white'
-                    : disabled
-                      ? 'var(--fg-dim)'
-                      : 'var(--fg)',
-                  cursor: disabled ? 'not-allowed' : 'pointer',
-                  opacity: disabled ? 0.45 : 1,
-                  fontSize: '0.82rem',
-                  fontWeight: isSelected || !disabled ? 700 : 400,
-                  transition: 'all 200ms',
-                  position: 'relative',
-                }}
-                onMouseEnter={(e) => {
-                  if (!disabled && !isSelected) {
-                    e.currentTarget.style.background = 'var(--primary-soft)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!disabled && !isSelected) {
-                    e.currentTarget.style.background = 'var(--bg)'
-                  }
-                }}
+                className={[
+                  'calendar-day num',
+                  isSelected && 'calendar-day-selected',
+                  disabled && 'calendar-day-disabled',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
               >
                 {day.getDate()}
                 {!isWorking && !isPast && (
-                  <span
-                    style={{
-                      fontSize: '0.45rem',
-                      display: 'block',
-                      color: 'var(--fg-dim)',
-                      fontWeight: 400,
-                    }}
-                  >
-                    مغلق
-                  </span>
+                  <span className="calendar-day-closed">مغلق</span>
                 )}
               </button>
             )
@@ -246,30 +130,9 @@ export function Step4Schedule({
         </div>
       </div>
 
-      <div
-        className="card-warm"
-        style={{
-          padding: '1.5rem',
-          border: '1px solid var(--border-faint)',
-          borderRadius: 'var(--r-lg)',
-          background: 'var(--surface)',
-          boxShadow: 'var(--shadow-sm)',
-          marginBottom: '1.5rem',
-        }}
-      >
-        <h3
-          style={{
-            fontSize: '0.9rem',
-            fontWeight: 800,
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-          }}
-        >
-          <span
-            style={{ width: 4, height: 14, borderRadius: 2, background: 'var(--gold)' }}
-          />
+      <div className="time-card">
+        <h3 className="time-card-title">
+          <span className="time-card-accent" />
           الأوقات المتاحة ليوم{' '}
           {selectedDate ? (
             <span className="num" style={{ color: 'var(--primary)' }}>
@@ -293,39 +156,15 @@ export function Step4Schedule({
             </p>
           </div>
         ) : !selectedDate ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '2.5rem 1rem',
-              color: 'var(--fg-dim)',
-              background: 'var(--bg)',
-              borderRadius: 'var(--r)',
-              border: '1px dashed var(--border)',
-            }}
-          >
+          <div className="empty-box">
             📅 الرجاء اختيار تاريخ من التقويم في الأعلى لعرض الأوقات المتاحة
           </div>
         ) : slots.length === 0 ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '2.5rem 1rem',
-              color: 'var(--fg-dim)',
-              background: 'var(--bg)',
-              borderRadius: 'var(--r)',
-              border: '1px dashed var(--border)',
-            }}
-          >
+          <div className="empty-box">
             📭 عذراً، لا توجد فترات عمل متاحة في هذا اليوم
           </div>
         ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
-              gap: '0.5rem',
-            }}
-          >
+          <div className="time-grid">
             {slots.map((slot) => {
               const isTimeSelected = selectedTime === slot.time
               const slotDisabled = !slot.available
@@ -335,45 +174,17 @@ export function Step4Schedule({
                   type="button"
                   disabled={slotDisabled}
                   onClick={() => onSelectTime(slot.time)}
-                  className="num"
-                  style={{
-                    padding: '0.6rem 0.5rem',
-                    borderRadius: 8,
-                    border: isTimeSelected
-                      ? '1.5px solid var(--gold)'
-                      : '1px solid var(--border-faint)',
-                    background: isTimeSelected
-                      ? 'var(--gold-soft)'
-                      : slotDisabled
-                        ? 'var(--surface-up)'
-                        : 'var(--bg)',
-                    color: isTimeSelected
-                      ? 'var(--gold)'
-                      : slotDisabled
-                        ? 'var(--fg-dim)'
-                        : 'var(--fg)',
-                    cursor: slotDisabled ? 'not-allowed' : 'pointer',
-                    opacity: slotDisabled ? 0.55 : 1,
-                    textDecoration: slotDisabled ? 'line-through' : 'none',
-                    fontSize: '0.82rem',
-                    fontWeight: isTimeSelected ? 800 : 600,
-                    transition: 'all 200ms',
-                    textAlign: 'center',
-                  }}
+                  className={[
+                    'time-slot num',
+                    isTimeSelected && 'time-slot-selected',
+                    slotDisabled && 'time-slot-disabled',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
                 >
                   {slot.time}
                   {slotDisabled && (
-                    <span
-                      style={{
-                        fontSize: '0.55rem',
-                        display: 'block',
-                        color: 'var(--err)',
-                        textDecoration: 'none',
-                        fontWeight: 500,
-                      }}
-                    >
-                      محجوز
-                    </span>
+                    <span className="time-slot-note">محجوز</span>
                   )}
                 </button>
               )
@@ -383,22 +194,7 @@ export function Step4Schedule({
       </div>
 
       {selectedDate && selectedTime && (
-        <div
-          style={{
-            padding: '0.95rem 1.25rem',
-            background: 'var(--primary-soft)',
-            border: '1.5px solid var(--primary)',
-            borderRadius: 'var(--r)',
-            marginBottom: '1.5rem',
-            fontSize: '0.88rem',
-            fontWeight: 700,
-            color: 'var(--primary)',
-            animation: 'scaleIn 0.3s var(--ease-out)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
+        <div className="booking-summary">
           <span>
             📌 الموعد المختار:{' '}
             {new Date(selectedDate).toLocaleDateString('ar-SA-u-nu-latn', {
@@ -408,12 +204,7 @@ export function Step4Schedule({
             })}{' '}
             في تمام الساعة <span className="num">{selectedTime}</span>
           </span>
-          <span
-            className="num"
-            style={{ fontSize: '0.72rem', color: 'var(--fg-dim)', fontWeight: 400 }}
-          >
-            بانتظار موافقة الطبيب
-          </span>
+          <span className="booking-summary-meta">بانتظار موافقة الطبيب</span>
         </div>
       )}
 

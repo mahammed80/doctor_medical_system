@@ -11,12 +11,10 @@ export function PaymobPaymentForm({
         href={checkoutUrl}
         target="_top"
         rel="noopener"
-        className="btn-primary"
+        className="btn-primary btn-lg"
         style={{
           width: '100%',
           justifyContent: 'center',
-          padding: '1rem',
-          fontSize: '1rem',
           textDecoration: 'none',
         }}
       >

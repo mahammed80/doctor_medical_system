@@ -17,18 +17,20 @@ type Props = {
 
 export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.4rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <Field label="ما هي الشكوى الرئيسية التي تعاني منها؟" required>
         <textarea
-          className="input"
+          className="textarea"
           placeholder="مثال: ألم حاد في الركبة اليسرى يزداد عند صعود الدرج..."
           value={form.chief_complaint}
           onChange={(e) => set('chief_complaint', e.target.value)}
-          style={{ minHeight: 90, fontWeight: 500 }}
         />
       </Field>
 
-      <div className="card-warm" style={{ padding: '1rem 1.25rem', background: 'var(--bg)' }}>
+      <div
+        className="booking-card"
+        style={{ padding: '1.25rem', background: 'var(--bg)', boxShadow: 'none' }}
+      >
         <Field label="شدّة الألم" required>
           <PainSeveritySlider
             value={form.pain_severity}
@@ -87,9 +89,9 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
         </div>
       </Field>
 
-      <div className="complaint-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div className="option-grid">
         <Field label="مدة الشكوى (سريعة)" optional>
-          <div className="complaint-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+          <div className="option-grid" style={{ gap: '0.4rem' }}>
             {PAIN_DURATIONS.map((opt) => {
               const isSelected = form.pain_duration === opt
               return (
@@ -97,17 +99,9 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
                   key={opt}
                   type="button"
                   onClick={() => set('pain_duration', opt)}
-                  style={{
-                    padding: '0.55rem 0.4rem',
-                    borderRadius: 'var(--r-sm)',
-                    border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
-                    background: isSelected ? 'var(--primary-soft)' : 'var(--surface)',
-                    color: isSelected ? 'var(--primary)' : 'var(--fg)',
-                    fontWeight: isSelected ? 700 : 500,
-                    fontSize: '0.78rem',
-                    cursor: 'pointer',
-                    transition: 'all 150ms',
-                  }}
+                  className={['option-button', isSelected && 'option-button-selected']
+                    .filter(Boolean)
+                    .join(' ')}
                 >
                   {opt}
                 </button>
@@ -126,10 +120,10 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
         </Field>
       </div>
 
-      <div className="complaint-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div className="option-grid">
         <Field label="علاجات سابقة" optional>
           <textarea
-            className="input"
+            className="textarea"
             style={{ minHeight: 70 }}
             placeholder="أدوية، علاج طبيعي، جبائر..."
             value={form.previous_treatments}
@@ -138,7 +132,7 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
         </Field>
         <Field label="عمليات جراحية سابقة" optional>
           <textarea
-            className="input"
+            className="textarea"
             style={{ minHeight: 70 }}
             placeholder="نوع العملية وتاريخها..."
             value={form.previous_surgeries}
@@ -147,7 +141,7 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
         </Field>
         <Field label="العوامل التي تزيد الألم" optional>
           <textarea
-            className="input"
+            className="textarea"
             style={{ minHeight: 70 }}
             placeholder="مثال: صعود الدرج، الجلوس طويلاً..."
             value={form.aggravating_factors}
@@ -156,7 +150,7 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
         </Field>
         <Field label="العوامل التي تخفف الألم" optional>
           <textarea
-            className="input"
+            className="textarea"
             style={{ minHeight: 70 }}
             placeholder="مثال: الراحة، الكمادات، مسكنات..."
             value={form.relieving_factors}
@@ -166,7 +160,7 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
       </div>
 
       <Field label="هل تعاني من تورم أو تيبس في المفاصل؟" required>
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div className="option-grid">
           {['نعم', 'لا'].map((opt) => {
             const isSelected = form.joint_swelling_stiffness === opt
             return (
@@ -174,18 +168,9 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
                 key={opt}
                 type="button"
                 onClick={() => set('joint_swelling_stiffness', opt)}
-                style={{
-                  flex: 1,
-                  padding: '0.65rem 1.5rem',
-                  borderRadius: 'var(--r-sm)',
-                  border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
-                  background: isSelected ? 'var(--primary-soft)' : 'var(--surface)',
-                  color: isSelected ? 'var(--primary)' : 'var(--fg)',
-                  fontWeight: isSelected ? 700 : 500,
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  transition: 'all 150ms',
-                }}
+                className={['option-button', isSelected && 'option-button-selected']
+                  .filter(Boolean)
+                  .join(' ')}
               >
                 {opt}
               </button>
@@ -194,10 +179,10 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
         </div>
       </Field>
 
-      <div className="complaint-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div className="option-grid">
         <Field label="التاريخ المرضي" optional>
           <textarea
-            className="input"
+            className="textarea"
             style={{ minHeight: 70 }}
             placeholder="أمراض مزمنة، حساسية..."
             value={form.medical_history}
@@ -206,7 +191,7 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
         </Field>
         <Field label="الأدوية الحالية" optional>
           <textarea
-            className="input"
+            className="textarea"
             style={{ minHeight: 70 }}
             placeholder="اسم الدواء والجرعة..."
             value={form.current_medications}

@@ -24,17 +24,12 @@ export function Step0PatientInfo({
   onNext,
 }: Props) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <Field label="اختر الطبيب الاستشاري" required>
         <div
           role="radiogroup"
           aria-label="قائمة الأطباء الاستشاريين"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '0.75rem',
-            marginBottom: '0.5rem',
-          }}
+          className="doctor-grid"
         >
           {DOCTORS.map((d) => {
             const isSelected = selectedDoctorId === d.id
@@ -51,85 +46,22 @@ export function Step0PatientInfo({
                     onSelectDoctor(d.id)
                   }
                 }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.85rem 1rem',
-                  borderRadius: 'var(--r)',
-                  background: isSelected ? 'var(--primary-soft)' : 'var(--surface)',
-                  border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
-                  cursor: 'pointer',
-                  transition: 'all 200ms var(--ease-out)',
-                  boxShadow: isSelected ? '0 4px 12px var(--primary-glow)' : 'var(--shadow-sm)',
-                  outline: 'none',
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--primary)'
-                  e.currentTarget.style.boxShadow = '0 0 0 3px var(--primary-soft)'
-                }}
-                onBlur={(e) => {
-                  if (!isSelected) {
-                    e.currentTarget.style.borderColor = 'var(--border)'
-                  }
-                  e.currentTarget.style.boxShadow = isSelected ? '0 4px 12px var(--primary-glow)' : 'var(--shadow-sm)'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSelected) {
-                    e.currentTarget.style.borderColor = 'var(--border-accent)'
-                    e.currentTarget.style.background = 'var(--surface-up)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSelected) {
-                    e.currentTarget.style.borderColor = 'var(--border)'
-                    e.currentTarget.style.background = 'var(--surface)'
-                  }
-                }}
+                className={['doctor-card', isSelected && 'doctor-card-selected']
+                  .filter(Boolean)
+                  .join(' ')}
               >
-                <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    border: '1.5px solid var(--border)',
-                    flexShrink: 0,
-                    position: 'relative',
-                  }}
-                >
+                <div className="doctor-avatar">
                   <Image
                     src={d.image}
                     alt={d.name}
                     fill
-                    sizes="40px"
+                    sizes="44px"
                     style={{ objectFit: 'cover' }}
                   />
                 </div>
                 <div style={{ overflow: 'hidden' }}>
-                  <div
-                    style={{
-                      fontSize: '0.88rem',
-                      fontWeight: 800,
-                      color: 'var(--fg)',
-                      lineHeight: 1.2,
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {d.name}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '0.68rem',
-                      color: 'var(--fg-dim)',
-                      marginTop: '0.15rem',
-                      whiteSpace: 'nowrap',
-                      textOverflow: 'ellipsis',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {d.specialty}
-                  </div>
+                  <div className="doctor-name">{d.name}</div>
+                  <div className="doctor-specialty">{d.specialty}</div>
                 </div>
               </div>
             )
@@ -147,7 +79,7 @@ export function Step0PatientInfo({
         />
       </Field>
 
-      <div className="patient-id-row" style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: '1rem' }}>
         <Field label="رقم الجوال" required>
           <input
             className="input"

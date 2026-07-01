@@ -27,14 +27,12 @@ export function Field({
       <label htmlFor={inputId} className="label">
         {label}
         {required && (
-          <span style={{ color: 'var(--err)', marginRight: '0.2rem', fontSize: '0.8rem' }} aria-hidden>
+          <span className="label-required" aria-hidden>
             *
           </span>
         )}
         {optional && (
-          <span style={{ color: 'var(--fg-dim)', fontWeight: 400, marginRight: '0.35rem', fontSize: '0.78rem' }}>
-            (اختياري)
-          </span>
+          <span className="label-optional">(اختياري)</span>
         )}
       </label>
       {enhanced}

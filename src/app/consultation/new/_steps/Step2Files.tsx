@@ -18,66 +18,33 @@ export function Step2Files({ form, set, loading, onUpload, onSkipToPayment }: Pr
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-        <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--fg)' }}>
+        <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--fg)' }}>
           هل لديك أي ملفات طبية سابقة (أشعة، تحاليل، روشتات)؟
         </h3>
-        <p style={{ fontSize: '0.82rem', color: 'var(--fg-dim)', marginTop: '0.25rem' }}>
+        <p style={{ fontSize: '0.84rem', color: 'var(--fg-dim)', marginTop: '0.35rem', lineHeight: 1.7 }}>
           مشاركة الفحوصات السابقة تساعد الطبيب على تشخيص الحالة بشكل أدق.
         </p>
       </div>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '1rem',
-          marginBottom: '1rem',
-        }}
-      >
+      <div className="option-grid">
         <button
           type="button"
           onClick={() => set('has_previous_tests', 'yes')}
-          style={{
-            padding: '1.25rem 1rem',
-            borderRadius: 'var(--r)',
-            border: `1.8px solid ${form.has_previous_tests === 'yes' ? 'var(--primary)' : 'var(--border)'}`,
-            background: form.has_previous_tests === 'yes' ? 'var(--primary-soft)' : 'var(--surface)',
-            color: form.has_previous_tests === 'yes' ? 'var(--primary)' : 'var(--fg)',
-            fontWeight: 700,
-            cursor: 'pointer',
-            transition: 'all 200ms',
-            textAlign: 'center',
-            boxShadow:
-              form.has_previous_tests === 'yes'
-                ? '0 4px 12px var(--primary-glow)'
-                : 'var(--shadow-sm)',
-          }}
+          className={['option-card', form.has_previous_tests === 'yes' && 'option-card-selected']
+            .filter(Boolean)
+            .join(' ')}
         >
-          <div style={{ fontSize: '1.8rem', marginBottom: '0.35rem' }}>📁</div>
+          <div className="option-card-icon">📁</div>
           نعم، لدي ملفات سابقة
         </button>
         <button
           type="button"
-          onClick={() =>
-            set('has_previous_tests', 'no')
-          }
-          style={{
-            padding: '1.25rem 1rem',
-            borderRadius: 'var(--r)',
-            border: `1.8px solid ${form.has_previous_tests === 'no' ? 'var(--primary)' : 'var(--border)'}`,
-            background: form.has_previous_tests === 'no' ? 'var(--primary-soft)' : 'var(--surface)',
-            color: form.has_previous_tests === 'no' ? 'var(--primary)' : 'var(--fg)',
-            fontWeight: 700,
-            cursor: 'pointer',
-            transition: 'all 200ms',
-            textAlign: 'center',
-            boxShadow:
-              form.has_previous_tests === 'no'
-                ? '0 4px 12px var(--primary-glow)'
-                : 'var(--shadow-sm)',
-          }}
+          onClick={() => set('has_previous_tests', 'no')}
+          className={['option-card', form.has_previous_tests === 'no' && 'option-card-selected']
+            .filter(Boolean)
+            .join(' ')}
         >
-          <div style={{ fontSize: '1.8rem', marginBottom: '0.35rem' }}>❌</div>
+          <div className="option-card-icon">❌</div>
           لا، لا توجد لدي ملفات
         </button>
       </div>
@@ -114,12 +81,12 @@ export function Step2Files({ form, set, loading, onUpload, onSkipToPayment }: Pr
       )}
 
       {form.has_previous_tests === 'yes' && (
-        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+        <div className="booking-actions">
           <button
             type="button"
             className="btn-ghost"
             onClick={onSkipToPayment}
-            style={{ flex: 1, justifyContent: 'center' }}
+            style={{ justifyContent: 'center' }}
           >
             تخطى
           </button>

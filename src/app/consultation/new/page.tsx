@@ -238,43 +238,16 @@ export default function NewConsultation() {
   }
 
   return (
-    <div
-      className="geo-bg"
-      style={{ minHeight: '100vh', padding: '2.5rem 0 4rem', position: 'relative' }}
-    >
-      <div className="container-narrow" style={{ position: 'relative', zIndex: 1 }}>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '2.5rem',
-          }}
-        >
-          <Link
-            href="/"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              color: 'var(--fg-dim)',
-              textDecoration: 'none',
-              fontSize: '0.88rem',
-              fontWeight: 600,
-              transition: 'color 200ms',
-            }}
-          >
-            رجوع →
+    <div className="booking-page">
+      <div className="booking-inner">
+        <div className="booking-header">
+          <Link href="/" className="booking-back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            رجوع
           </Link>
-          <span
-            className="num"
-            style={{
-              fontSize: '0.82rem',
-              color: 'var(--fg-dim)',
-              fontWeight: 500,
-              direction: 'ltr',
-            }}
-          >
+          <span className="booking-step-count num">
             الخطوة {step + 1} من {STEPS.length}
           </span>
         </div>
@@ -282,22 +255,11 @@ export default function NewConsultation() {
         <StepIndicator step={step} />
 
         <div style={{ marginBottom: '1.75rem' }}>
-          <h1
-            style={{
-              fontSize: '1.6rem',
-              fontWeight: 900,
-              letterSpacing: '-0.02em',
-              color: 'var(--fg)',
-            }}
-          >
-            {STEPS[step].label}
-          </h1>
-          <p style={{ fontSize: '0.88rem', color: 'var(--fg-muted)', marginTop: '0.3rem' }}>
-            {STEPS[step].description}
-          </p>
+          <h1 className="booking-step-title">{STEPS[step].label}</h1>
+          <p className="booking-step-desc">{STEPS[step].description}</p>
         </div>
 
-        <div className="card-warm">
+        <div className="booking-card">
           {step === 0 && (
             <Step0PatientInfo
               form={form}
@@ -358,14 +320,14 @@ export default function NewConsultation() {
         </div>
 
         {step > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+          <div className="booking-back-row">
             <button
               type="button"
               className="btn-ghost"
               onClick={() => setStep((s) => s - 1)}
               style={{ fontSize: '0.88rem', padding: '0.7rem 1.5rem' }}
             >
-              السابق →
+              السابق
             </button>
           </div>
         )}
