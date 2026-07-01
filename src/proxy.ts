@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { isDemoMode } from '@/lib/demoMode'
+import { TEST_COOKIE_NAME, TEST_COOKIE_VALUE } from '@/lib/auth'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -15,6 +16,11 @@ export async function proxy(request: NextRequest) {
     (p) => pathname === p || pathname.startsWith(p + '/'),
   )
   if (!isProtected) return NextResponse.next()
+
+  // Static test session — bypass Supabase auth check entirely.
+  if (request.cookies.get(TEST_COOKIE_NAME)?.value === TEST_COOKIE_VALUE) {
+    return NextResponse.next({ request: { headers: request.headers } })
+  }
 
   if (isDemoMode() || !SUPABASE_ANON_KEY) {
     return NextResponse.redirect(new URL(AUTH_PATH, request.url))

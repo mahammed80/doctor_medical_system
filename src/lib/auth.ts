@@ -9,11 +9,50 @@ export type AuthSession = {
 
 const SESSION_KEY = 'doctor_console_session'
 
+// ── Static test credential (testing only — remove or rotate before production) ──
+export const TEST_CREDENTIALS = [
+  { email: 'admin@kbaterjee.clinic', password: 'Test@2026', display_name: 'مدير النظام (تجربة)' },
+] as const
+export const TEST_COOKIE_NAME = 'dashboard_test_session'
+export const TEST_COOKIE_VALUE = 'kbaterjee-admin-2026'
+
+function isTestCredential(email: string, password: string) {
+  return TEST_CREDENTIALS.find(c => c.email === email && c.password === password)
+}
+
+function setTestSessionCookie() {
+  if (typeof document === 'undefined') return
+  const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+  document.cookie = `${TEST_COOKIE_NAME}=${TEST_COOKIE_VALUE}; path=/; max-age=86400; SameSite=Lax${secure}`
+}
+
+function clearTestSessionCookie() {
+  if (typeof document === 'undefined') return
+  document.cookie = `${TEST_COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax`
+}
+
 /**
  * Sign in with email + password via Supabase Auth.
+ * Falls through to a static test credential (see TEST_CREDENTIALS) for
+ * local/dev access without provisioning a Supabase user.
  * Returns the session on success, or a user-facing error message.
  */
 export async function signIn(email: string, password: string): Promise<AuthSession> {
+  const test = isTestCredential(email, password)
+  if (test) {
+    const session: AuthSession = {
+      user_id: `test-${test.email}`,
+      email: test.email,
+      display_name: test.display_name,
+      role: 'admin',
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session))
+      setTestSessionCookie()
+    }
+    return session
+  }
+
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
   if (error || !data.user) {
     throw new Error(error?.message || 'تعذر تسجيل الدخول')
@@ -34,6 +73,7 @@ export async function signIn(email: string, password: string): Promise<AuthSessi
 
 export async function signOut(): Promise<void> {
   await supabase.auth.signOut()
+  clearTestSessionCookie()
   if (typeof window !== 'undefined') {
     localStorage.removeItem(SESSION_KEY)
   }
