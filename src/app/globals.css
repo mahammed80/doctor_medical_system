@@ -819,14 +819,16 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
 .service-ribbon {
   position: absolute;
   top: 1.25rem;
-  insetInlineStart: -2.5rem;
-  transform: rotate(-45deg);
+  inset-inline-start: -2.5rem;
+  transform: rotate(45deg);
   background: var(--accent);
   color: white;
   font-size: 0.62rem;
   font-weight: 800;
   padding: 0.25rem 3rem;
   letter-spacing: 0.06em;
+  white-space: nowrap;
+  z-index: 1;
 }
 .service-meta {
   font-size: 0.72rem;
