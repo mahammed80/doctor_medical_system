@@ -8,6 +8,7 @@ import { getConsultationById, getConsultationFiles, updateConsultation, transiti
 import { getCachedSession, signOut, AuthSession } from '@/lib/auth'
 import { getMessages, sendMessage, subscribeToMessages, markRead, QUICK_REPLY_TEMPLATES } from '@/lib/chatService'
 import { DOCTORS } from '@/lib/doctors'
+import { useToasts } from '@/components/Toaster'
 import {
   ConsultationFile,
   ConsultationMessage,
@@ -36,6 +37,7 @@ function categoryStyle(cat: string | null | undefined) {
 export default function ConsultationDetail() {
   const params = useParams()
   const router = useRouter()
+  const toasts = useToasts()
   const id = params?.id as string
 
   const [session, setSession] = useState<AuthSession | null>(null)
@@ -65,6 +67,10 @@ export default function ConsultationDetail() {
   const [showCancel, setShowCancel] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
 
+  // Rejection
+  const [showReject, setShowReject] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
+
   // Auth guard
   useEffect(() => {
     const cached = getCachedSession()
@@ -72,7 +78,10 @@ export default function ConsultationDetail() {
       router.replace('/dashboard/login')
       return
     }
+    // Initial sync from localStorage — runs once on mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSession(cached)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAuthChecked(true)
   }, [router])
 
@@ -131,7 +140,7 @@ export default function ConsultationDetail() {
 
   async function askForInfo() {
     if (!chatInput.trim()) {
-      alert('اكتب رسالتك للطبيب قبل إرسال طلب المعلومات.')
+      toasts.push('اكتب رسالتك للطبيب قبل إرسال طلب المعلومات.', 'warn')
       return
     }
     if (!consultation) return
@@ -150,16 +159,22 @@ export default function ConsultationDetail() {
   }
 
   async function reject() {
-    const reason = window.prompt('سبب الرفض (اختياري):') || ''
     if (!consultation) return
-    await transitionStatus(consultation.id, 'declined', { cancellation_reason: reason }, '❌ تم رفض طلب الاستشارة.')
+    await transitionStatus(
+      consultation.id,
+      'declined',
+      { cancellation_reason: rejectReason },
+      '❌ تم رفض طلب الاستشارة.',
+    )
     const refreshed = await getConsultationById(consultation.id)
     if (refreshed) setConsultation(refreshed)
+    setShowReject(false)
+    setRejectReason('')
   }
 
   async function cancel() {
     if (!consultation || !cancelReason.trim()) {
-      alert('الرجاء كتابة سبب الإلغاء.')
+      toasts.push('الرجاء كتابة سبب الإلغاء.', 'warn')
       return
     }
     await transitionStatus(consultation.id, 'cancelled', { cancellation_reason: cancelReason }, '🚫 تم إلغاء الاستشارة.')
@@ -175,7 +190,7 @@ export default function ConsultationDetail() {
 
   async function reschedule() {
     if (!reschedDate || !reschedTime) {
-      alert('الرجاء اختيار التاريخ والوقت الجديد.')
+      toasts.push('الرجاء اختيار التاريخ والوقت الجديد.', 'warn')
       return
     }
     if (!consultation) return
@@ -336,7 +351,7 @@ export default function ConsultationDetail() {
               <button onClick={startReview} className="btn-ghost" style={{ fontSize: '0.78rem' }}>🔍 بدء المراجعة</button>
               <button onClick={approve} className="btn-primary" style={{ fontSize: '0.78rem', background: 'var(--ok)', borderColor: 'var(--ok)' }}>✔ قبول وتأكيد</button>
               <button onClick={() => { setChatInput(QUICK_REPLY_TEMPLATES[0]); askForInfo() }} className="btn-ghost" style={{ fontSize: '0.78rem' }}>📨 طلب معلومات</button>
-              <button onClick={reject} className="btn-ghost" style={{ fontSize: '0.78rem', color: 'var(--err)' }}>✘ رفض</button>
+              <button onClick={() => setShowReject(true)} className="btn-ghost" style={{ fontSize: '0.78rem', color: 'var(--err)' }}>✘ رفض</button>
             </>
           )}
           {consultation.status === 'approved' && (
@@ -387,6 +402,23 @@ export default function ConsultationDetail() {
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.85rem' }}>
               <button onClick={cancel} className="btn-primary" style={{ flex: 1, background: 'var(--err)', borderColor: 'var(--err)' }}>تأكيد الإلغاء</button>
               <button onClick={() => setShowCancel(false)} className="btn-ghost" style={{ flex: 1 }}>تراجع</button>
+            </div>
+          </div>
+        )}
+
+        {showReject && (
+          <div className="card-warm" style={{ marginBottom: '1.25rem', padding: '1.25rem', border: '1.5px solid var(--err)' }}>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '0.85rem', color: 'var(--err)' }}>✘ رفض طلب الاستشارة</h3>
+            <textarea
+              className="input"
+              placeholder="سبب الرفض (اختياري، سيظهر للمريض)..."
+              value={rejectReason}
+              onChange={e => setRejectReason(e.target.value)}
+              style={{ minHeight: '70px' }}
+            />
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.85rem' }}>
+              <button onClick={reject} className="btn-primary" style={{ flex: 1, background: 'var(--err)', borderColor: 'var(--err)' }}>تأكيد الرفض</button>
+              <button onClick={() => { setShowReject(false); setRejectReason('') }} className="btn-ghost" style={{ flex: 1 }}>تراجع</button>
             </div>
           </div>
         )}

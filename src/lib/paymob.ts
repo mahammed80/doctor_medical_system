@@ -12,7 +12,6 @@
 const PAYMOB_BASE = (process.env.PAYMOB_BASE_URL || 'https://ksa.paymob.com').replace(/\/+$/, '')
 
 type PaymobAuthResponse = { token: string; profile: unknown }
-type PaymobOrderResponse = { id: number; url: string; token: string }
 type PaymobPaymentLinkResponse = {
   id: number
   url: string

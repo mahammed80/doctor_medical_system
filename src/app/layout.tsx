@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { IBM_Plex_Sans_Arabic, Inter } from 'next/font/google'
 import Link from 'next/link'
 import Image from 'next/image'
+import { ToastProvider } from '@/components/Toaster'
 import './globals.css'
 
 const tajawal = IBM_Plex_Sans_Arabic({
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ar" dir="rtl" className={`${tajawal.variable} ${inter.variable}`}>
       <body>
+        <ToastProvider>
         <div className="top-bar" />
         <div className="grain" />
 
@@ -191,6 +193,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             opacity: 0.5,
           }} />
         </footer>
+        </ToastProvider>
       </body>
     </html>
   )

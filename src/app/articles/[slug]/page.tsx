@@ -1,13 +1,12 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ARTICLES } from '@/lib/articles'
 
 export default function ArticleDetail() {
   const params = useParams()
-  const router = useRouter()
   const slug = params?.slug as string
 
   const article = ARTICLES.find(a => a.slug === slug)

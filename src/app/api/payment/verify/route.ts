@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createHmac } from 'node:crypto'
-import { updateConsultation } from '@/lib/consultationService'
+import { createHmac, timingSafeEqual } from 'node:crypto'
+import { updateConsultationAsService } from '@/lib/server/consultationAdmin'
 
 export const runtime = 'nodejs'
 
@@ -36,14 +36,12 @@ function verifyHmac(params: Record<string, string>, hmacSecret: string): boolean
   const toHash = HMAC_FIELDS.map(k => params[k] ?? '').join('')
   const expected = createHmac('sha512', hmacSecret).update(toHash).digest('hex')
   const received = params.hmac ?? ''
-  return expected.length === received.length && timingSafeEq(expected, received)
-}
-
-function timingSafeEq(a: string, b: string): boolean {
-  if (a.length !== b.length) return false
-  let mismatch = 0
-  for (let i = 0; i < a.length; i++) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i)
-  return mismatch === 0
+  if (expected.length !== received.length) return false
+  try {
+    return timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(received, 'hex'))
+  } catch {
+    return false
+  }
 }
 
 export async function POST(request: Request) {
@@ -76,7 +74,7 @@ export async function POST(request: Request) {
 
   if (success && consultationId) {
     try {
-      await updateConsultation(consultationId, {
+      await updateConsultationAsService(consultationId, {
         status: 'pending_booking',
         payment_id: String(transactionId ?? ''),
       })

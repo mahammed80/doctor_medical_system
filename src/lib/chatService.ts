@@ -1,9 +1,10 @@
 import { supabase, ConsultationMessage, SenderRole, MessageAttachment } from './supabase'
+import { isDemoMode } from './demoMode'
 
 const POLL_INTERVAL_MS = 5000
 
 const isBrowser = typeof window !== 'undefined'
-const isDemo = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')
+const isDemo = isDemoMode()
 
 // ── Demo storage ────────────────────────────────────────────────────────────
 function demoKey(consultationId: string) {

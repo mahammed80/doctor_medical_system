@@ -8,6 +8,7 @@ import { getConsultations, getDoctorSettings, saveDoctorSettings, DoctorSchedule
 import { getCachedSession, signOut, AuthSession } from '@/lib/auth'
 import { DOCTORS } from '@/lib/doctors'
 import { STATUS_CONFIG, type ConsultationStatus } from '@/lib/supabase'
+import { useToasts } from '@/components/Toaster'
 
 // Re-use the shared STATUS_CONFIG from supabase.ts.
 // (We re-declare a non-const variant here so the type widens to include
@@ -24,6 +25,7 @@ const OVERVIEW_STATUSES: ConsultationStatus[] = [
 
 export default function Dashboard() {
   const router = useRouter()
+  const toasts = useToasts()
   const [session, setSession] = useState<AuthSession | null>(null)
   const [authChecked, setAuthChecked] = useState(false)
   const [consultations, setConsultations] = useState<EnhancedConsultation[]>([])
@@ -44,7 +46,10 @@ export default function Dashboard() {
       router.replace('/dashboard/login')
       return
     }
+    // Initial sync from localStorage — runs once on mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSession(cached)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAuthChecked(true)
   }, [router])
 
@@ -729,8 +734,8 @@ export default function Dashboard() {
                   await saveDoctorSettings(docId, scheduleSettings)
                   setSaveSuccess(true)
                   setTimeout(() => setSaveSuccess(false), 4000)
-                } catch (err) {
-                  alert('خطأ أثناء حفظ الإعدادات')
+                } catch {
+                  toasts.push('خطأ أثناء حفظ الإعدادات', 'error')
                 } finally {
                   setSavingSettings(false)
                 }

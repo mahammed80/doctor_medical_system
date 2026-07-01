@@ -1,12 +1,13 @@
 import { supabase, Consultation, ConsultationFile, FileCategory, ConsultationStatus } from './supabase'
 import { DOCTORS } from './doctors'
 import { sendMessage } from './chatService'
+import { isDemoMode } from './demoMode'
 
 // Extended type — same shape as Consultation plus legacy local-only props.
 export type EnhancedConsultation = Consultation
 
 const isBrowser = typeof window !== 'undefined'
-const isDemo = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')
+const isDemo = isDemoMode()
 
 // ── Initial mock data ───────────────────────────────────────────────────────
 const MOCK_CONSULTATIONS: EnhancedConsultation[] = [

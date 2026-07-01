@@ -22,6 +22,8 @@ export default function Success() {
       const docId = params.get('doctor')
       const doc = DOCTORS.find(d => d.id === docId)
       if (doc) {
+        // Initial sync from URL — runs once on mount.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAssignedDoc(doc)
       }
     }
