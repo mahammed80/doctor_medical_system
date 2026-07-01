@@ -158,7 +158,21 @@ export default function BodyMap({ selected, spinalSelected, onChange }: Props) {
           {hotspots.map(h => {
             const isSelected = selected.includes(h.id)
             return (
-              <g key={h.id + view} style={{ cursor: 'pointer' }} onClick={() => toggle(h.id)}>
+              <g
+                key={h.id + view}
+                role="button"
+                tabIndex={0}
+                aria-label={`تحديد منطقة ${PAIN_LOCATION_LABELS_AR[h.id]}`}
+                aria-pressed={isSelected}
+                style={{ cursor: 'pointer', outline: 'none' }}
+                onClick={() => toggle(h.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    toggle(h.id)
+                  }
+                }}
+              >
                 <circle
                   cx={h.x} cy={h.y} r="14"
                   fill={isSelected ? 'var(--err)' : 'var(--primary)'}
@@ -179,7 +193,21 @@ export default function BodyMap({ selected, spinalSelected, onChange }: Props) {
           {view === 'back' && showSpinal && SPINAL_TAPS.map(s => {
             const isSelected = spinalSelected.includes(s.id)
             return (
-              <g key={s.id} style={{ cursor: 'pointer' }} onClick={() => toggleSpinal(s.id)}>
+              <g
+                key={s.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`تحديد ${SPINAL_AREA_LABELS_AR[s.id]}`}
+                aria-pressed={isSelected}
+                style={{ cursor: 'pointer', outline: 'none' }}
+                onClick={() => toggleSpinal(s.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    toggleSpinal(s.id)
+                  }
+                }}
+              >
                 <rect
                   x={s.x - 22} y={s.y - 9} width="44" height="18" rx="9"
                   fill={isSelected ? 'var(--gold)' : 'transparent'}

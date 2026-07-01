@@ -52,11 +52,11 @@ export default function NewConsultation() {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
     const doc = params.get('doctor')
+    // Reading from URL is an external source — sync into state on mount.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (doc) setSelectedDoctorId(doc)
     const urlStep = params.get('step')
     const urlConsultationId = params.get('consultation')
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (urlStep === '4' && urlConsultationId) {
       setStep(4)
       setConsultationId(urlConsultationId)
@@ -73,7 +73,7 @@ export default function NewConsultation() {
 
   useEffect(() => {
     if (step === 3 && consultationId && !checkoutUrl) {
-      // External effect: set loading, then trigger network request that updates state.
+      // Trigger network request; loading flag is set before the request fires.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setPaymentLoading(true)
       fetch('/api/payment', {
@@ -111,7 +111,6 @@ export default function NewConsultation() {
       setSlots([])
       return
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSlotsLoading(true)
     getDoctorSlots(selectedDoctorId, selectedDate)
       .then(setSlots)
@@ -265,7 +264,7 @@ export default function NewConsultation() {
               transition: 'color 200ms',
             }}
           >
-            ← رجوع
+            رجوع →
           </Link>
           <span
             className="num"
@@ -366,7 +365,7 @@ export default function NewConsultation() {
               onClick={() => setStep((s) => s - 1)}
               style={{ fontSize: '0.88rem', padding: '0.7rem 1.5rem' }}
             >
-              → السابق
+              السابق →
             </button>
           </div>
         )}

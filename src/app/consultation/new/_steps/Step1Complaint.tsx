@@ -55,9 +55,9 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
         />
       </Field>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div className="complaint-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
         <Field label="مدة الشكوى (سريعة)" optional>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+          <div className="complaint-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
             {PAIN_DURATIONS.map((opt) => {
               const isSelected = form.pain_duration === opt
               return (
@@ -94,7 +94,7 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
         </Field>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div className="complaint-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
         <Field label="علاجات سابقة" optional>
           <textarea
             className="input"
@@ -162,7 +162,7 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
         </div>
       </Field>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div className="complaint-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
         <Field label="التاريخ المرضي" optional>
           <textarea
             className="input"
@@ -191,6 +191,7 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
           !form.chief_complaint ||
           form.pain_natures.length === 0 ||
           form.pain_locations.length === 0 ||
+          !form.joint_swelling_stiffness ||
           loading
         }
         onClick={onSubmit}

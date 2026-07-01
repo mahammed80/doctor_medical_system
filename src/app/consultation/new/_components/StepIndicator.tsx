@@ -123,7 +123,9 @@ export function StepIndicator({ step }: { step: number }) {
                       ? 'var(--ok)'
                       : 'var(--fg-dim)',
                 fontWeight: i === step ? 700 : i < step ? 600 : 400,
-                whiteSpace: 'nowrap',
+                textAlign: 'center',
+                maxWidth: '90px',
+                lineHeight: 1.3,
                 transition: 'color 400ms',
               }}
             >

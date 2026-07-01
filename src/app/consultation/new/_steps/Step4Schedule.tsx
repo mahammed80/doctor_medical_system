@@ -126,7 +126,7 @@ export function Step4Schedule({
             style={{ padding: '0.4rem 0.85rem', fontSize: '0.82rem' }}
             onClick={() => onChangeMonth(-1)}
           >
-            السابق ◀
+            → السابق
           </button>
           <span
             className="num"
@@ -140,7 +140,7 @@ export function Step4Schedule({
             style={{ padding: '0.4rem 0.85rem', fontSize: '0.82rem' }}
             onClick={() => onChangeMonth(1)}
           >
-            ▶ التالي
+            التالي ←
           </button>
         </div>
 
@@ -202,7 +202,7 @@ export function Step4Schedule({
                   background: isSelected
                     ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-down) 100%)'
                     : disabled
-                      ? 'var(--surface-subtle)'
+                      ? 'var(--surface-up)'
                       : 'var(--bg)',
                   color: isSelected
                     ? 'white'
@@ -345,7 +345,7 @@ export function Step4Schedule({
                     background: isTimeSelected
                       ? 'var(--gold-soft)'
                       : slotDisabled
-                        ? 'var(--surface-subtle)'
+                        ? 'var(--surface-up)'
                         : 'var(--bg)',
                     color: isTimeSelected
                       ? 'var(--gold)'

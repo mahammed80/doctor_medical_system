@@ -62,7 +62,7 @@ export default function ArticleDetail() {
         </div>
 
         {/* Article Container Grid */}
-        <div style={{
+        <div className="article-grid" style={{
           display: 'grid',
           gridTemplateColumns: '2.5fr 1fr',
           gap: '2.5rem',

@@ -49,7 +49,6 @@ export default function Dashboard() {
     // Initial sync from localStorage — runs once on mount.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSession(cached)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAuthChecked(true)
   }, [router])
 
@@ -196,10 +195,16 @@ export default function Dashboard() {
           gap: '1rem',
           marginBottom: '2rem',
         }}>
-          {statusCounts.map(({ status, count, label }, i) => (
+          {statusCounts.map(({ status, count, label }, i) => {
+            const isActive = selectedStatusFilter === status
+            return (
             <div
               key={status}
               className="card-warm"
+              role="button"
+              tabIndex={0}
+              aria-pressed={isActive}
+              aria-label={`تصفية حسب حالة: ${label}`}
               style={{
                 padding: '1.25rem 1.5rem',
                 display: 'flex',
@@ -209,11 +214,25 @@ export default function Dashboard() {
                 position: 'relative',
                 overflow: 'hidden',
                 cursor: 'pointer',
-                transition: 'transform 300ms var(--ease-spring), box-shadow 300ms',
+                transition: 'transform 300ms var(--ease-spring), box-shadow 300ms, border-color 200ms',
+                border: isActive ? '2px solid var(--primary)' : '1px solid var(--border-faint)',
+                outline: 'none',
               }}
-              onClick={() => setSelectedStatusFilter(selectedStatusFilter === status ? 'all' : status)}
+              onClick={() => setSelectedStatusFilter(isActive ? 'all' : status)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  setSelectedStatusFilter(isActive ? 'all' : status)
+                }
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 0 3px var(--primary-soft), var(--shadow-lg)'
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = isActive ? 'var(--shadow-lg)' : 'var(--shadow-warm)'
+              }}
               onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)' }}
-              onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-warm)' }}
+              onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isActive ? 'var(--shadow-lg)' : 'var(--shadow-warm)' }}
             >
               {/* Top accent bar */}
               <div style={{
@@ -267,7 +286,8 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Tab buttons */}

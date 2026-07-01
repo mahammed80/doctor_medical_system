@@ -686,7 +686,7 @@ export default function Home() {
                       style={{
                         position: 'absolute',
                         top: '1.5rem',
-                        left: '-2.75rem',
+                        insetInlineStart: '-2.75rem',
                         transform: 'rotate(-45deg)',
                         background:
                           'linear-gradient(135deg, var(--primary) 0%, var(--primary-down) 100%)',

@@ -97,7 +97,7 @@ export default function PatientConsultationChat() {
       <div style={{ maxWidth: '720px', margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
           <Link href="/" style={{ fontSize: '0.85rem', color: 'var(--fg-dim)', textDecoration: 'none', fontWeight: 600 }}>
-            ← الصفحة الرئيسية
+            الصفحة الرئيسية →
           </Link>
           <span className={statusInfo.badge}>{statusInfo.label}</span>
         </div>

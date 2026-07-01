@@ -27,6 +27,8 @@ export function Step0PatientInfo({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       <Field label="اختر الطبيب الاستشاري" required>
         <div
+          role="radiogroup"
+          aria-label="قائمة الأطباء الاستشاريين"
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
@@ -39,7 +41,16 @@ export function Step0PatientInfo({
             return (
               <div
                 key={d.id}
+                role="radio"
+                aria-checked={isSelected}
+                tabIndex={0}
                 onClick={() => onSelectDoctor(d.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    onSelectDoctor(d.id)
+                  }
+                }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -51,6 +62,17 @@ export function Step0PatientInfo({
                   cursor: 'pointer',
                   transition: 'all 200ms var(--ease-out)',
                   boxShadow: isSelected ? '0 4px 12px var(--primary-glow)' : 'var(--shadow-sm)',
+                  outline: 'none',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--primary)'
+                  e.currentTarget.style.boxShadow = '0 0 0 3px var(--primary-soft)'
+                }}
+                onBlur={(e) => {
+                  if (!isSelected) {
+                    e.currentTarget.style.borderColor = 'var(--border)'
+                  }
+                  e.currentTarget.style.boxShadow = isSelected ? '0 4px 12px var(--primary-glow)' : 'var(--shadow-sm)'
                 }}
                 onMouseEnter={(e) => {
                   if (!isSelected) {
@@ -125,7 +147,7 @@ export function Step0PatientInfo({
         />
       </Field>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: '1rem' }}>
+      <div className="patient-id-row" style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: '1rem' }}>
         <Field label="رقم الجوال" required>
           <input
             className="input"

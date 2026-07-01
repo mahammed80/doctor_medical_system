@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { Children, cloneElement, isValidElement, useId, type ReactNode } from 'react'
 
 export function Field({
   label,
@@ -11,12 +11,23 @@ export function Field({
   required?: boolean
   children: ReactNode
 }) {
+  const reactId = useId()
+  const fieldId = `field-${reactId}`
+
+  const child = Children.only(children) as React.ReactElement<{ id?: string }>
+  const existingId = isValidElement(child) ? child.props.id : undefined
+  const inputId = existingId ?? fieldId
+
+  const enhanced = isValidElement(child)
+    ? cloneElement(child, { id: inputId })
+    : child
+
   return (
     <div className="field">
-      <label className="label">
+      <label htmlFor={inputId} className="label">
         {label}
         {required && (
-          <span style={{ color: 'var(--err)', marginRight: '0.2rem', fontSize: '0.8rem' }}>
+          <span style={{ color: 'var(--err)', marginRight: '0.2rem', fontSize: '0.8rem' }} aria-hidden>
             *
           </span>
         )}
@@ -26,7 +37,7 @@ export function Field({
           </span>
         )}
       </label>
-      {children}
+      {enhanced}
     </div>
   )
 }

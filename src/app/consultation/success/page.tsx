@@ -43,7 +43,7 @@ export default function Success() {
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
         {CONFETTI_DIAMONDS.map((d, i) => (
           <div key={i} style={{
-            position: 'absolute', bottom: '-20px', left: d.left,
+            position: 'absolute', bottom: '-20px', insetInlineStart: d.left,
             width: d.size, height: d.size,
             background: d.color,
             clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',

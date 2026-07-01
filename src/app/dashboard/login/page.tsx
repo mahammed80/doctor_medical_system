@@ -134,7 +134,7 @@ export default function LoginPage() {
 
         <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
           <Link href="/" style={{ fontSize: '0.82rem', color: 'var(--fg-dim)', textDecoration: 'none', fontWeight: 600 }}>
-            ← العودة للصفحة الرئيسية
+            العودة للصفحة الرئيسية →
           </Link>
         </div>
       </div>

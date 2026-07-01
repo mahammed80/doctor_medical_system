@@ -81,7 +81,6 @@ export default function ConsultationDetail() {
     // Initial sync from localStorage — runs once on mount.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSession(cached)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAuthChecked(true)
   }, [router])
 
@@ -423,7 +422,7 @@ export default function ConsultationDetail() {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+        <div className="detail-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
           {/* LEFT column: patient + assessment + files */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {/* Patient + complaint */}

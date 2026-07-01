@@ -123,10 +123,10 @@ const ORB_COLORS = [
 
 export function FloatingOrbs() {
   const orbs = [
-    { size: '400px', top: '10%', right: '-5%', anim: 'floatOrb 18s ease-in-out infinite', color: ORB_COLORS[0], side: 'right' as const },
-    { size: '300px', top: '50%', left: '-8%', anim: 'floatOrb2 22s ease-in-out infinite', color: ORB_COLORS[1], side: 'left' as const },
-    { size: '200px', top: '70%', right: '15%', anim: 'floatOrb 15s ease-in-out infinite reverse', color: ORB_COLORS[2], side: 'right' as const },
-    { size: '500px', top: '-15%', left: '20%', anim: 'floatOrb2 25s ease-in-out infinite', color: ORB_COLORS[0], side: 'left' as const },
+    { size: '400px', top: '10%',   insetInlineEnd: '-5%',  anim: 'floatOrb 18s ease-in-out infinite',            color: ORB_COLORS[0] },
+    { size: '300px', top: '50%',   insetInlineStart: '-8%', anim: 'floatOrb2 22s ease-in-out infinite',           color: ORB_COLORS[1] },
+    { size: '200px', top: '70%',   insetInlineEnd: '15%',  anim: 'floatOrb 15s ease-in-out infinite reverse',   color: ORB_COLORS[2] },
+    { size: '500px', top: '-15%',  insetInlineStart: '20%', anim: 'floatOrb2 25s ease-in-out infinite',           color: ORB_COLORS[0] },
   ]
   return (
     <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
@@ -138,7 +138,8 @@ export function FloatingOrbs() {
             width: orb.size,
             height: orb.size,
             top: orb.top,
-            [orb.side]: orb.side === 'left' ? orb.left : orb.right,
+            insetInlineStart: orb.insetInlineStart,
+            insetInlineEnd: orb.insetInlineEnd,
             borderRadius: '50%',
             background: orb.color,
             animation: orb.anim,
@@ -180,18 +181,18 @@ export function MouseGlow() {
 
 export function DiamondShower() {
   const diamonds = [
-    { left: '8%', size: '6px', delay: '2s', duration: '22s', color: 'var(--primary)' },
-    { left: '22%', size: '10px', delay: '6s', duration: '28s', color: 'var(--gold)' },
-    { left: '38%', size: '5px', delay: '1s', duration: '18s', color: 'var(--ok)' },
-    { left: '52%', size: '8px', delay: '9s', duration: '24s', color: 'var(--primary)' },
-    { left: '68%', size: '12px', delay: '4s', duration: '30s', color: 'var(--gold)' },
-    { left: '82%', size: '7px', delay: '11s', duration: '20s', color: 'var(--ok)' },
-    { left: '15%', size: '9px', delay: '14s', duration: '26s', color: 'var(--gold)' },
-    { left: '45%', size: '11px', delay: '3s', duration: '32s', color: 'var(--primary)' },
-    { left: '75%', size: '5px', delay: '8s', duration: '17s', color: 'var(--ok)' },
-    { left: '90%', size: '14px', delay: '12s', duration: '34s', color: 'var(--primary)' },
-    { left: '60%', size: '7px', delay: '16s', duration: '23s', color: 'var(--gold)' },
-    { left: '35%', size: '9px', delay: '5s', duration: '19s', color: 'var(--ok)' },
+    { x: '8%',  size: '6px',  delay: '2s',  duration: '22s', color: 'var(--primary)' },
+    { x: '22%', size: '10px', delay: '6s',  duration: '28s', color: 'var(--gold)' },
+    { x: '38%', size: '5px',  delay: '1s',  duration: '18s', color: 'var(--ok)' },
+    { x: '52%', size: '8px',  delay: '9s',  duration: '24s', color: 'var(--primary)' },
+    { x: '68%', size: '12px', delay: '4s',  duration: '30s', color: 'var(--gold)' },
+    { x: '82%', size: '7px',  delay: '11s', duration: '20s', color: 'var(--ok)' },
+    { x: '15%', size: '9px',  delay: '14s', duration: '26s', color: 'var(--gold)' },
+    { x: '45%', size: '11px', delay: '3s',  duration: '32s', color: 'var(--primary)' },
+    { x: '75%', size: '5px',  delay: '8s',  duration: '17s', color: 'var(--ok)' },
+    { x: '90%', size: '14px', delay: '12s', duration: '34s', color: 'var(--primary)' },
+    { x: '60%', size: '7px',  delay: '16s', duration: '23s', color: 'var(--gold)' },
+    { x: '35%', size: '9px',  delay: '5s',  duration: '19s', color: 'var(--ok)' },
   ]
 
   return (
@@ -202,7 +203,7 @@ export function DiamondShower() {
           style={{
             position: 'absolute',
             bottom: '-20px',
-            left: d.left,
+            insetInlineStart: d.x,
             width: d.size,
             height: d.size,
             background: d.color,

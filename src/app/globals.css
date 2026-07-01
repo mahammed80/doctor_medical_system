@@ -706,6 +706,34 @@ details summary::-webkit-details-marker {
   }
 }
 
+/* ── Wider responsive coverage ── */
+@media (max-width: 1024px) {
+  .container { padding: 0 1.25rem; }
+}
+@media (max-width: 900px) {
+  .container { padding: 0 1rem; }
+  /* Stack the step-1 form grids */
+  .complaint-grid-2,
+  .complaint-grid-3,
+  .complaint-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+  /* Stack dashboard detail columns */
+  .detail-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+  /* Article page */
+  .article-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+@media (max-width: 480px) {
+  /* Stack patient-name + age row in step 0 */
+  .patient-id-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* ── Top bar ── */
 .top-bar {
   position: fixed;
@@ -715,6 +743,30 @@ details summary::-webkit-details-marker {
   height: 5px;
   background: linear-gradient(90deg, var(--primary) 0%, var(--primary-down) 50%, var(--gold) 100%);
   z-index: 100;
+}
+
+/* ── Keyboard focus indicators ── */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.btn-primary:focus-visible,
+.btn-ghost:focus-visible,
+.btn-gold:focus-visible,
+.btn-danger:focus-visible {
+  outline-offset: 3px;
+}
+.input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+[role="button"]:focus-visible,
+[role="radio"]:focus-visible,
+[role="checkbox"]:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 /* ── Interactive Virtual Consultation Desk styles ── */
