@@ -10,6 +10,7 @@ const AUTH_PATH = '/dashboard/login'
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl
+  if (pathname === AUTH_PATH) return NextResponse.next()
   const isProtected = PROTECTED_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(p + '/'),
   )
