@@ -100,6 +100,12 @@ export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParam
   const token = await getPaymobAuthToken()
   const currency = params.currency || 'SAR'
 
+  // Paymob KSA's payment-links endpoint requires `is_live` to explicitly
+  // indicate whether the request targets the live or test environment.
+  // It is read from `PAYMOB_IS_LIVE` ("true" / "false"). Defaults to false
+  // (test mode) so local development works out of the box.
+  const isLive = String(process.env.PAYMOB_IS_LIVE || '').toLowerCase() === 'true'
+
   // KSA's payment-links endpoint requires `payment_methods` to be a non-null
   // array of integration IDs. We always send a single-element array with the
   // configured card integration ID. We also include `integration_id` (singular)
@@ -110,6 +116,7 @@ export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParam
     currency,
     payment_methods: [Number(integrationId)],
     integration_id: Number(integrationId),
+    is_live: isLive,
     billing_data: params.billingData,
     extras: { consultation_id: params.consultationId },
     redirection_url: params.redirectUrl,
