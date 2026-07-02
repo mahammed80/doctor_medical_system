@@ -215,8 +215,8 @@
 .dashboard-stat-body { display: flex; flex-direction: column; gap: 0.15rem; }
 
 .dashboard-stat-value {
-  font-family: var(--font-display), 'Amiri', serif;
-  font-size: 1.6rem;
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
+  font-size: 1.7rem;
   font-weight: 700;
   color: var(--fg);
   line-height: 1;
@@ -443,7 +443,8 @@
   color: var(--fg-dim);
   direction: ltr;
   text-align: right;
-  font-family: var(--font-latin), 'Cormorant', serif;
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
+  font-weight: 700;
 }
 
 .dashboard-doctor {
@@ -486,11 +487,12 @@
 
 .dashboard-date {
   color: var(--fg-dim);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   white-space: nowrap;
   direction: ltr;
   text-align: right;
-  font-family: var(--font-latin), 'Cormorant', serif;
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
+  font-weight: 700;
 }
 
 .dashboard-action {

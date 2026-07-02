@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Amiri, Noto_Sans_Arabic, Cormorant } from 'next/font/google'
+import { Amiri, Noto_Sans_Arabic, Cormorant, Oswald } from 'next/font/google'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ToastProvider } from '@/components/Toaster'
@@ -23,6 +23,12 @@ const cormorant = Cormorant({
   variable: '--font-latin',
 })
 
+const oswald = Oswald({
+  subsets: ['latin'],
+  weight: ['500', '700'],
+  variable: '--font-numbers',
+})
+
 export const metadata: Metadata = {
   title: 'استشارات د. خالد بترجي',
   description: 'احجز استشارتك الطبية مع د. خالد بترجي بسهولة — أون لاين، آمن، وسريع.',
@@ -30,7 +36,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" className={`${amiri.variable} ${notoSansArabic.variable} ${cormorant.variable}`}>
+    <html lang="ar" dir="rtl" className={`${amiri.variable} ${notoSansArabic.variable} ${cormorant.variable} ${oswald.variable}`}>
       <body>
         <ToastProvider>
           <div className="grain" />

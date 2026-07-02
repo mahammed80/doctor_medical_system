@@ -108,7 +108,13 @@ h1, h2, h3, h4, .display {
   letter-spacing: -0.02em;
 }
 
-.num, :lang(en), [dir="ltr"], input[dir="ltr"], input[type="number"] {
+.num {
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+:lang(en), [dir="ltr"], input[dir="ltr"], input[type="number"] {
   font-family: var(--font-latin), 'Cormorant', var(--font-body), serif;
   font-variant-numeric: tabular-nums;
 }
@@ -599,8 +605,8 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
 }
 .hero-stat { display: flex; flex-direction: column; gap: 0.15rem; }
 .hero-stat-num {
-  font-family: var(--font-display), 'Amiri', serif;
-  font-size: 1.4rem;
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
+  font-size: 1.45rem;
   font-weight: 700;
   color: var(--primary);
 }
@@ -706,8 +712,8 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   animation: scaleIn 0.5s var(--ease-out) both;
 }
 .counter-num {
-  font-family: var(--font-display), 'Amiri', serif;
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
+  font-size: clamp(2.1rem, 4vw, 3.1rem);
   font-weight: 700;
   color: var(--primary);
   line-height: 1;
@@ -752,8 +758,8 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   border-radius: var(--r);
 }
 .mini-stat-num {
-  font-family: var(--font-display), 'Amiri', serif;
-  font-size: 1.3rem;
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--primary);
   margin-bottom: 0.15rem;
@@ -785,9 +791,9 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   background: var(--primary-50);
   border-radius: var(--r-sm);
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--primary);
-  font-family: var(--font-latin), 'Cormorant', serif;
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
 }
 .qualification-title { font-size: 0.95rem; font-weight: 700; color: var(--fg); margin-bottom: 0.15rem; }
 .qualification-inst { font-size: 0.78rem; color: var(--fg-dim); }
@@ -853,8 +859,8 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   justify-content: flex-end;
 }
 .service-price {
-  font-family: var(--font-display), 'Amiri', serif;
-  font-size: 2.6rem;
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
+  font-size: 2.7rem;
   font-weight: 700;
   color: var(--primary);
   line-height: 1;
@@ -930,7 +936,7 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   position: absolute;
   top: 1rem;
   insetInlineStart: 1rem;
-  font-family: var(--font-latin), 'Cormorant', serif;
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
   font-size: 2.6rem;
   font-weight: 700;
   color: var(--border);
@@ -973,7 +979,7 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-latin), 'Cormorant', serif;
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
   font-size: 1rem;
   font-weight: 700;
   margin-bottom: 1.25rem;
@@ -1286,9 +1292,9 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
 .booking-step-count {
   font-size: 0.82rem;
   color: var(--fg-dim);
-  font-weight: 500;
+  font-weight: 700;
   direction: ltr;
-  font-family: var(--font-latin), 'Cormorant', serif;
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
 }
 .booking-step-title {
   font-family: var(--font-display), 'Amiri', serif;
@@ -1354,7 +1360,7 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-latin), 'Cormorant', serif;
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
   font-size: 0.85rem;
   font-weight: 700;
   transition: all 400ms var(--ease-spring);
@@ -1682,9 +1688,9 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   background: var(--bg);
   color: var(--fg);
   cursor: pointer;
-  font-family: var(--font-latin), 'Cormorant', serif;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
   transition: all 200ms;
   position: relative;
 }
@@ -1739,9 +1745,9 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   background: var(--bg);
   color: var(--fg);
   cursor: pointer;
-  font-family: var(--font-latin), 'Cormorant', serif;
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
   text-align: center;
   transition: all 200ms;
 }
@@ -1816,8 +1822,8 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   direction: ltr;
 }
 .price-amount {
-  font-family: var(--font-display), 'Amiri', serif;
-  font-size: 4rem;
+  font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
+  font-size: 4.1rem;
   font-weight: 700;
   color: var(--primary);
   line-height: 0.95;
