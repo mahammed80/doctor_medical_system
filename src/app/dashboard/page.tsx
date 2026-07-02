@@ -1,9 +1,23 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import {
+  Check,
+  X,
+  Search,
+  Inbox,
+  HelpCircle,
+  MessageCircle,
+  Ban,
+  Calendar,
+  CalendarDays,
+  CreditCard,
+  User,
+  Settings,
+} from 'lucide-react'
 import { getConsultations, getDoctorSettings, saveDoctorSettings, DoctorScheduleSettings, EnhancedConsultation } from '@/lib/consultationService'
 import { getCachedSession, signOut, AuthSession } from '@/lib/auth'
 import { DOCTORS } from '@/lib/doctors'
@@ -19,18 +33,18 @@ const OVERVIEW_STATUSES: ConsultationStatus[] = [
   'completed',
 ]
 
-const STATUS_META: Record<ConsultationStatus, { icon: string; color: string; soft: string; border: string }> = {
-  submitted:       { icon: '📥', color: 'var(--accent)',      soft: 'var(--accent-50)',      border: 'var(--border-accent)' },
-  under_review:    { icon: '🔍', color: 'var(--primary)',     soft: 'var(--primary-50)',     border: 'var(--primary-100)' },
-  needs_info:      { icon: '❓', color: 'var(--warn)',        soft: 'var(--warn-soft)',      border: 'rgba(184, 134, 75, 0.25)' },
-  patient_replied: { icon: '💬', color: 'var(--primary-500)', soft: 'rgba(26, 60, 47, 0.08)', border: 'rgba(26, 60, 47, 0.14)' },
-  approved:        { icon: '✅', color: 'var(--ok)',          soft: 'var(--ok-soft)',        border: 'rgba(26, 60, 47, 0.18)' },
-  completed:       { icon: '✔',  color: 'var(--primary)',     soft: 'var(--primary-50)',     border: 'var(--primary-100)' },
-  declined:        { icon: '❌', color: 'var(--err)',         soft: 'var(--err-soft)',       border: 'rgba(165, 62, 62, 0.2)' },
-  cancelled:       { icon: '🚫', color: 'var(--err)',         soft: 'var(--err-soft)',       border: 'rgba(165, 62, 62, 0.2)' },
-  pending_payment: { icon: '💳', color: 'var(--accent)',      soft: 'var(--accent-50)',      border: 'var(--border-accent)' },
-  pending_booking: { icon: '📅', color: 'var(--primary)',     soft: 'var(--primary-50)',     border: 'var(--primary-100)' },
-  booked:          { icon: '✅', color: 'var(--ok)',          soft: 'var(--ok-soft)',        border: 'rgba(26, 60, 47, 0.18)' },
+const STATUS_META: Record<ConsultationStatus, { icon: ReactNode; color: string; soft: string; border: string }> = {
+  submitted:       { icon: <Inbox size={20} />,      color: 'var(--accent)',      soft: 'var(--accent-50)',      border: 'var(--border-accent)' },
+  under_review:    { icon: <Search size={20} />,     color: 'var(--primary)',     soft: 'var(--primary-50)',     border: 'var(--primary-100)' },
+  needs_info:      { icon: <HelpCircle size={20} />, color: 'var(--warn)',        soft: 'var(--warn-soft)',      border: 'rgba(184, 134, 75, 0.25)' },
+  patient_replied: { icon: <MessageCircle size={20} />, color: 'var(--primary-500)', soft: 'rgba(26, 60, 47, 0.08)', border: 'rgba(26, 60, 47, 0.14)' },
+  approved:        { icon: <Check size={20} />,      color: 'var(--ok)',          soft: 'var(--ok-soft)',        border: 'rgba(26, 60, 47, 0.18)' },
+  completed:       { icon: <Check size={20} />,       color: 'var(--primary)',     soft: 'var(--primary-50)',     border: 'var(--primary-100)' },
+  declined:        { icon: <X size={20} />,          color: 'var(--err)',         soft: 'var(--err-soft)',       border: 'rgba(165, 62, 62, 0.2)' },
+  cancelled:       { icon: <Ban size={20} />,        color: 'var(--err)',         soft: 'var(--err-soft)',       border: 'rgba(165, 62, 62, 0.2)' },
+  pending_payment: { icon: <CreditCard size={20} />, color: 'var(--accent)',      soft: 'var(--accent-50)',      border: 'var(--border-accent)' },
+  pending_booking: { icon: <Calendar size={20} />,   color: 'var(--primary)',     soft: 'var(--primary-50)',     border: 'var(--primary-100)' },
+  booked:          { icon: <Check size={20} />,      color: 'var(--ok)',          soft: 'var(--ok-soft)',        border: 'rgba(26, 60, 47, 0.18)' },
 }
 
 const DAYS = [
@@ -167,8 +181,8 @@ export default function Dashboard() {
           </div>
           <div className="dashboard-header-end">
             {session && (
-              <span className="dashboard-pill dashboard-pill-user">
-                👤 {session.display_name || session.email}
+              <span className="dashboard-pill dashboard-pill-user" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <User size={16} /> {session.display_name || session.email}
               </span>
             )}
             <span className="dashboard-pill">
@@ -233,7 +247,7 @@ export default function Dashboard() {
             className={`dashboard-tab ${activeTab === 'requests' ? 'dashboard-tab-active' : ''}`}
             onClick={() => setActiveTab('requests')}
           >
-            📥 طلبات الاستشارات
+            <Inbox size={16} /> طلبات الاستشارات
           </button>
           <button
             role="tab"
@@ -241,7 +255,7 @@ export default function Dashboard() {
             className={`dashboard-tab ${activeTab === 'settings' ? 'dashboard-tab-active' : ''}`}
             onClick={() => setActiveTab('settings')}
           >
-            ⚙ إعدادات العيادة
+            <Settings size={16} /> إعدادات العيادة
           </button>
         </div>
 
@@ -256,7 +270,7 @@ export default function Dashboard() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <span className="dashboard-search-icon">🔍</span>
+                <span className="dashboard-search-icon"><Search size={16} /></span>
               </div>
 
               <div className="dashboard-filter-group">
@@ -385,16 +399,16 @@ export default function Dashboard() {
 
         {activeTab === 'settings' && scheduleSettings && (
           <div className="dashboard-settings">
-            <h2 className="dashboard-settings-title">
-              🗓 ضبط جدول العمل والعيادة
+            <h2 className="dashboard-settings-title" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+              <CalendarDays size={24} /> ضبط جدول العمل والعيادة
               <span style={{ color: 'var(--fg-dim)', fontSize: '0.85rem', fontWeight: 500 }}>
                 ({DOCTORS.find((d) => d.id === (selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter))?.name})
               </span>
             </h2>
 
             {saveSuccess && (
-              <div className="dashboard-success">
-                <span>✓</span>
+              <div className="dashboard-success" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Check size={16} />
                 تم حفظ إعدادات المواعيد وجدول العمل بنجاح!
               </div>
             )}

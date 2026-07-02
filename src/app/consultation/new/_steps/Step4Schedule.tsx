@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { Calendar, Check, Inbox, MapPin } from 'lucide-react'
 import { Spinner } from '../_components/Spinner'
 import { ARABIC_MONTHS, ARABIC_WEEKDAYS } from '../constants'
 import type { DoctorScheduleSettings, TimeSlot } from '@/lib/consultationService'
@@ -62,7 +63,7 @@ export function Step4Schedule({
   return (
     <div>
       <div className="alert alert-success">
-        <div className="alert-icon">✓</div>
+        <div className="alert-icon" style={{ display: 'inline-flex' }}><Check size={16} /></div>
         <div>
           <div className="alert-title">تم استلام الدفع بنجاح</div>
           <div className="alert-text">اختر الوقت المناسب لجلستك مع الدكتور</div>
@@ -157,11 +158,13 @@ export function Step4Schedule({
           </div>
         ) : !selectedDate ? (
           <div className="empty-box">
-            📅 الرجاء اختيار تاريخ من التقويم في الأعلى لعرض الأوقات المتاحة
+            <span style={{ display: 'inline-flex', marginInlineEnd: '0.35rem' }}><Calendar size={16} /></span>
+            الرجاء اختيار تاريخ من التقويم في الأعلى لعرض الأوقات المتاحة
           </div>
         ) : slots.length === 0 ? (
           <div className="empty-box">
-            📭 عذراً، لا توجد فترات عمل متاحة في هذا اليوم
+            <span style={{ display: 'inline-flex', marginInlineEnd: '0.35rem' }}><Inbox size={16} /></span>
+            عذراً، لا توجد فترات عمل متاحة في هذا اليوم
           </div>
         ) : (
           <div className="time-grid">
@@ -196,7 +199,8 @@ export function Step4Schedule({
       {selectedDate && selectedTime && (
         <div className="booking-summary">
           <span>
-            📌 الموعد المختار:{' '}
+            <span style={{ display: 'inline-flex', marginInlineEnd: '0.35rem' }}><MapPin size={16} /></span>
+            الموعد المختار:{' '}
             {new Date(selectedDate).toLocaleDateString('ar-SA-u-nu-latn', {
               weekday: 'long',
               day: 'numeric',

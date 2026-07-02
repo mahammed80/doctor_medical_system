@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
+import { AlertTriangle, Send } from 'lucide-react'
 import { getConsultationById, EnhancedConsultation } from '@/lib/consultationService'
 import { subscribeToMessages, sendMessage, markRead, getMessages } from '@/lib/chatService'
 import { ConsultationMessage, STATUS_CONFIG, ConsultationStatus } from '@/lib/supabase'
@@ -78,8 +79,8 @@ export default function PatientConsultationChat() {
     return (
       <div className="geo-bg" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div className="card-warm" style={{ padding: '2rem 3rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--err)', fontWeight: 700, marginBottom: '1rem' }}>
-            ⚠️ {error || 'الاستشارة غير موجودة'}
+          <p style={{ color: 'var(--err)', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+            <AlertTriangle size={16} /> {error || 'الاستشارة غير موجودة'}
           </p>
           <Link href="/" className="btn-primary">العودة للرئيسية</Link>
         </div>
@@ -127,7 +128,7 @@ export default function PatientConsultationChat() {
               color: 'oklch(40% 0.15 60)',
               fontWeight: 600,
             }}>
-              📨 الطبيب يطلب منك معلومات إضافية. يرجى الرد أدناه.
+              <Send size={14} style={{ verticalAlign: 'middle', marginInlineEnd: '0.35rem' }} /> الطبيب يطلب منك معلومات إضافية. يرجى الرد أدناه.
             </div>
           )}
 

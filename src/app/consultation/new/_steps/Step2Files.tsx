@@ -1,5 +1,6 @@
 'use client'
 
+import { FolderOpen, X } from 'lucide-react'
 import CategoryFileDropZone from '@/components/CategoryFileDropZone'
 import type { FileWithCategory } from '@/components/CategoryFileDropZone'
 import { Field } from '../_components/Field'
@@ -34,7 +35,7 @@ export function Step2Files({ form, set, loading, onUpload, onSkipToPayment }: Pr
             .filter(Boolean)
             .join(' ')}
         >
-          <div className="option-card-icon">📁</div>
+          <div className="option-card-icon" style={{ display: 'inline-flex' }}><FolderOpen size={24} /></div>
           نعم، لدي ملفات سابقة
         </button>
         <button
@@ -44,7 +45,7 @@ export function Step2Files({ form, set, loading, onUpload, onSkipToPayment }: Pr
             .filter(Boolean)
             .join(' ')}
         >
-          <div className="option-card-icon">❌</div>
+          <div className="option-card-icon" style={{ display: 'inline-flex' }}><X size={24} /></div>
           لا، لا توجد لدي ملفات
         </button>
       </div>

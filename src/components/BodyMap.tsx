@@ -1,6 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
+import {
+  ArrowLeftCircle,
+  Bone,
+  Check,
+  Dumbbell,
+  Footprints,
+  Globe,
+  Hand,
+  PersonStanding,
+} from 'lucide-react'
 import {
   PAIN_LOCATIONS,
   PAIN_LOCATION_LABELS_AR,
@@ -76,16 +86,16 @@ const BACK_SPOTS: Spot[] = [
 ]
 
 /** Quick-pick groups used as an alternative to tapping the body. */
-const QUICK_PICKS: Array<{ id: PainLocation; label: string; icon: string; category: 'upper' | 'middle' | 'lower' }> = [
-  { id: 'shoulder',   label: 'الكتف',   icon: '💪', category: 'upper'  },
-  { id: 'elbow',      label: 'الكوع',   icon: '🦾', category: 'upper'  },
-  { id: 'wrist',      label: 'المعصم',  icon: '✋', category: 'upper'  },
-  { id: 'neck',       label: 'الرقبة',  icon: '🧎', category: 'upper'  },
-  { id: 'upper_back', label: 'أعلى الظهر', icon: '🔙', category: 'middle' },
-  { id: 'lower_back', label: 'أسفل الظهر', icon: '🪑', category: 'middle' },
-  { id: 'hip',        label: 'الورك',   icon: '🦴', category: 'middle' },
-  { id: 'knee',       label: 'الركبة',  icon: '🦵', category: 'lower'  },
-  { id: 'ankle',      label: 'الكاحل',  icon: '🦶', category: 'lower'  },
+const QUICK_PICKS: Array<{ id: PainLocation; label: string; icon: ReactNode; category: 'upper' | 'middle' | 'lower' }> = [
+  { id: 'shoulder',   label: 'الكتف',   icon: <Dumbbell size={16} />, category: 'upper'  },
+  { id: 'elbow',      label: 'الكوع',   icon: <Dumbbell size={16} />, category: 'upper'  },
+  { id: 'wrist',      label: 'المعصم',  icon: <Hand size={16} />, category: 'upper'  },
+  { id: 'neck',       label: 'الرقبة',  icon: <PersonStanding size={16} />, category: 'upper'  },
+  { id: 'upper_back', label: 'أعلى الظهر', icon: <ArrowLeftCircle size={16} />, category: 'middle' },
+  { id: 'lower_back', label: 'أسفل الظهر', icon: <Bone size={16} />, category: 'middle' },
+  { id: 'hip',        label: 'الورك',   icon: <Bone size={16} />, category: 'middle' },
+  { id: 'knee',       label: 'الركبة',  icon: <Bone size={16} />, category: 'lower'  },
+  { id: 'ankle',      label: 'الكاحل',  icon: <Footprints size={16} />, category: 'lower'  },
 ]
 
 const SIDE_LABELS: Record<Side, string> = {
@@ -419,16 +429,15 @@ export default function BodyMap({
                   fill="white" pointerEvents="none"
                 />
                 {isSel && (
-                  <text
-                    x={spot.x} y={spot.y + 3.5}
-                    textAnchor="middle"
-                    fontSize="10"
-                    fontWeight="900"
-                    fill="#9B2C2C"
+                  <path
+                    d={`M ${spot.x - 4} ${spot.y} L ${spot.x - 1} ${spot.y + 4} L ${spot.x + 4} ${spot.y - 4}`}
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     pointerEvents="none"
-                  >
-                    ✓
-                  </text>
+                  />
                 )}
               </g>
             )
@@ -504,7 +513,7 @@ export default function BodyMap({
               }}
               aria-hidden
             >
-              {widespread ? '✓' : ''}
+              {widespread ? <Check size={14} /> : null}
             </span>
             <span>ألم منتشر في كامل الجسم</span>
           </span>
@@ -551,7 +560,7 @@ export default function BodyMap({
                 gap: '0.35rem',
               }}
             >
-              <span aria-hidden style={{ fontSize: '1rem' }}>{v === 'front' ? '🧍' : '🚶'}</span>
+              <span aria-hidden style={{ display: 'inline-flex' }}>{v === 'front' ? <PersonStanding size={16} /> : <Footprints size={16} />}</span>
               {v === 'front' ? 'العرض الأمامي' : 'العرض الخلفي'}
             </button>
           ))}
@@ -595,7 +604,7 @@ export default function BodyMap({
               border: '1px solid var(--border-accent)', borderRadius: 9999,
               fontSize: '0.82rem', fontWeight: 700,
             }}>
-              <span aria-hidden>🌐</span> كامل الجسم
+              <span aria-hidden style={{ display: 'inline-flex' }}><Globe size={16} /></span> كامل الجسم
             </div>
           ) : selectedItems.length === 0 ? (
             <p style={{ fontSize: '0.78rem', color: 'var(--fg-dim)', margin: 0, lineHeight: 1.6 }}>
@@ -710,9 +719,9 @@ export default function BodyMap({
                             fontFamily: 'inherit',
                           }}
                         >
-                          <span aria-hidden style={{ fontSize: '0.95rem' }}>{p.icon}</span>
+                          <span aria-hidden style={{ display: 'inline-flex' }}>{p.icon}</span>
                           {p.label}
-                          {isSel && <span style={{ fontSize: '0.7rem' }} aria-hidden>✓</span>}
+                          {isSel && <span style={{ display: 'inline-flex' }} aria-hidden><Check size={16} /></span>}
                         </button>
                       )
                     })}
@@ -735,7 +744,7 @@ export default function BodyMap({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
-              <span aria-hidden style={{ fontSize: '1rem' }}>🦴</span>
+              <span aria-hidden style={{ display: 'inline-flex' }}><Bone size={16} /></span>
               <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#936C40' }}>
                 حدد الفقرات المتأثرة (اختياري)
               </span>

@@ -1,9 +1,25 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, type ReactNode } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
+import {
+  Check,
+  X,
+  AlertTriangle,
+  Search,
+  Send,
+  Ban,
+  Calendar,
+  Brain,
+  ScanLine,
+  Microscope,
+  FlaskConical,
+  ClipboardList,
+  Paperclip,
+  User,
+} from 'lucide-react'
 import { getConsultationById, getConsultationFiles, updateConsultation, transitionStatus, EnhancedConsultation } from '@/lib/consultationService'
 import { getCachedSession, signOut, AuthSession } from '@/lib/auth'
 import { getMessages, sendMessage, subscribeToMessages, markRead, QUICK_REPLY_TEMPLATES } from '@/lib/chatService'
@@ -20,14 +36,14 @@ import {
   type ConsultationStatus,
 } from '@/lib/supabase'
 
-const CATEGORY_COLORS: Record<string, { color: string; bg: string; icon: string }> = {
-  mri:          { color: 'var(--primary)', bg: 'var(--primary-soft)', icon: '🧠' },
-  xray:         { color: 'var(--gold)',     bg: 'var(--gold-soft)',     icon: '🩻' },
-  ct:           { color: 'var(--primary)', bg: 'var(--primary-soft)', icon: '🔬' },
-  lab_report:   { color: 'var(--ok)',       bg: 'var(--ok-soft)',       icon: '🧪' },
-  prescription: { color: 'oklch(40% 0.15 60)', bg: 'oklch(95% 0.05 80)', icon: '📋' },
-  other:        { color: 'var(--fg-dim)',   bg: 'var(--surface)',       icon: '📎' },
-  id_card:      { color: 'var(--primary)', bg: 'var(--primary-soft)', icon: '🪪' },
+const CATEGORY_COLORS: Record<string, { color: string; bg: string; icon: ReactNode }> = {
+  mri:          { color: 'var(--primary)', bg: 'var(--primary-soft)', icon: <Brain size={16} /> },
+  xray:         { color: 'var(--gold)',     bg: 'var(--gold-soft)',     icon: <ScanLine size={16} /> },
+  ct:           { color: 'var(--primary)', bg: 'var(--primary-soft)', icon: <Microscope size={16} /> },
+  lab_report:   { color: 'var(--ok)',       bg: 'var(--ok-soft)',       icon: <FlaskConical size={16} /> },
+  prescription: { color: 'oklch(40% 0.15 60)', bg: 'oklch(95% 0.05 80)', icon: <ClipboardList size={16} /> },
+  other:        { color: 'var(--fg-dim)',   bg: 'var(--surface)',       icon: <Paperclip size={16} /> },
+  id_card:      { color: 'var(--primary)', bg: 'var(--primary-soft)', icon: <User size={16} /> },
 }
 
 function categoryStyle(cat: string | null | undefined) {
@@ -130,11 +146,11 @@ export default function ConsultationDetail() {
   }
 
   async function approve() {
-    await setStatus('approved', '✅ تم قبول الاستشارة وتأكيد الموعد من قبل الطبيب.')
+    await setStatus('approved', 'تم قبول الاستشارة وتأكيد الموعد من قبل الطبيب.')
   }
 
   async function startReview() {
-    await setStatus('under_review', '🔍 بدأ الطبيب مراجعة طلبك.')
+    await setStatus('under_review', 'بدأ الطبيب مراجعة طلبك.')
   }
 
   async function askForInfo() {
@@ -146,7 +162,7 @@ export default function ConsultationDetail() {
     setSendingMessage(true)
     try {
       await sendMessage(consultation.id, chatInput, 'doctor')
-      await transitionStatus(consultation.id, 'needs_info', {}, '📨 طلب الطبيب من المريض معلومات إضافية.')
+      await transitionStatus(consultation.id, 'needs_info', {}, 'طلب الطبيب من المريض معلومات إضافية.')
       setChatInput('')
       const list = await getMessages(consultation.id)
       setMessages(list)
@@ -163,7 +179,7 @@ export default function ConsultationDetail() {
       consultation.id,
       'declined',
       { cancellation_reason: rejectReason },
-      '❌ تم رفض طلب الاستشارة.',
+      'تم رفض طلب الاستشارة.',
     )
     const refreshed = await getConsultationById(consultation.id)
     if (refreshed) setConsultation(refreshed)
@@ -176,7 +192,7 @@ export default function ConsultationDetail() {
       toasts.push('الرجاء كتابة سبب الإلغاء.', 'warn')
       return
     }
-    await transitionStatus(consultation.id, 'cancelled', { cancellation_reason: cancelReason }, '🚫 تم إلغاء الاستشارة.')
+    await transitionStatus(consultation.id, 'cancelled', { cancellation_reason: cancelReason }, 'تم إلغاء الاستشارة.')
     const refreshed = await getConsultationById(consultation.id)
     if (refreshed) setConsultation(refreshed)
     setShowCancel(false)
@@ -184,7 +200,7 @@ export default function ConsultationDetail() {
   }
 
   async function startConsultation() {
-    await setStatus('completed', '✔ تم إجراء الاستشارة وإغلاقها.')
+    await setStatus('completed', 'تم إجراء الاستشارة وإغلاقها.')
   }
 
   async function reschedule() {
@@ -201,7 +217,7 @@ export default function ConsultationDetail() {
       consultation.id,
       'submitted',
       {},
-      `📅 تم إعادة جدولة الموعد إلى ${reschedDate} الساعة ${reschedTime}.`
+      `تم إعادة جدولة الموعد إلى ${reschedDate} الساعة ${reschedTime}.`
     )
     const refreshed = await getConsultationById(consultation.id)
     if (refreshed) setConsultation(refreshed)
@@ -261,7 +277,9 @@ export default function ConsultationDetail() {
       <div className="geo-bg" style={{ minHeight: '100vh', padding: '3rem 0' }}>
         <div className="container" style={{ textAlign: 'center', paddingTop: '8rem' }}>
           <div className="card-warm" style={{ maxWidth: '450px', margin: '0 auto', padding: '3rem' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+              <AlertTriangle size={32} />
+            </div>
             <h2 style={{ fontSize: '1.2rem', fontWeight: 900, marginBottom: '0.5rem' }}>{error || 'الاستشارة غير موجودة'}</h2>
             <Link href="/dashboard" className="btn-primary" style={{ fontSize: '0.9rem' }}>العودة للوحة التحكم</Link>
           </div>
@@ -347,19 +365,19 @@ export default function ConsultationDetail() {
         <div className="card-warm" style={{ marginBottom: '1.25rem', padding: '1rem 1.25rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
           {canActOnReview && (
             <>
-              <button onClick={startReview} className="btn-ghost" style={{ fontSize: '0.78rem' }}>🔍 بدء المراجعة</button>
-              <button onClick={approve} className="btn-primary" style={{ fontSize: '0.78rem', background: 'var(--ok)', borderColor: 'var(--ok)' }}>✔ قبول وتأكيد</button>
-              <button onClick={() => { setChatInput(QUICK_REPLY_TEMPLATES[0]); askForInfo() }} className="btn-ghost" style={{ fontSize: '0.78rem' }}>📨 طلب معلومات</button>
-              <button onClick={() => setShowReject(true)} className="btn-ghost" style={{ fontSize: '0.78rem', color: 'var(--err)' }}>✘ رفض</button>
+              <button onClick={startReview} className="btn-ghost" style={{ fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><Search size={16} /> بدء المراجعة</button>
+              <button onClick={approve} className="btn-primary" style={{ fontSize: '0.78rem', background: 'var(--ok)', borderColor: 'var(--ok)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><Check size={16} /> قبول وتأكيد</button>
+              <button onClick={() => { setChatInput(QUICK_REPLY_TEMPLATES[0]); askForInfo() }} className="btn-ghost" style={{ fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><Send size={16} /> طلب معلومات</button>
+              <button onClick={() => setShowReject(true)} className="btn-ghost" style={{ fontSize: '0.78rem', color: 'var(--err)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><X size={16} /> رفض</button>
             </>
           )}
           {consultation.status === 'approved' && (
-            <button onClick={startConsultation} className="btn-primary" style={{ fontSize: '0.78rem' }}>▶ بدء الاستشارة وإغلاقها</button>
+            <button onClick={startConsultation} className="btn-primary" style={{ fontSize: '0.78rem' }}>بدء الاستشارة وإغلاقها</button>
           )}
           {!isClosed && consultation.status !== 'pending_payment' && consultation.status !== 'pending_booking' && (
             <>
-              <button onClick={() => setShowReschedule(true)} className="btn-ghost" style={{ fontSize: '0.78rem' }}>📅 إعادة جدولة</button>
-              <button onClick={() => setShowCancel(true)} className="btn-ghost" style={{ fontSize: '0.78rem', color: 'var(--err)' }}>🚫 إلغاء</button>
+              <button onClick={() => setShowReschedule(true)} className="btn-ghost" style={{ fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><Calendar size={16} /> إعادة جدولة</button>
+              <button onClick={() => setShowCancel(true)} className="btn-ghost" style={{ fontSize: '0.78rem', color: 'var(--err)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><Ban size={16} /> إلغاء</button>
             </>
           )}
           <a
@@ -376,7 +394,7 @@ export default function ConsultationDetail() {
         {/* Reschedule modal-ish */}
         {showReschedule && (
           <div className="card-warm" style={{ marginBottom: '1.25rem', padding: '1.25rem', border: '1.5px solid var(--primary)' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '0.85rem' }}>📅 إعادة جدولة الموعد</h3>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><Calendar size={16} /> إعادة جدولة الموعد</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
               <input type="date" className="input" value={reschedDate} onChange={e => setReschedDate(e.target.value)} />
               <input type="time" className="input" value={reschedTime} onChange={e => setReschedTime(e.target.value)} />
@@ -390,7 +408,7 @@ export default function ConsultationDetail() {
 
         {showCancel && (
           <div className="card-warm" style={{ marginBottom: '1.25rem', padding: '1.25rem', border: '1.5px solid var(--err)' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '0.85rem', color: 'var(--err)' }}>🚫 إلغاء الاستشارة</h3>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '0.85rem', color: 'var(--err)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><Ban size={16} /> إلغاء الاستشارة</h3>
             <textarea
               className="input"
               placeholder="سبب الإلغاء (سيظهر للمريض)..."
@@ -407,7 +425,7 @@ export default function ConsultationDetail() {
 
         {showReject && (
           <div className="card-warm" style={{ marginBottom: '1.25rem', padding: '1.25rem', border: '1.5px solid var(--err)' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '0.85rem', color: 'var(--err)' }}>✘ رفض طلب الاستشارة</h3>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '0.85rem', color: 'var(--err)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><X size={16} /> رفض طلب الاستشارة</h3>
             <textarea
               className="input"
               placeholder="سبب الرفض (اختياري، سيظهر للمريض)..."
@@ -634,7 +652,7 @@ export default function ConsultationDetail() {
                     style={{ fontSize: '0.78rem', padding: '0.5rem 0.75rem' }}
                     title="إرسال الرسالة وتغيير الحالة إلى 'يحتاج معلومات'"
                   >
-                    📨 اطلب معلومات
+                    <Send size={16} /> اطلب معلومات
                   </button>
                 </div>
                 {/* Quick reply templates */}
@@ -673,7 +691,7 @@ export default function ConsultationDetail() {
                     {savingNotes ? 'جاري الحفظ...' : 'حفظ الملاحظات'}
                   </button>
                   {notesSavedAt && (
-                    <span style={{ fontSize: '0.72rem', color: 'var(--ok)', fontWeight: 600 }}>✓ تم الحفظ {notesSavedAt}</span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--ok)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><Check size={16} /> تم الحفظ {notesSavedAt}</span>
                   )}
                 </div>
               </div>

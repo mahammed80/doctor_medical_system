@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Search } from 'lucide-react'
 import { ARTICLES } from '@/lib/articles'
 
 export default function ArticleDetail() {
@@ -15,7 +16,7 @@ export default function ArticleDetail() {
     return (
       <main className="geo-bg" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
         <div className="card-warm" style={{ maxWidth: '480px', width: '100%', textAlign: 'center', padding: '3rem 2rem' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
+          <div style={{ marginBottom: '1rem' }}><Search size={48} /></div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--fg)', marginBottom: '0.75rem' }}>المقال غير موجود</h2>
           <p style={{ fontSize: '0.9rem', color: 'var(--fg-dim)', lineHeight: 1.6, marginBottom: '2rem' }}>
             عذراً، المقال الذي تبحث عنه غير متوفر حالياً أو قد تم نقله.

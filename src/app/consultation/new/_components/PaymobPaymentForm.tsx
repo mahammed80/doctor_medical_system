@@ -1,3 +1,5 @@
+import { Lock } from 'lucide-react'
+
 export function PaymobPaymentForm({
   checkoutUrl,
   price,
@@ -28,7 +30,8 @@ export function PaymobPaymentForm({
           lineHeight: 1.7,
         }}
       >
-        🔒 الدفع مشفر وآمن عبر Paymob — اضغط الزر أعلاه لإكمال سداد رسوم الاستشارة ({price} ر.س).
+        <span style={{ display: 'inline-flex', marginInlineEnd: '0.35rem' }}><Lock size={14} /></span>
+        الدفع مشفر وآمن عبر Paymob — اضغط الزر أعلاه لإكمال سداد رسوم الاستشارة ({price} ر.س).
         سيتم تحويلك إلى بوابة Paymob الآمنة، ثم تعود تلقائياً إلى هنا بعد إتمام الدفع.
       </p>
     </div>

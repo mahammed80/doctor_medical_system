@@ -1,5 +1,6 @@
 'use client'
 
+import { Pointer } from 'lucide-react'
 import BodyMap from '@/components/BodyMap'
 import PainSeveritySlider from '@/components/PainSeveritySlider'
 import PainNatureChips from '@/components/PainNatureChips'
@@ -73,7 +74,7 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
               padding: '0 0.25rem',
             }}
           >
-            <span aria-hidden style={{ fontSize: '1rem' }}>👆</span>
+            <span aria-hidden style={{ display: 'inline-flex' }}><Pointer size={16} /></span>
             انقر على المنطقة في الجسم أو اختر من القائمة السريعة. للجانب الأيمن والأيسر، انقر على النقطة المناسبة.
           </div>
           <BodyMap

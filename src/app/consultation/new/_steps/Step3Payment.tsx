@@ -1,5 +1,6 @@
 'use client'
 
+import { AlertCircle, Check } from 'lucide-react'
 import { PaymobPaymentForm } from '../_components/PaymobPaymentForm'
 import { Spinner } from '../_components/Spinner'
 
@@ -42,7 +43,7 @@ export function Step3Payment({ price, paymentLoading, checkoutUrl, consultationI
         <PaymobPaymentForm checkoutUrl={checkoutUrl} price={price} />
       ) : (
         <div className="alert alert-error">
-          <div className="alert-icon">!</div>
+          <div className="alert-icon" style={{ display: 'inline-flex' }}><AlertCircle size={16} /></div>
           <div>
             <div className="alert-title">تعذر الاتصال ببوابة الدفع</div>
             <div className="alert-text">يرجى إعادة تحميل الصفحة أو المحاولة لاحقاً.</div>
@@ -51,7 +52,7 @@ export function Step3Payment({ price, paymentLoading, checkoutUrl, consultationI
       )}
 
       <div className="payment-seal">
-        <div className="payment-seal-icon">✓</div>
+        <div className="payment-seal-icon" style={{ display: 'inline-flex' }}><Check size={14} /></div>
         <span className="payment-seal-text">الدفع مشفر وآمن 256-bit SSL</span>
         <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--border)', display: 'inline-block' }} />
         <span className="payment-seal-text">مدعوم من Paymob</span>

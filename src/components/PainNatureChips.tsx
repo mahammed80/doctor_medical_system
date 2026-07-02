@@ -1,5 +1,7 @@
 'use client'
 
+import { type ReactNode } from 'react'
+import { ArrowUpRight, Check, CircleDot, Flame, Sword, Timer, Waves, Zap } from 'lucide-react'
 import { PAIN_NATURES, PAIN_NATURE_LABELS_AR, type PainNature } from '@/lib/supabase'
 
 type Props = {
@@ -7,14 +9,14 @@ type Props = {
   onChange: (next: string[]) => void
 }
 
-const ICON: Record<PainNature, string> = {
-  sharp:        '⚡',
-  dull:         '◐',
-  burning:      '🔥',
-  stabbing:     '🗡',
-  continuous:   '⏱',
-  intermittent: '〰',
-  radiating:    '↗',
+const ICON: Record<PainNature, ReactNode> = {
+  sharp:        <Zap size={16} />,
+  dull:         <CircleDot size={16} />,
+  burning:      <Flame size={16} />,
+  stabbing:     <Sword size={16} />,
+  continuous:   <Timer size={16} />,
+  intermittent: <Waves size={16} />,
+  radiating:    <ArrowUpRight size={16} />,
 }
 
 export default function PainNatureChips({ selected, onChange }: Props) {
@@ -47,9 +49,9 @@ export default function PainNatureChips({ selected, onChange }: Props) {
               transition: 'all 150ms',
             }}
           >
-            <span style={{ fontSize: '0.9rem' }}>{ICON[id]}</span>
+            <span style={{ display: 'inline-flex' }}>{ICON[id]}</span>
             {PAIN_NATURE_LABELS_AR[id]}
-            {isSelected && <span style={{ fontSize: '0.9rem' }}>✓</span>}
+            {isSelected && <span style={{ display: 'inline-flex' }}><Check size={16} /></span>}
           </button>
         )
       })}

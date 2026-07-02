@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { AlertTriangle, FileText, Paperclip } from 'lucide-react'
 import { FILE_CATEGORIES, FILE_CATEGORY_LABELS_AR, type FileCategory } from '@/lib/supabase'
 
 const MAX_FILES = 10
@@ -125,7 +126,7 @@ export default function CategoryFileDropZone({ files, onChange }: Props) {
           style={{ display: 'none' }}
           accept="image/*,application/pdf"
         />
-        <div style={{ fontSize: '2rem', marginBottom: '0.4rem' }}>📎</div>
+        <div style={{ display: 'inline-flex', marginBottom: '0.4rem' }}><Paperclip size={32} /></div>
         <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--fg)' }}>
           اسحب الملفات هنا أو انقر للاختيار
         </div>
@@ -144,7 +145,8 @@ export default function CategoryFileDropZone({ files, onChange }: Props) {
           fontSize: '0.78rem',
           fontWeight: 700,
         }}>
-          ⚠️ {error}
+          <span style={{ display: 'inline-flex', marginInlineEnd: '0.35rem' }}><AlertTriangle size={16} /></span>
+          {error}
         </div>
       )}
 
@@ -184,7 +186,7 @@ export default function CategoryFileDropZone({ files, onChange }: Props) {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={f.previewUrl} alt={f.file.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  f.file.name.split('.').pop()?.toUpperCase().slice(0, 4) || '📄'
+                  <span style={{ display: 'inline-flex' }}><FileText size={16} /></span>
                 )}
               </div>
 

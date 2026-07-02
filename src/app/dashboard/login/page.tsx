@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signIn, getCachedSession } from '@/lib/auth'
+import { Stethoscope, AlertTriangle } from 'lucide-react'
 import '../dashboard.css'
 
 export default function LoginPage() {
@@ -40,7 +41,7 @@ export default function LoginPage() {
   return (
     <div className="dashboard-login-page">
       <div className="dashboard-login-card">
-        <div className="dashboard-login-logo">🩺</div>
+        <div className="dashboard-login-logo"><Stethoscope size={32} /></div>
         <h1 className="dashboard-login-title">لوحة تحكم الطبيب</h1>
         <p className="dashboard-login-subtitle">سجّل دخولك للوصول إلى الاستشارات وإدارة المواعيد</p>
 
@@ -70,8 +71,8 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="dashboard-login-error">
-              <span>⚠</span>
+            <div className="dashboard-login-error" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <AlertTriangle size={16} />
               {error}
             </div>
           )}

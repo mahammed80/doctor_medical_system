@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { Sparkles } from 'lucide-react'
 import { JOINTS_DATA, type JointKey } from '@/content/landing'
 
 const SLOTS = ['16:30', '18:00', '19:30'] as const
@@ -97,7 +98,7 @@ export function VirtualConsultationDesk() {
               fontSize: '0.78rem',
             }}
           >
-            <span style={{ fontSize: '1.2rem' }}>{JOINTS_DATA[key].icon}</span>
+            {JOINTS_DATA[key].icon}
             <span>{JOINTS_DATA[key].name}</span>
           </button>
         ))}
@@ -179,16 +180,14 @@ export function VirtualConsultationDesk() {
                   lineHeight: 1.35,
                 }}
               >
-                <span
+                <Sparkles
+                  size={14}
                   style={{
                     color: 'var(--primary-down)',
-                    fontSize: '0.85rem',
                     flexShrink: 0,
                     marginTop: '-2px',
                   }}
-                >
-                  ✦
-                </span>
+                />
                 <span>{sym}</span>
               </div>
             ))}

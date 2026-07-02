@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Bone, Dumbbell, Footprints } from 'lucide-react'
 
 export const STATS = [
   { num: '35+', label: 'سنة من الخبرة', desc: 'في جراحة العظام والمفاصل' },
@@ -134,7 +135,7 @@ export type JointKey = 'knee' | 'spine' | 'shoulder' | 'hip'
 
 export const JOINTS_DATA: Record<JointKey, {
   name: string
-  icon: string
+  icon: ReactNode
   diagnosis: string
   mriPath: string
   metrics: { wear: string; stability: string }
@@ -144,7 +145,7 @@ export const JOINTS_DATA: Record<JointKey, {
 }> = {
   knee: {
     name: 'الركبة',
-    icon: '🦵',
+    icon: <Bone size={24} />,
     diagnosis: 'تآكل غضاريف الركبة والصليبي',
     mriPath: 'M 25,20 C 35,20 40,30 40,45 C 40,55 35,65 25,65 M 75,20 C 65,20 60,30 60,45 C 60,55 65,65 75,65 M 50,15 L 50,35 Q 50,45 42,48 T 50,85',
     metrics: { wear: '65%', stability: 'تقييم مطلوب' },
@@ -154,7 +155,7 @@ export const JOINTS_DATA: Record<JointKey, {
   },
   spine: {
     name: 'الظهر',
-    icon: '🦴',
+    icon: <Bone size={24} />,
     diagnosis: 'تقييم ديسك الفقرات والضغط العصبي',
     mriPath: 'M 50,10 L 50,90 M 42,25 L 58,25 M 40,42 L 60,42 M 38,60 L 62,60 M 40,78 L 60,78',
     metrics: { wear: '20%', stability: 'مستقر نسبياً' },
@@ -164,7 +165,7 @@ export const JOINTS_DATA: Record<JointKey, {
   },
   shoulder: {
     name: 'الكتف',
-    icon: '💪',
+    icon: <Dumbbell size={24} />,
     diagnosis: 'التهاب الأوتار والخلع المتكرر',
     mriPath: 'M 20,40 C 30,25 50,15 70,25 C 75,30 80,45 75,60 C 60,55 40,55 20,40 Z M 72,25 C 60,30 55,42 62,50',
     metrics: { wear: '40%', stability: 'تحديد حركي' },
@@ -174,7 +175,7 @@ export const JOINTS_DATA: Record<JointKey, {
   },
   hip: {
     name: 'الحوض',
-    icon: '🚶',
+    icon: <Footprints size={24} />,
     diagnosis: 'خشونة مفصل الورك وتآكل الغضروف',
     mriPath: 'M 30,30 Q 50,20 70,30 L 65,70 Q 50,85 35,70 Z M 38,38 C 45,35 48,45 42,52',
     metrics: { wear: '75%', stability: 'تآكل متقدم' },

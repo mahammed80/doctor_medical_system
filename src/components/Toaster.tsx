@@ -10,6 +10,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { AlertTriangle, Check, Info, X } from 'lucide-react'
 
 export type ToastVariant = 'info' | 'success' | 'error' | 'warn'
 
@@ -27,11 +28,11 @@ type ToastContextValue = {
 
 const ToastContext = createContext<ToastContextValue | null>(null)
 
-const VARIANT_STYLES: Record<ToastVariant, { bg: string; border: string; color: string; icon: string }> = {
-  info:    { bg: 'var(--surface)',     border: 'var(--primary)',  color: 'var(--primary)',  icon: 'ℹ' },
-  success: { bg: 'var(--ok-soft)',     border: 'var(--ok)',       color: 'var(--ok)',       icon: '✓' },
-  error:   { bg: 'var(--err-soft)',    border: 'var(--err)',      color: 'var(--err)',      icon: '✕' },
-  warn:    { bg: 'var(--gold-soft)',   border: 'var(--gold)',     color: 'var(--gold)',     icon: '!' },
+const VARIANT_STYLES: Record<ToastVariant, { bg: string; border: string; color: string; icon: ReactNode }> = {
+  info:    { bg: 'var(--surface)',     border: 'var(--primary)',  color: 'var(--primary)',  icon: <Info size={14} /> },
+  success: { bg: 'var(--ok-soft)',     border: 'var(--ok)',       color: 'var(--ok)',       icon: <Check size={14} /> },
+  error:   { bg: 'var(--err-soft)',    border: 'var(--err)',      color: 'var(--err)',      icon: <X size={14} /> },
+  warn:    { bg: 'var(--gold-soft)',   border: 'var(--gold)',     color: 'var(--gold)',     icon: <AlertTriangle size={14} /> },
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
