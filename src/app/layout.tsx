@@ -86,9 +86,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </Link>
 
               <nav style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Link href="/dashboard" className="btn-ghost btn-sm" style={{ height: 40, padding: '0 1rem' }}>
-                  لوحة التحكم
-                </Link>
                 <Link href="/consultation/new" className="btn-primary btn-sm">
                   ابدأ الاستشارة
                 </Link>
@@ -179,10 +176,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   color: 'var(--fg-dim)', textDecoration: 'none', fontSize: '0.82rem',
                   transition: 'color 200ms',
                 }}>حجز استشارة</Link>
-                <Link href="/dashboard" style={{
-                  color: 'var(--fg-dim)', textDecoration: 'none', fontSize: '0.82rem',
-                  transition: 'color 200ms',
-                }}>لوحة التحكم</Link>
               </div>
 
               <div style={{
