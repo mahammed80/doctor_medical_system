@@ -149,6 +149,9 @@ export type Consultation = {
   completed_at?: string | null
   rescheduled_from?: string | null
 
+  // Google Calendar event ID (for two-way sync)
+  google_calendar_event_id?: string | null
+
   created_at: string
 }
 

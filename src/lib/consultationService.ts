@@ -399,6 +399,10 @@ export type DoctorScheduleSettings = {
   slotDuration: number
   lunchStart: string
   lunchEnd: string
+  googleCalendar?: {
+    connected: boolean
+    email?: string | null
+  }
 }
 
 const DEFAULT_SETTINGS: DoctorScheduleSettings = {
@@ -490,6 +494,7 @@ export async function getDoctorSlots(doctorId: string, dateStr: string): Promise
     slots.push({ time: minutesToTime(m), available: true, status: 'available' })
   }
 
+  // Mark slots occupied by existing consultations
   const consultations = await getConsultations()
   const dayConsultations = consultations.filter(c =>
     (c.doctor_id || 'khalid') === doctorId &&
@@ -505,6 +510,39 @@ export async function getDoctorSlots(doctorId: string, dateStr: string): Promise
       slot.consultationId = match.id
     }
   })
+
+  // Merge Google Calendar busy times — hide slots that conflict
+  if (settings.googleCalendar?.connected && isBrowser) {
+    try {
+      const res = await fetch(
+        `/api/calendar/freebusy?doctorId=${encodeURIComponent(doctorId)}&date=${encodeURIComponent(dateStr)}`,
+      )
+      if (res.ok) {
+        const data = await res.json() as { busy?: { start: string; end: string }[] }
+        const busyRanges = data.busy || []
+        for (const range of busyRanges) {
+          const busyStart = new Date(range.start)
+          const busyEnd = new Date(range.end)
+          const busyStartMin = busyStart.getHours() * 60 + busyStart.getMinutes()
+          const busyEndMin = busyEnd.getHours() * 60 + busyEnd.getMinutes()
+
+          slots.forEach(slot => {
+            const slotStartMin = timeToMinutes(slot.time)
+            const slotEndMin = slotStartMin + duration
+            // If the slot overlaps with a busy range, mark it unavailable
+            if (slotStartMin < busyEndMin && slotEndMin > busyStartMin) {
+              slot.available = false
+              if (slot.status === 'available') {
+                slot.status = 'booked'
+              }
+            }
+          })
+        }
+      }
+    } catch {
+      // Fail gracefully — don't block slot rendering if Google Calendar is unreachable
+    }
+  }
 
   return slots
 }

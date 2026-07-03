@@ -196,6 +196,17 @@ export default function ConsultationDetail() {
       return
     }
     await transitionStatus(consultation.id, 'cancelled', { cancellation_reason: cancelReason }, 'تم إلغاء الاستشارة.')
+    // Delete Google Calendar event if one exists
+    if (consultation.google_calendar_event_id) {
+      try {
+        await fetch('/api/calendar/event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', doctorId: consultation.doctor_id || 'khalid', consultationId: consultation.id, eventId: consultation.google_calendar_event_id, consultation: {} }),
+        })
+        await updateConsultation(consultation.id, { google_calendar_event_id: null })
+      } catch { /* best-effort */ }
+    }
     const refreshed = await getConsultationById(consultation.id)
     if (refreshed) setConsultation(refreshed)
     setShowCancel(false)
@@ -222,6 +233,30 @@ export default function ConsultationDetail() {
       {},
       `تم إعادة جدولة الموعد إلى ${reschedDate} الساعة ${reschedTime}.`,
     )
+    // Update Google Calendar event if one exists
+    if (consultation.google_calendar_event_id) {
+      try {
+        const doctor = DOCTORS.find((d) => d.id === consultation.doctor_id) || DOCTORS[0]
+        await fetch('/api/calendar/event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'update',
+            doctorId: consultation.doctor_id || 'khalid',
+            consultationId: consultation.id,
+            eventId: consultation.google_calendar_event_id,
+            consultation: {
+              patientName: consultation.patient_name,
+              patientPhone: consultation.patient_phone,
+              chiefComplaint: consultation.chief_complaint,
+              date: reschedDate,
+              time: reschedTime,
+              doctorName: doctor.name,
+            },
+          }),
+        })
+      } catch { /* best-effort */ }
+    }
     const refreshed = await getConsultationById(consultation.id)
     if (refreshed) setConsultation(refreshed)
     setShowReschedule(false)

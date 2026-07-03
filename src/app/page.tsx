@@ -5,61 +5,61 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ARTICLES } from '@/lib/articles'
 
-/* ΓöÇΓöÇ DATA ΓöÇΓöÇ */
+/* ── DATA ── */
 
 const stats = [
-  { num: '35+', label: '╪│┘å╪⌐ ┘à┘å ╪º┘ä╪«╪¿╪▒╪⌐', desc: '┘ü┘è ╪¼╪▒╪º╪¡╪⌐ ╪º┘ä╪╣╪╕╪º┘à ┘ê╪º┘ä┘à┘ü╪º╪╡┘ä' },
-  { num: '100%', label: '╪º╪│╪¬╪┤╪º╪▒╪⌐ ╪ú┘ê┘å ┘ä╪º┘è┘å', desc: '┘à╪▒╪ª┘è╪⌐╪î ╪ó┘à┘å╪⌐ ┘ê┘à╪▒┘è╪¡╪⌐' },
-  { num: '1,500+', label: '┘à╪▒┘è╪╢ ╪¬┘à ╪╣┘ä╪º╪¼┘ç┘à', desc: '╪¿┘å╪│╪¿╪⌐ ╪▒╪╢╪º ╪¬┘ü┘ê┘é 98%' },
+  { num: '35+', label: 'سنة من الخبرة', desc: 'في جراحة العظام والمفاصل' },
+  { num: '100%', label: 'استشارة أون لاين', desc: 'مرئية، آمنة ومريحة' },
+  { num: '1,500+', label: 'مريض تم علاجهم', desc: 'بنسبة رضا تفوق 98%' },
 ]
 
 const steps = [
-  { step: '01', title: '╪º╪¡╪¼╪▓ ╪º┘ä╪º╪│╪¬╪┤╪º╪▒╪⌐', desc: '╪º╪«╪¬╪▒ ╪º┘ä╪¿╪º┘é╪⌐ ╪º┘ä╪╖╪¿┘è╪⌐ ╪º┘ä┘à┘å╪º╪│╪¿╪⌐ ┘ä╪¡╪º┘ä╪¬┘â ┘ä╪¿╪»╪í ╪¡╪¼╪▓ ┘à┘ê╪╣╪»┘â' },
-  { step: '02', title: '╪│╪¼┘æ┘ä ╪¿┘è╪º┘å╪º╪¬┘â ╪º┘ä╪╖╪¿┘è╪⌐', desc: '╪º┘à┘ä╪ú ┘à╪╣┘ä┘ê┘à╪º╪¬┘â ╪º┘ä╪┤╪«╪╡┘è╪⌐ ┘ê╪º╪▒┘ü╪╣ ╪º┘ä╪ú╪┤╪╣╪⌐ ┘ê╪º┘ä╪¬╪¡╪º┘ä┘è┘ä ┘ü┘è ╪»┘é╪º╪ª┘é' },
-  { step: '03', title: '╪│╪»╪» ╪º┘ä╪▒╪│┘ê┘à ╪¿╪ú┘à╪º┘å', desc: '╪º╪»┘ü╪╣ ╪╣╪¿╪▒ ╪¿┘ê╪º╪¿╪º╪¬ ╪º┘ä╪»┘ü╪╣ ╪º┘ä╪Ñ┘ä┘â╪¬╪▒┘ê┘å┘è ╪º┘ä┘à╪╣╪¬┘à╪»╪⌐ ┘ê╪º┘ä╪│╪▒┘è╪╣╪⌐' },
-  { step: '04', title: '╪º╪¡╪¼╪▓ ┘à┘ê╪╣╪»┘â ┘ê╪¬┘ê╪º╪╡┘ä', desc: '╪º╪«╪¬╪▒ ╪º┘ä┘à┘ê╪╣╪» ╪º┘ä┘à┘å╪º╪│╪¿ ┘ä╪¼┘ä╪│╪¬┘â ╪º┘ä┘à╪▒╪ª┘è╪⌐ ╪º┘ä┘à╪¿╪º╪┤╪▒╪⌐ ┘à╪╣ ╪º┘ä╪╖╪¿┘è╪¿' },
+  { step: '01', title: 'احجز الاستشارة', desc: 'اختر الباقة الطبية المناسبة لحالتك لبدء حجز موعدك' },
+  { step: '02', title: 'سجّل بياناتك الطبية', desc: 'املأ معلوماتك الشخصية وارفع الأشعة والتحاليل في دقائق' },
+  { step: '03', title: 'سدد الرسوم بأمان', desc: 'ادفع عبر بوابات الدفع الإلكتروني المعتمدة والسريعة' },
+  { step: '04', title: 'احجز موعدك وتواصل', desc: 'اختر الموعد المناسب لجلستك المرئية المباشرة مع الطبيب' },
 ]
 
 const services = [
   {
-    title: '╪º┘ä┘â╪┤┘ü ╪º┘ä╪ú╪│╪º╪│┘è',
+    title: 'الكشف الأساسي',
     price: '899',
-    period: '╪▒┘è╪º┘ä',
-    desc: '╪¼┘ä╪│╪⌐ ╪º╪│╪¬╪┤╪º╪▒┘è╪⌐ ╪┤╪º┘à┘ä╪⌐ ┘ä┘à╪»╪⌐ 30 ╪»┘é┘è┘é╪⌐ ┘à╪╣ ╪º┘ä╪╖╪¿┘è╪¿ ┘ä╪¬┘é┘è┘è┘à ╪¡╪º┘ä╪¬┘â ┘ê╪¬╪┤╪«┘è╪╡┘ç╪º ╪¿╪»┘é╪⌐.',
+    period: 'ريال',
+    desc: 'جلسة استشارية شاملة لمدة 30 دقيقة مع الطبيب لتقييم حالتك وتشخيصها بدقة.',
     features: [
-      '┘â╪┤┘ü┘è╪⌐ ╪ú╪│╪º╪│┘è╪⌐ ┘à╪╣ ╪º┘ä╪º╪│╪¬╪┤╪º╪▒┘è',
-      '╪╣╪▒╪╢ ┘ê╪¬╪¡┘ä┘è┘ä ╪º┘ä╪ú╪┤╪╣╪⌐ ┘ê╪º┘ä╪¬╪¡╪º┘ä┘è┘ä',
-      '╪¬╪┤╪«┘è╪╡ ╪╖╪¿┘è ╪»┘é┘è┘é ┘ä┘ä╪¡╪º┘ä╪⌐',
-      '┘à╪»╪⌐ ╪º┘ä╪¼┘ä╪│╪⌐: 30 ╪»┘é┘è┘é╪⌐',
-      '┘à╪¬╪º╪¿╪╣╪⌐ ┘à╪¼╪º┘å┘è╪⌐ ┘ä┘à╪»╪⌐ 10 ╪ú┘è╪º┘à',
+      'كشفية أساسية مع الاستشاري',
+      'عرض وتحليل الأشعة والتحاليل',
+      'تشخيص طبي دقيق للحالة',
+      'مدة الجلسة: 30 دقيقة',
+      'متابعة مجانية لمدة 10 أيام',
     ],
     popular: false,
   },
   {
-    title: '╪º┘ä┘â╪┤┘ü ╪º┘ä╪┤╪º┘à┘ä ┘ê╪º┘ä╪«╪╖╪⌐ ╪º┘ä╪╣┘ä╪º╪¼┘è╪⌐',
+    title: 'الكشف الشامل والخطة العلاجية',
     price: '1,700',
-    period: '╪▒┘è╪º┘ä',
-    desc: '╪º╪│╪¬╪┤╪º╪▒╪⌐ ┘à┘ê╪│╪╣╪⌐ ┘à╪╣ ╪Ñ╪╣╪»╪º╪» ╪¿╪▒┘å╪º┘à╪¼ ╪╣┘ä╪º╪¼┘è ┘à╪¬┘â╪º┘à┘ä ┘ê╪¬┘é┘è┘è┘à ╪º┘ä╪¡╪º╪¼╪⌐ ┘ä┘ä╪¼╪▒╪º╪¡╪⌐.',
+    period: 'ريال',
+    desc: 'استشارة موسعة مع إعداد برنامج علاجي متكامل وتقييم الحاجة للجراحة.',
     features: [
-      '┘â┘ä ┘à╪º ┘ü┘è ╪º┘ä╪¿╪º┘é╪⌐ ╪º┘ä╪ú╪│╪º╪│┘è╪⌐',
-      '╪Ñ╪╣╪»╪º╪» ╪¿╪▒┘å╪º┘à╪¼ ╪╣┘ä╪º╪¼┘è ┘à╪¬┘â╪º┘à┘ä',
-      '╪¬┘é┘è┘è┘à ╪º┘ä╪¡╪º╪¼╪⌐ ┘ä┘ä╪¼╪▒╪º╪¡╪⌐',
-      '┘à┘å╪º┘é╪┤╪⌐ ╪º┘ä╪«┘è╪º╪▒╪º╪¬ ╪º┘ä╪¿╪»┘è┘ä╪⌐ ┘ê╪º┘ä╪¼╪▒╪º╪¡┘è╪⌐',
-      '┘à╪¬╪º╪¿╪╣╪⌐ ╪ú┘ê┘ä┘ë ┘à╪¼╪º┘å┘è╪⌐ ╪¿╪╣╪» ╪º┘ä╪╣┘à┘ä┘è╪⌐',
+      'كل ما في الباقة الأساسية',
+      'إعداد برنامج علاجي متكامل',
+      'تقييم الحاجة للجراحة',
+      'مناقشة الخيارات البديلة والجراحية',
+      'متابعة أولى مجانية بعد العملية',
     ],
     popular: true,
   },
   {
-    title: '╪¿╪º┘é╪º╪¬ ╪º┘ä┘à╪¬╪º╪¿╪╣╪⌐ ╪º┘ä┘à╪¬╪╣╪»╪»╪⌐',
+    title: 'باقات المتابعة المتعددة',
     price: '2,500',
-    period: '╪▒┘è╪º┘ä',
-    desc: '╪¼┘ä╪│╪º╪¬ ┘à╪¬╪╣╪»╪»╪⌐ ╪¿╪│╪╣╪▒ ┘à╪«┘ü┘æ╪╢ ┘ä┘ä┘à╪▒╪╢┘ë ╪º┘ä┘à╪¡╪¬╪º╪¼┘è┘å ┘ä┘à╪¬╪º╪¿╪╣╪⌐ ┘à╪│╪¬┘à╪▒╪⌐ ╪¿╪╣╪» ╪º┘ä╪╣┘à┘ä┘è╪º╪¬.',
+    period: 'ريال',
+    desc: 'جلسات متعددة بسعر مخفّض للمرضى المحتاجين لمتابعة مستمرة بعد العمليات.',
     features: [
-      '╪¿╪º┘é╪⌐ 3 ╪¼┘ä╪│╪º╪¬ ΓÇö ╪¿┘é┘è┘à╪⌐ 2,500 ╪▒┘è╪º┘ä',
-      '╪¿╪º┘é╪⌐ 4 ╪¼┘ä╪│╪º╪¬ ΓÇö ╪¿┘é┘è┘à╪⌐ 3,400 ╪▒┘è╪º┘ä',
-      '╪¬┘ê┘ü┘è╪▒ ┘è╪╡┘ä ╪Ñ┘ä┘ë 200 ╪▒┘è╪º┘ä',
-      '┘à╪¬╪º╪¿╪╣╪⌐ ┘à╪º ╪¿╪╣╪» ╪º┘ä╪¼╪▒╪º╪¡╪⌐ ┘ê╪Ñ╪╡╪º╪¿╪º╪¬ ╪º┘ä┘à┘ä╪º╪╣╪¿',
-      '┘à╪▒┘ê┘å╪⌐ ╪╣╪º┘ä┘è╪⌐ ┘ü┘è ╪¡╪¼╪▓ ╪º┘ä┘à┘ê╪º╪╣┘è╪»',
+      'باقة 3 جلسات — بقيمة 2,500 ريال',
+      'باقة 4 جلسات — بقيمة 3,400 ريال',
+      'توفير يصل إلى 200 ريال',
+      'متابعة ما بعد الجراحة وإصابات الملاعب',
+      'مرونة عالية في حجز المواعيد',
     ],
     popular: false,
   },
@@ -68,60 +68,60 @@ const services = [
 const features = [
   {
     icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>,
-    title: '┘å╪«╪¿╪⌐ ┘à┘å ╪º┘ä╪º╪│╪¬╪┤╪º╪▒┘è┘è┘å',
-    desc: '╪¼┘à┘è╪╣ ╪ú╪╖╪¿╪º╪ª┘å╪º ┘è╪¡┘à┘ä┘ê┘å ╪»╪▒╪¼╪º╪¬ ╪º┘ä╪¿┘ê╪▒╪» ┘ê╪º┘ä╪▓┘à╪º┘ä╪º╪¬ ╪º┘ä┘â┘å╪»┘è╪⌐ ┘ê╪º┘ä╪¿╪▒┘è╪╖╪º┘å┘è╪⌐ ┘à╪╣ ╪«╪¿╪▒╪⌐ ╪╖┘ê┘è┘ä╪⌐.',
+    title: 'نخبة من الاستشاريين',
+    desc: 'جميع أطبائنا يحملون درجات البورد والزمالات الكندية والبريطانية مع خبرة طويلة.',
   },
   {
     icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
-    title: '╪«╪╡┘ê╪╡┘è╪⌐ ╪¬╪º┘à╪⌐ ┘ä┘ä┘à┘ä┘ü╪º╪¬',
-    desc: '╪¬╪┤┘ü┘è╪▒ ┘â╪º┘à┘ä ┘ä┘à┘ä┘ü╪º╪¬┘â ┘ê╪ú╪┤╪╣╪º╪¬┘â ╪º┘ä╪╖╪¿┘è╪⌐ ┘ê┘ü┘é╪º┘ï ┘ä╪ú╪╣┘ä┘ë ┘à╪╣╪º┘è┘è╪▒ ╪º┘ä╪ú┘à┘å ╪º┘ä╪│┘è╪¿╪▒╪º┘å┘è ╪º┘ä╪╖╪¿┘è╪⌐.',
+    title: 'خصوصية تامة للملفات',
+    desc: 'تشفير كامل لملفاتك وأشعاتك الطبية وفقاً لأعلى معايير الأمن السيبراني الطبية.',
   },
   {
     icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>,
-    title: '╪¼╪»┘ê┘ä╪⌐ ┘à┘ê╪º╪╣┘è╪» ┘ü┘ê╪▒┘è╪⌐',
-    desc: '╪º╪«╪¬╪▒ ┘ê┘é╪¬┘â ╪º┘ä┘à┘å╪º╪│╪¿ ┘à╪¿╪º╪┤╪▒╪⌐ ┘à┘å ╪¼╪»┘ê┘ä ╪º┘ä╪╖╪¿┘è╪¿ ╪º┘ä┘à╪¬╪º╪¡ ╪»┘ê┘å ┘ü╪¬╪▒╪º╪¬ ╪º┘å╪¬╪╕╪º╪▒.',
+    title: 'جدولة مواعيد فورية',
+    desc: 'اختر وقتك المناسب مباشرة من جدول الطبيب المتاح دون فترات انتظار.',
   },
   {
     icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><line x1="8" y1="7" x2="16" y2="7" /><line x1="8" y1="11" x2="14" y2="11" /></svg>,
-    title: '╪»╪╣┘à ╪¼┘à┘è╪╣ ╪º┘ä╪╡┘è╪║ ╪º┘ä╪╖╪¿┘è╪⌐',
-    desc: '╪º╪▒┘ü╪╣ ╪¬┘é╪º╪▒┘è╪▒┘â ┘ê╪ú╪┤╪╣╪º╪¬┘â ╪¿╪│┘ç┘ê┘ä╪⌐ ┘ü╪º╪ª┘é╪⌐ ╪¿┘à╪«╪¬┘ä┘ü ╪º┘ä╪╡┘è╪║ ╪º┘ä╪╖╪¿┘è╪⌐ ╪¿┘à╪º ┘ü┘è┘ç╪º ┘à┘ä┘ü╪º╪¬ DICOM.',
+    title: 'دعم جميع الصيغ الطبية',
+    desc: 'ارفع تقاريرك وأشعاتك بسهولة فائقة بمختلف الصيغ الطبية بما فيها ملفات DICOM.',
   },
   {
     icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6" /><path d="M10 22h4" /><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" /></svg>,
-    title: '╪¬┘ê╪╡┘è┘ä ╪º┘ä┘ê╪╡┘ü╪⌐ ┘ä┘ä┘à┘å╪▓┘ä',
-    desc: '┘å┘ê┘ü╪▒ ╪«╪»┘à╪⌐ ╪Ñ╪▒╪│╪º┘ä ┘ê╪╡┘ü╪¬┘â ╪º┘ä╪╖╪¿┘è╪⌐ ╪º┘ä┘à╪╣╪¬┘à╪»╪⌐ ╪▒┘é┘à┘è╪º┘ï ┘ê╪¬┘ê╪╡┘è┘ä ╪º┘ä╪ú╪»┘ê┘è╪⌐ ┘à╪¿╪º╪┤╪▒╪⌐ ┘ä╪¿╪º╪¿ ╪¿┘è╪¬┘â.',
+    title: 'توصيل الوصفة للمنزل',
+    desc: 'نوفر خدمة إرسال وصفتك الطبية المعتمدة رقمياً وتوصيل الأدوية مباشرة لباب بيتك.',
   },
   {
     icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>,
-    title: '╪¿┘ê╪º╪¿╪⌐ ╪»┘ü╪╣ ╪ó┘à┘å╪⌐ ┘ê┘à╪╣╪¬┘à╪»╪⌐',
-    desc: '╪«┘è╪º╪▒╪º╪¬ ╪»┘ü╪╣ ╪│╪╣┘ê╪»┘è╪⌐ ┘à┘ê╪½┘ê┘é╪⌐ ╪¬╪»╪╣┘à ╪¿╪╖╪º┘é╪º╪¬ ┘à╪»┘ë╪î ┘ü┘è╪▓╪º╪î ┘à╪º╪│╪¬╪▒┘â╪º╪▒╪»╪î ┘ê╪ú╪¿┘ä ╪¿╪º┘è.',
+    title: 'بوابة دفع آمنة ومعتمدة',
+    desc: 'خيارات دفع سعودية موثوقة تدعم بطاقات مدى، فيزا، ماستركارد، وأبل باي.',
   },
 ]
 
 const faqs = [
-  { q: '┘â┘è┘ü ┘è┘à┘â┘å┘å┘è ╪¡╪¼╪▓ ╪º╪│╪¬╪┤╪º╪▒╪⌐ ┘ü┘è ┘à╪▒┘â╪▓ ╪¿╪¬╪▒╪¼┘è╪ƒ', a: '╪º┘ä╪╣┘à┘ä┘è╪⌐ ╪¿╪│┘è╪╖╪⌐ ┘ä┘ä╪║╪º┘è╪⌐ ┘ê╪¬╪│╪¬╪║╪▒┘é ╪ú┘é┘ä ┘à┘å 5 ╪»┘é╪º╪ª┘é: ╪º╪«╪¬╪▒ ╪º┘ä╪¬╪«╪╡╪╡ ┘ê╪º┘ä╪╖╪¿┘è╪¿ ╪º┘ä┘à┘å╪º╪│╪¿ ┘ä╪¡╪º┘ä╪¬┘â╪î ╪º┘à┘ä╪ú ╪¿┘è╪º┘å╪º╪¬┘â ╪º┘ä╪╖╪¿┘è╪⌐ ┘ê╪ú╪▒┘ü┘é ╪º┘ä╪ú╪┤╪╣╪⌐ ╪Ñ┘å ┘ê╪¼╪»╪¬╪î ┘é┘à ╪¿╪│╪»╪º╪» ╪▒╪│┘ê┘à ╪º┘ä╪º╪│╪¬╪┤╪º╪▒╪⌐ ╪¿╪ú┘à╪º┘å╪î ╪½┘à ╪º╪«╪¬╪▒ ╪º┘ä┘à┘ê╪╣╪» ╪º┘ä┘à┘å╪º╪│╪¿ ┘ä┘â ┘à┘å ╪¼╪»┘ê┘ä ╪º┘ä╪╖╪¿┘è╪¿ ╪º┘ä┘à╪¿╪º╪┤╪▒ ┘ä╪¬┘ä┘é┘è ╪▒╪º╪¿╪╖ ╪º┘ä╪¼┘ä╪│╪⌐ ╪º┘ä┘à╪▒╪ª┘è╪⌐.' },
-  { q: '┘à╪º ┘ç┘è ╪¬┘â┘ä┘ü╪⌐ ╪º┘ä╪º╪│╪¬╪┤╪º╪▒╪⌐ ╪º┘ä╪╖╪¿┘è╪⌐╪ƒ', a: '╪¬╪«╪¬┘ä┘ü ╪º┘ä╪¬┘â┘ä┘ü╪⌐ ╪¡╪│╪¿ ┘à╪│╪¬┘ê┘ë ╪º┘ä┘â╪┤┘ü ╪º┘ä┘à╪«╪¬╪º╪▒: ╪º┘ä┘â╪┤┘ü ╪º┘ä╪ú╪│╪º╪│┘è ╪¿┘é┘è┘à╪⌐ 899 ╪▒┘è╪º┘ä╪î ╪º┘ä┘â╪┤┘ü ╪º┘ä╪┤╪º┘à┘ä ┘ê╪Ñ╪╣╪»╪º╪» ╪º┘ä╪«╪╖╪⌐ ╪º┘ä╪╣┘ä╪º╪¼┘è╪⌐ ╪¿┘é┘è┘à╪⌐ 1,700 ╪▒┘è╪º┘ä╪î ┘â┘à╪º ╪¬╪¬┘ê┘ü╪▒ ╪¿╪º┘é╪º╪¬ ┘ä┘ä┘à╪¬╪º╪¿╪╣╪º╪¬ ╪º┘ä┘à╪¬╪╣╪»╪»╪⌐ ╪¬╪¿╪»╪ú ┘à┘å 2,500 ╪▒┘è╪º┘ä ┘ä┘Ç 3 ╪¼┘ä╪│╪º╪¬.' },
-  { q: '┘ç┘ä ┘è┘à┘â┘å┘å┘è ┘à╪▒╪º╪¼╪╣╪⌐ ╪º┘ä╪╖╪¿┘è╪¿ ┘à╪¼╪º┘å╪º┘ï ╪¿╪╣╪» ╪º┘ä╪¼┘ä╪│╪⌐╪ƒ', a: '┘å╪╣┘à╪î ╪¬╪┤┘à┘ä ╪¼┘à┘è╪╣ ╪º┘ä╪º╪│╪¬╪┤╪º╪▒╪º╪¬ ╪º┘ä╪╖╪¿┘è╪⌐ ┘â┘ü╪¬╪▒╪⌐ ┘à╪▒╪º╪¼╪╣╪⌐ (┘à╪¬╪º╪¿╪╣╪⌐ ┘à╪¼╪º┘å┘è╪⌐) ╪╡╪º┘ä╪¡╪⌐ ┘ä┘à╪»╪⌐ 10 ╪ú┘è╪º┘à ┘à┘å ╪¬╪º╪▒┘è╪« ╪º┘ä╪¼┘ä╪│╪⌐ ╪º┘ä╪ú╪│╪º╪│┘è╪⌐ ┘ä┘à┘å╪º┘é╪┤╪⌐ ┘å╪¬╪º╪ª╪¼ ╪º┘ä╪¬╪¡╪º┘ä┘è┘ä ╪ú┘ê ╪¬╪¡╪»┘è╪½ ╪«╪╖╪⌐ ╪º┘ä╪╣┘ä╪º╪¼.' },
-  { q: '┘ç┘ä ╪«╪»┘à╪⌐ ╪¬┘ê╪╡┘è┘ä ╪º┘ä╪ú╪»┘ê┘è╪⌐ ┘à╪¬╪º╪¡╪⌐ ┘ä╪¼┘à┘è╪╣ ╪º┘ä┘à╪▒╪╢┘ë╪ƒ', a: '┘å╪╣┘à╪î ╪¿╪╣╪» ╪º╪│╪¬╪┤╪º╪▒╪¬┘â ┘à╪╣ ╪º┘ä╪╖╪¿┘è╪¿╪î ╪Ñ╪░╪º ┘é╪▒╪▒ ┘ä┘â ┘ê╪╡┘ü╪⌐ ╪╣┘ä╪º╪¼┘è╪⌐╪î ┘è╪¬┘à ╪Ñ╪▒╪│╪º┘ä┘ç╪º ┘ä┘â ╪Ñ┘ä┘â╪¬╪▒┘ê┘å┘è╪º┘ï╪î ┘ê┘å┘ê┘ü╪▒ ╪«┘è╪º╪▒ ╪¬┘ê╪╡┘è┘ä ╪º┘ä╪ú╪»┘ê┘è╪⌐ ┘ä╪¿╪º╪¿ ┘à┘å╪▓┘ä┘â ╪¿╪º┘ä╪¬╪╣╪º┘ê┘å ┘à╪╣ ┘â╪¿╪▒┘ë ╪º┘ä╪╡┘è╪»┘ä┘è╪º╪¬ ╪º┘ä┘à╪╣╪¬┘à╪»╪⌐.' },
-  { q: '┘â┘è┘ü ╪ú╪▒┘ü╪╣ ╪º┘ä┘ü╪¡┘ê╪╡╪º╪¬ ┘ê╪╡┘ê╪▒ ╪º┘ä╪ú╪┤╪╣╪⌐ ╪º┘ä╪«╪º╪╡╪⌐ ╪¿┘è╪ƒ', a: '╪ú╪½┘å╪º╪í ╪¬╪╣╪¿╪ª╪⌐ ┘å┘à┘ê╪░╪¼ ╪º┘ä╪º╪│╪¬╪┤╪º╪▒╪⌐╪î ╪│╪¬╪¼╪» ┘à┘å╪╖┘é╪⌐ ┘à╪«╪╡╪╡╪⌐ ┘ä╪▒┘ü╪╣ ╪º┘ä┘à┘ä┘ü╪º╪¬╪î ╪¡┘è╪½ ┘è┘à┘â┘å┘â ╪│╪¡╪¿ ┘ê╪Ñ┘ü┘ä╪º╪¬ ╪º┘ä╪¬┘é╪º╪▒┘è╪▒ ╪º┘ä╪╖╪¿┘è╪⌐ ┘ê╪╡┘ê╪▒ ╪º┘ä╪ú╪┤╪╣╪⌐. ┘è╪»╪╣┘à ┘å╪╕╪º┘à┘å╪º ╪¼┘à┘è╪╣ ╪º┘ä╪╡┘è╪║ ╪º┘ä┘à╪╣╪¬┘à╪»╪⌐ ┘à╪½┘ä PDF ┘êJPG ┘êPNG ╪¿╪º┘ä╪Ñ╪╢╪º┘ü╪⌐ ┘ä╪╡┘è╪║╪⌐ DICOM ┘ä┘ä╪ú╪┤╪╣╪º╪¬ ╪º┘ä┘à╪¬╪«╪╡╪╡╪⌐.' },
+  { q: 'كيف يمكنني حجز استشارة في مركز بترجي؟', a: 'العملية بسيطة للغاية وتستغرق أقل من 5 دقائق: اختر التخصص والطبيب المناسب لحالتك، املأ بياناتك الطبية وأرفق الأشعة إن وجدت، قم بسداد رسوم الاستشارة بأمان، ثم اختر الموعد المناسب لك من جدول الطبيب المباشر لتلقي رابط الجلسة المرئية.' },
+  { q: 'ما هي تكلفة الاستشارة الطبية؟', a: 'تختلف التكلفة حسب مستوى الكشف المختار: الكشف الأساسي بقيمة 899 ريال، الكشف الشامل وإعداد الخطة العلاجية بقيمة 1,700 ريال، كما تتوفر باقات للمتابعات المتعددة تبدأ من 2,500 ريال لـ 3 جلسات.' },
+  { q: 'هل يمكنني مراجعة الطبيب مجاناً بعد الجلسة؟', a: 'نعم، تشمل جميع الاستشارات الطبية كفترة مراجعة (متابعة مجانية) صالحة لمدة 10 أيام من تاريخ الجلسة الأساسية لمناقشة نتائج التحاليل أو تحديث خطة العلاج.' },
+  { q: 'هل خدمة توصيل الأدوية متاحة لجميع المرضى؟', a: 'نعم، بعد استشارتك مع الطبيب، إذا قرر لك وصفة علاجية، يتم إرسالها لك إلكترونياً، ونوفر خيار توصيل الأدوية لباب منزلك بالتعاون مع كبرى الصيدليات المعتمدة.' },
+  { q: 'كيف أرفع الفحوصات وصور الأشعة الخاصة بي؟', a: 'أثناء تعبئة نموذج الاستشارة، ستجد منطقة مخصصة لرفع الملفات، حيث يمكنك سحب وإفلات التقارير الطبية وصور الأشعة. يدعم نظامنا جميع الصيغ المعتمدة مثل PDF وJPG وPNG بالإضافة لصيغة DICOM للأشعات المتخصصة.' },
 ]
 
 const testimonials = [
-  { text: '╪º┘ä┘à╪▒┘â╪▓ ┘è┘é╪»┘à ╪▒╪╣╪º┘è╪⌐ ┘à┘à╪¬╪º╪▓╪⌐ ╪¼╪»╪º┘ï ┘ê┘å╪«╪¿╪⌐ ┘à┘à┘è╪▓╪⌐ ┘à┘å ╪º┘ä╪ú╪╖╪¿╪º╪í. ╪º╪│╪¬╪┤╪▒╪¬ ╪». ╪«╪º┘ä╪» ╪¿╪¬╪▒╪¼┘è ╪¿╪«╪╡┘ê╪╡ ╪╣┘à┘ä┘è╪⌐ ╪º┘ä╪▒┘â╪¿╪⌐ ┘ê┘â╪º┘å ╪¬╪┤╪«┘è╪╡┘ç ╪»┘é┘è┘é╪º┘ï ╪¼╪»╪º┘ï ┘ê╪ú╪▒╪º╪¡┘å┘è ┘â╪½┘è╪▒╪º┘ï. ┘ê┘ü╪▒ ╪╣┘ä┘è ╪╣┘å╪º╪í ╪º┘ä╪│┘ü╪▒.', name: '╪╣╪¿╪»╪º┘ä╪▒╪¡┘à┘å ╪º┘ä╪╣╪¬┘è╪¿┘è', title: '┘à╪▒┘è╪╢ ΓÇö ╪╣┘è╪º╪»╪⌐ ╪¼╪▒╪º╪¡╪⌐ ╪º┘ä┘à┘ü╪º╪╡┘ä' },
-  { text: '╪¬╪¼╪▒╪¿╪⌐ ╪¡╪¼╪▓ ╪│┘ç┘ä╪⌐ ┘ê╪│╪▒┘è╪╣╪⌐ ┘ä┘ä╪║╪º┘è╪⌐╪î ┘ê╪º┘ä╪ú╪▒┘ê╪╣ ┘ç┘ê ╪Ñ┘à┘â╪º┘å┘è╪⌐ ╪▒┘ü╪╣ ╪º┘ä╪ú╪┤╪╣╪⌐ ┘ê┘à┘ä┘ü╪º╪¬ ╪º┘ä╪▒┘å┘è┘å ╪º┘ä┘à╪║┘å╪º╪╖┘è╪│┘è ┘ä╪¬┘é┘ê┘à ╪». ╪│╪º╪▒╪⌐ ╪º┘ä┘à┘å╪╡┘ê╪▒ ╪¿╪¬╪¡┘ä┘è┘ä┘ç╪º ┘ê┘ê╪╡┘ü ╪º┘ä╪╣┘ä╪º╪¼ ╪º┘ä┘à┘å╪º╪│╪¿ ┘ä┘è ╪»┘ê┘å ╪º┘ä╪¡╪º╪¼╪⌐ ┘ä┘à╪║╪º╪»╪▒╪⌐ ╪º┘ä┘à┘å╪▓┘ä.', name: '┘å┘ê╪▒╪⌐ ╪º┘ä╪»┘ê╪│╪▒┘è', title: '┘à╪▒┘è╪╢╪⌐ ΓÇö ╪╣┘è╪º╪»╪⌐ ╪º┘ä╪▒┘ê┘à╪º╪¬┘è╪▓┘à' },
-  { text: '╪¿╪╣╪» ╪Ñ╪╡╪º╪¿╪¬┘è ┘ü┘è ╪º┘ä╪▒┘â╪¿╪⌐╪î ╪¬┘ê╪º╪╡┘ä╪¬ ┘à╪╣ ╪». ┘ä┘è┘ä┘ë ╪º┘ä╪╣╪¬┘è╪¿┘è ┘ê╪ú╪╣╪»╪¬ ┘ä┘è ╪¿╪▒┘å╪º┘à╪¼ ╪¬╪ú┘ç┘è┘ä ╪¡╪▒┘â┘è ┘à┘å╪▓┘ä┘è ╪▒╪º╪ª╪╣ ┘ê╪¬╪º╪¿╪╣╪¬ ┘à╪╣┘è ╪«╪╖┘ê╪⌐ ╪¿╪«╪╖┘ê╪⌐ ╪¡╪¬┘ë ╪╣╪»╪¬ ┘ä┘à┘à╪º╪▒╪│╪⌐ ╪º┘ä╪▒┘è╪º╪╢╪⌐ ╪¿╪┤┘â┘ä ╪╖╪¿┘è╪╣┘è.', name: '┘ü┘ç╪» ╪º┘ä╪│╪¿┘è╪╣┘è', title: '┘à╪▒┘è╪╢ ΓÇö ╪╣┘è╪º╪»╪⌐ ╪º┘ä╪╣┘ä╪º╪¼ ╪º┘ä╪╖╪¿┘è╪╣┘è' },
+  { text: 'المركز يقدم رعاية ممتازة جداً ونخبة مميزة من الأطباء. استشرت د. خالد بترجي بخصوص عملية الركبة وكان تشخيصه دقيقاً جداً وأراحني كثيراً. وفر علي عناء السفر.', name: 'عبدالرحمن العتيبي', title: 'مريض — عيادة جراحة المفاصل' },
+  { text: 'تجربة حجز سهلة وسريعة للغاية، والأروع هو إمكانية رفع الأشعة وملفات الرنين المغناطيسي لتقوم د. سارة المنصور بتحليلها ووصف العلاج المناسب لي دون الحاجة لمغادرة المنزل.', name: 'نورة الدوسري', title: 'مريضة — عيادة الروماتيزم' },
+  { text: 'بعد إصابتي في الركبة، تواصلت مع د. ليلى العتيبي وأعدت لي برنامج تأهيل حركي منزلي رائع وتابعت معي خطوة بخطوة حتى عدت لممارسة الرياضة بشكل طبيعي.', name: 'فهد السبيعي', title: 'مريض — عيادة العلاج الطبيعي' },
 ]
 
 const qualifications = [
-  { year: '1991', title: '╪¬╪ú╪│┘è╪│ ┘à╪▒┘â╪▓ ╪¿╪¬╪▒╪¼┘è ╪º┘ä╪╖╪¿┘è', inst: '╪▒╪ñ┘è╪⌐ ┘ä╪¬┘é╪»┘è┘à ╪ú┘ü╪╢┘ä ╪º┘ä╪«╪»┘à╪º╪¬ ╪º┘ä╪╖╪¿┘è╪⌐ ╪º┘ä╪¬╪«╪╡╪╡┘è╪⌐' },
-  { year: '2012', title: '╪Ñ╪╖┘ä╪º┘é ╪º┘ä╪╣┘è╪º╪»╪º╪¬ ╪º┘ä┘à╪¬┘â╪º┘à┘ä╪⌐', inst: '╪¬┘ê╪│╪╣╪⌐ ╪º┘ä╪ú┘é╪│╪º┘à ┘ä╪¬╪┤┘à┘ä ╪º┘ä╪╣┘à┘ê╪» ╪º┘ä┘ü┘é╪▒┘è ┘ê╪º┘ä╪▒┘ê┘à╪º╪¬┘è╪▓┘à ┘ê╪º┘ä╪¬╪ú┘ç┘è┘ä' },
-  { year: '2020', title: '╪º┘ä╪¬┘â╪º┘à┘ä ╪º┘ä╪▒┘é┘à┘è ╪º┘ä┘â╪º┘à┘ä', inst: '╪¬╪¡┘ê┘è┘ä ╪¼┘à┘è╪╣ ╪º┘ä╪º╪│╪¬╪┤╪º╪▒╪º╪¬ ╪Ñ┘ä┘ë ╪º╪│╪¬╪┤╪º╪▒╪º╪¬ ┘à╪▒┘å┘è╪⌐ ╪¬┘ü╪º╪╣┘ä┘è╪⌐ ╪╣┘å ╪¿╪╣╪»' },
-  { year: '2026', title: '┘å╪╕╪º┘à ╪º┘ä╪º╪│╪¬╪┤╪º╪▒╪º╪¬ ╪º┘ä┘à╪╖┘ê╪▒', inst: '╪Ñ╪╖┘ä╪º┘é ╪º┘ä┘à┘å╪╡╪⌐ ╪º┘ä╪¼╪»┘è╪»╪⌐ ┘ê╪¬┘ü╪╣┘è┘ä ┘à┘è╪▓╪º╪¬ ╪º┘ä╪¬╪«╪▓┘è┘å ╪º┘ä╪╖╪¿┘è ╪º┘ä╪ó┘à┘å ┘ê╪¬┘ê╪╡┘è┘ä ╪º┘ä╪ú╪»┘ê┘è╪⌐' },
+  { year: '1991', title: 'تأسيس مركز بترجي الطبي', inst: 'رؤية لتقديم أفضل الخدمات الطبية التخصصية' },
+  { year: '2012', title: 'إطلاق العيادات المتكاملة', inst: 'توسعة الأقسام لتشمل العمود الفقري والروماتيزم والتأهيل' },
+  { year: '2020', title: 'التكامل الرقمي الكامل', inst: 'تحويل جميع الاستشارات إلى استشارات مرنية تفاعلية عن بعد' },
+  { year: '2026', title: 'نظام الاستشارات المطور', inst: 'إطلاق المنصة الجديدة وتفعيل ميزات التخزين الطبي الآمن وتوصيل الأدوية' },
 ]
 
 
 
-/* ΓöÇΓöÇ COMPONENTS ΓöÇΓöÇ */
+/* ── COMPONENTS ── */
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -133,7 +133,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
       border: '1px solid var(--border-accent)',
       background: 'var(--primary-subtle)', marginBottom: '1.25rem',
     }}>
-      <span style={{ fontSize: '0.55rem' }}>Γùç</span>
+      <span style={{ fontSize: '0.55rem' }}>◇</span>
       {children}
     </div>
   )
@@ -295,7 +295,7 @@ function DiamondShower() {
   )
 }
 
-/* ΓöÇΓöÇ PAGE ΓöÇΓöÇ */
+/* ── PAGE ── */
 
 export default function Home() {
   return (
@@ -307,7 +307,7 @@ export default function Home() {
       <DiamondShower />
       <MouseGlow />
 
-      {/* ΓöÇΓöÇ HERO ΓöÇΓöÇ */}
+      {/* ── HERO ── */}
       <section style={{ position: 'relative', zIndex: 2, padding: '5rem 0 6rem' }}>
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0,
@@ -338,8 +338,8 @@ export default function Home() {
                   display: 'inline-block',
                   animation: 'pulse-soft 2s ease-in-out infinite',
                   fontSize: '0.7rem',
-                }}>Γ£ª</span>
-                ┘à╪▒┘â╪▓ ╪¿╪¬╪▒╪¼┘è ┘ä┘ä╪º╪│╪¬╪┤╪º╪▒╪º╪¬ ╪º┘ä╪╖╪¿┘è╪⌐ ╪º┘ä╪¬╪«╪╡╪╡┘è╪⌐
+                }}>✦</span>
+                مركز بترجي للاستشارات الطبية التخصصية
               </div>
 
               <h1 className="anim-fade-1" style={{
@@ -350,7 +350,7 @@ export default function Home() {
                 color: 'var(--fg)',
                 marginBottom: '1.5rem',
               }}>
-                ╪º╪│╪¬╪┤╪º╪▒╪º╪¬ ╪». ╪«╪º┘ä╪» ╪¿╪¬╪▒╪¼┘è{' '}
+                استشارات د. خالد بترجي{' '}
                 <br />
                 <span style={{
                   background: 'linear-gradient(135deg, var(--primary) 0%, oklch(55% 0.22 260) 50%, var(--primary-down) 100%)',
@@ -362,7 +362,7 @@ export default function Home() {
                   display: 'inline-block',
                   paddingTop: '10px',
                 }}>
-                  ╪º╪│╪¬╪┤╪º╪▒┘è ╪¼╪▒╪º╪¡╪⌐ ╪º┘ä╪╣╪╕╪º┘à ┘ê╪º┘ä┘à┘ü╪º╪╡┘ä
+                  استشاري جراحة العظام والمفاصل
                 </span>
                 <span style={{
                   fontSize: 'clamp(1.1rem, 2.2vw, 1.5rem)',
@@ -372,7 +372,7 @@ export default function Home() {
                   marginTop: '0.75rem',
                   letterSpacing: '-0.01em',
                 }}>
-                  ╪▒╪╣╪º┘è╪⌐ ╪╖╪¿┘è╪⌐ ┘ü╪º╪ª┘é╪⌐ ┘ä╪¼╪▒╪º╪¡╪º╪¬ ╪º┘ä╪▒┘â╪¿╪⌐ ┘ê╪º┘ä┘à┘ü╪º╪╡┘ä ╪º┘ä╪╡┘å╪º╪╣┘è╪⌐ ┘ê╪º┘ä┘à┘å╪º╪╕┘è╪▒ ╪ú┘ê┘å┘ä╪º┘è┘å ┘à┘å ┘à┘å╪▓┘ä┘â
+                  رعاية طبية فائقة لجراحات الركبة والمفاصل الصناعية والمناظير أونلاين من منزلك
                 </span>
               </h1>
 
@@ -383,7 +383,7 @@ export default function Home() {
                 marginBottom: '2.5rem',
                 maxWidth: '540px',
               }}>
-                ╪ú┘ê┘ä ┘à┘å╪╡╪⌐ ╪º╪│╪¬╪┤╪º╪▒╪º╪¬ ╪╖╪¿┘è╪⌐ ┘à╪¬┘â╪º┘à┘ä╪⌐ ╪¬╪¼┘à╪╣ ╪¿┘è┘å ╪«╪¿╪▒╪⌐ ╪º┘ä╪º╪│╪¬╪┤╪º╪▒┘è┘è┘å ┘ê╪│┘ç┘ê┘ä╪⌐ ╪º┘ä╪¬┘é┘å┘è╪⌐. ╪º╪¡╪¼╪▓ ╪º╪│╪¬╪┤╪º╪▒╪¬┘â ╪º┘ä┘à╪▒╪ª┘è╪⌐ ┘ü┘è ╪»┘é╪º╪ª┘é╪î ┘ê╪º╪▒┘ü╪╣ ┘ü╪¡┘ê╪╡╪º╪¬┘â ┘ê╪¬┘é╪º╪▒┘è╪▒┘â ╪¿╪«╪╡┘ê╪╡┘è╪⌐ ╪¬╪º┘à╪⌐ ┘ê╪¬┘ä┘é┘ë ╪º┘ä╪¬╪┤╪«┘è╪╡ ┘ê╪º┘ä╪«╪╖╪⌐ ╪º┘ä╪╣┘ä╪º╪¼┘è╪⌐ ┘à┘å ┘à┘å╪▓┘ä┘â.
+                أول منصة استشارات طبية متكاملة تجمع بين خبرة الاستشاريين وسهولة التقنية. احجز استشارتك المرئية في دقائق، وارفع فحوصاتك وتقاريرك بخصوصية تامة وتلقى التشخيص والخطة العلاجية من منزلك.
               </p>
 
               <div className="anim-fade-2" style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -393,12 +393,12 @@ export default function Home() {
                   gap: '0.75rem',
                   borderRadius: 'var(--r-lg)',
                 }}>
-                  ╪º╪¿╪»╪ú ╪º┘ä╪º╪│╪¬╪┤╪º╪▒╪⌐ ╪º┘ä╪ó┘å
+                  ابدأ الاستشارة الآن
                   <span style={{ fontSize: '1.2rem', lineHeight: 1, display: 'inline-block', transform: 'translateX(0)', transition: 'transform 200ms' }}
-                  >ΓåÉ</span>
+                  >←</span>
                 </Link>
                 <Link href="#about-section" className="btn-ghost" style={{ fontSize: '0.95rem', padding: '0.9rem 1.75rem' }}>
-                  ╪¬╪╣╪▒┘æ┘ü ╪╣┘ä┘ë ╪º┘ä╪»┘â╪¬┘ê╪▒
+                  تعرّف على الدكتور
                 </Link>
               </div>
 
@@ -434,7 +434,7 @@ export default function Home() {
                 
                 <Image
                   src="/main_image.jpeg"
-                  alt="╪». ╪«╪º┘ä╪» ╪¿╪¬╪▒╪¼┘è"
+                  alt="د. خالد بترجي"
                   fill
                   sizes="(max-width: 900px) 100vw, 550px"
                   style={{ objectFit: 'cover', scale: '1.02', borderRadius: 'var(--r-xl)' }}
@@ -481,7 +481,7 @@ export default function Home() {
                   boxShadow: 'var(--shadow-lg)',
                   zIndex: 4,
                 }}>
-                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--fg)' }}>╪». ╪«╪º┘ä╪» ╪¿╪¬╪▒╪¼┘è</div>
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--fg)' }}>د. خالد بترجي</div>
                   <div style={{
                     fontSize: '0.82rem', color: 'var(--fg-muted)', marginTop: '0.2rem',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
@@ -492,7 +492,7 @@ export default function Home() {
                       animation: 'pulse-soft 2s ease-in-out infinite',
                       boxShadow: '0 0 6px var(--ok-soft)',
                     }} />
-                    ╪▒╪ª┘è╪│ ┘à╪¼┘ä╪│ ╪Ñ╪»╪º╪▒╪⌐ ╪º┘ä┘à╪▒┘â╪▓ ΓÇö ┘à╪¬╪º╪¡ ┘ä┘ä╪¡╪¼╪▓
+                    رئيس مجلس إدارة المركز — متاح للحجز
                   </div>
                 </div>
               </div>
@@ -501,7 +501,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ΓöÇΓöÇ HERO STATS SECTION ΓöÇΓöÇ */}
+      {/* ── HERO STATS SECTION ── */}
       <section style={{ position: 'relative', zIndex: 3, padding: '1.5rem 0 3rem' }}>
         <div className="container">
           <ScrollReveal>
@@ -550,7 +550,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ΓöÇΓöÇ EXPERTISE BAR ΓöÇΓöÇ */}
+      {/* ── EXPERTISE BAR ── */}
       <section style={{ position: 'relative', zIndex: 2, padding: '0 0 5rem' }}>
         <div className="container">
           <ScrollReveal>
@@ -567,7 +567,7 @@ export default function Home() {
               border: '1px solid var(--border-faint)',
               boxShadow: 'var(--shadow-warm)',
             }}>
-              {['╪¼╪▒╪º╪¡╪⌐ ╪º┘ä╪╣╪╕╪º┘à ┘ê╪º┘ä┘à┘ü╪º╪╡┘ä', '╪º┘ä┘à┘å╪º╪╕┘è╪▒ ╪º┘ä╪¼╪▒╪º╪¡┘è╪⌐', '╪╣┘ä╪º╪¼ ╪º┘ä╪ó┘ä╪º┘à ╪º┘ä┘à╪▓┘à┘å╪⌐', '╪¬╪ú┘ç┘è┘ä ┘à╪º ╪¿╪╣╪» ╪º┘ä╪╣┘à┘ä┘è╪º╪¬', '╪º╪│╪¬╪┤╪º╪▒╪º╪¬ ╪ú┘ê┘å ┘ä╪º┘è┘å'].map((item, i) => (
+              {['جراحة العظام والمفاصل', 'المناظير الجراحية', 'علاج الآلام المزمنة', 'تأهيل ما بعد العمليات', 'استشارات أون لاين'].map((item, i) => (
                 <div key={item} style={{
                   display: 'flex', alignItems: 'center', gap: '0.5rem',
                   fontSize: '0.85rem', fontWeight: 600,
@@ -590,7 +590,7 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* ΓöÇΓöÇ ACHIEVEMENT COUNTERS ΓöÇΓöÇ */}
+      {/* ── ACHIEVEMENT COUNTERS ── */}
       <section style={{ position: 'relative', zIndex: 2, padding: '5rem 0' }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -608,10 +608,10 @@ export default function Home() {
               border: '1px solid var(--border-accent)',
             }}>
               {[
-                { end: 1500, label: '┘à╪▒┘è╪╢', suffix: '+', sub: '╪¬┘à╪¬ ╪º╪│╪¬╪┤╪º╪▒╪¬┘ç┘à' },
-                { end: 35, label: '╪╣╪º┘à╪º┘ï', suffix: '+', sub: '╪«╪¿╪▒╪⌐ ┘ü┘è ╪º┘ä┘à╪¼╪º┘ä ╪º┘ä╪╖╪¿┘è' },
-                { end: 98, label: '┘¬', suffix: '', sub: '┘å╪│╪¿╪⌐ ╪▒╪╢╪º ╪º┘ä┘à╪▒╪╢┘ë' },
-                { end: 24, label: '╪│╪º╪╣╪⌐', suffix: '', sub: '╪º┘ä╪▒╪» ╪╣┘ä┘ë ╪º┘ä╪º╪│╪¬┘ü╪│╪º╪▒╪º╪¬' },
+                { end: 1500, label: 'مريض', suffix: '+', sub: 'تمت استشارتهم' },
+                { end: 35, label: 'عاماً', suffix: '+', sub: 'خبرة في المجال الطبي' },
+                { end: 98, label: '٪', suffix: '', sub: 'نسبة رضا المرضى' },
+                { end: 24, label: 'ساعة', suffix: '', sub: 'الرد على الاستفسارات' },
               ].map((c, i) => (
                 <div key={c.label} style={{
                   textAlign: 'center',
@@ -641,7 +641,7 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* ΓöÇΓöÇ DOCTOR QUALIFICATIONS ΓöÇΓöÇ */}
+      {/* ── DOCTOR QUALIFICATIONS ── */}
       <section id="about-section" style={{ position: 'relative', zIndex: 2, padding: '5rem 0' }}>
         <div className="container">
           <div style={{
@@ -652,7 +652,7 @@ export default function Home() {
           }}>
             <ScrollReveal>
               <div>
-                <SectionLabel>╪º┘ä┘à╪ñ┘ç┘ä╪º╪¬ ╪º┘ä╪╣┘ä┘à┘è╪⌐</SectionLabel>
+                <SectionLabel>المؤهلات العلمية</SectionLabel>
                 <h2 style={{
                   fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
                   fontWeight: 900,
@@ -661,7 +661,7 @@ export default function Home() {
                   marginBottom: '1rem',
                   lineHeight: 1.15,
                 }}>
-                  ╪«╪¿╪▒╪⌐ ╪¬┘à╪¬╪» ┘ä╪ú┘â╪½╪▒ ┘à┘å <span style={{ color: 'var(--primary)' }}>╪½┘ä╪º╪½╪⌐ ╪╣┘é┘ê╪»</span>
+                  خبرة تمتد لأكثر من <span style={{ color: 'var(--primary)' }}>ثلاثة عقود</span>
                 </h2>
                 <p style={{
                   fontSize: '0.95rem',
@@ -669,10 +669,10 @@ export default function Home() {
                   lineHeight: 1.9,
                   marginBottom: '2.5rem',
                 }}>
-                  ┘è╪¬┘à╪¬╪╣ ╪º┘ä╪»┘â╪¬┘ê╪▒ ╪«╪º┘ä╪» ╪¿╪¬╪▒╪¼┘è ╪¿╪│┘è╪▒╪⌐ ╪░╪º╪¬┘è╪⌐ ╪¡╪º┘ü┘ä╪⌐ ╪¿╪º┘ä╪Ñ┘å╪¼╪º╪▓╪º╪¬ ╪º┘ä╪ú┘â╪º╪»┘è┘à┘è╪⌐ ┘ê╪º┘ä╪╣┘à┘ä┘è╪⌐ ┘ü┘è ┘à╪¼╪º┘ä ╪¼╪▒╪º╪¡╪⌐ ╪º┘ä╪╣╪╕╪º┘à ┘ê╪º┘ä┘à┘ü╪º╪╡┘ä╪î ┘à╪╣ ╪ú┘â╪½╪▒ ┘à┘å 35 ╪╣╪º┘à╪º┘ï ┘à┘å ╪º┘ä╪«╪¿╪▒╪⌐ ╪º┘ä┘à╪¬╪▒╪º┘â┘à╪⌐.
+                  يتمتع الدكتور خالد بترجي بسيرة ذاتية حافلة بالإنجازات الأكاديمية والعملية في مجال جراحة العظام والمفاصل، مع أكثر من 35 عاماً من الخبرة المتراكمة.
                 </p>
                 <Link href="/consultation/new" className="btn-primary" style={{ fontSize: '0.9rem', padding: '0.85rem 1.75rem' }}>
-                  ╪º╪¡╪¼╪▓ ╪º╪│╪¬╪┤╪º╪▒╪¬┘â
+                  احجز استشارتك
                 </Link>
               </div>
             </ScrollReveal>
@@ -729,7 +729,7 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* ΓöÇΓöÇ HOW IT WORKS ΓöÇΓöÇ */}
+      {/* ── HOW IT WORKS ── */}
       <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -737,7 +737,7 @@ export default function Home() {
         }} />
         <div className="container" style={{ textAlign: 'center', position: 'relative' }}>
           <ScrollReveal>
-            <SectionLabel>╪«╪╖┘ê╪º╪¬ ╪º┘ä╪¡╪¼╪▓</SectionLabel>
+            <SectionLabel>خطوات الحجز</SectionLabel>
             <h2 style={{
               fontSize: 'clamp(2rem, 4vw, 3rem)',
               fontWeight: 900,
@@ -745,7 +745,7 @@ export default function Home() {
               color: 'var(--fg)',
               marginBottom: '0.75rem',
             }}>
-              ┘â┘è┘ü ╪¬╪╣┘à┘ä ╪º┘ä╪«╪»┘à╪⌐╪ƒ
+              كيف تعمل الخدمة؟
             </h2>
             <p style={{
               fontSize: '1.05rem',
@@ -754,7 +754,7 @@ export default function Home() {
               margin: '0 auto 4rem',
               lineHeight: 1.8,
             }}>
-              ┘à┘å ╪º┘ä╪¬╪│╪¼┘è┘ä ╪Ñ┘ä┘ë ╪º┘ä╪¼┘ä╪│╪⌐ ┘à╪╣ ╪º┘ä╪»┘â╪¬┘ê╪▒ ┘ü┘è 4 ╪«╪╖┘ê╪º╪¬ ╪¿╪│┘è╪╖╪⌐
+              من التسجيل إلى الجلسة مع الدكتور في 4 خطوات بسيطة
             </p>
           </ScrollReveal>
 
@@ -823,7 +823,7 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* ΓöÇΓöÇ SERVICES ΓöÇΓöÇ */}
+      {/* ── SERVICES ── */}
       <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -831,7 +831,7 @@ export default function Home() {
         }} />
         <div className="container" style={{ textAlign: 'center', position: 'relative' }}>
           <ScrollReveal>
-            <SectionLabel>╪º┘ä╪¿╪º┘é╪º╪¬ ┘ê╪º┘ä╪ú╪│╪╣╪º╪▒</SectionLabel>
+            <SectionLabel>الباقات والأسعار</SectionLabel>
             <h2 style={{
               fontSize: 'clamp(2rem, 4vw, 3rem)',
               fontWeight: 900,
@@ -839,7 +839,7 @@ export default function Home() {
               color: 'var(--fg)',
               marginBottom: '0.75rem',
             }}>
-              ╪º╪«╪¬╪▒ ╪º┘ä╪¿╪º┘é╪⌐ ╪º┘ä┘à┘å╪º╪│╪¿╪⌐ ┘ä┘â
+              اختر الباقة المناسبة لك
             </h2>
             <p style={{
               fontSize: '1.05rem',
@@ -848,7 +848,7 @@ export default function Home() {
               margin: '0 auto 4rem',
               lineHeight: 1.8,
             }}>
-              ╪º╪│╪¬╪┤╪º╪▒╪º╪¬ ┘à╪▒┘å╪⌐ ╪¿╪ú╪│╪╣╪º╪▒ ╪¬┘å╪º┘ü╪│┘è╪⌐ ╪¬┘å╪º╪│╪¿ ╪¼┘à┘è╪╣ ╪º┘ä╪¡╪º┘ä╪º╪¬
+              استشارات مرنة بأسعار تنافسية تناسب جميع الحالات
             </p>
           </ScrollReveal>
 
@@ -911,7 +911,7 @@ export default function Home() {
                         color: 'white', fontSize: '0.65rem', fontWeight: 700,
                         padding: '0.25rem 3.5rem', letterSpacing: '0.08em',
                       }}>
-                        ╪º┘ä╪ú┘â╪½╪▒ ╪╖┘ä╪¿╪º┘ï
+                        الأكثر طلباً
                       </div>
                       <div style={{
                         position: 'absolute', top: 0, right: 0,
@@ -925,7 +925,7 @@ export default function Home() {
                     fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)',
                     marginBottom: '0.5rem', letterSpacing: '0.05em',
                   }}>
-                    {svc.popular ? 'ΓÇö ┘à╪╖┘ê┘æ╪▒' : 'ΓÇö ╪¿╪º┘é╪⌐'}
+                    {svc.popular ? '— مطوّر' : '— باقة'}
                   </div>
                   <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--fg)', marginBottom: '0.3rem' }}>{svc.title}</div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem', marginBottom: '1rem', direction: 'ltr' }}>
@@ -946,7 +946,7 @@ export default function Home() {
                         fontSize: '0.82rem', color: 'var(--fg-muted)',
                         padding: '0.35rem 0',
                       }}>
-                        <span style={{ color: svc.popular ? 'var(--primary)' : 'var(--gold)', fontSize: '0.6rem', marginTop: '0.3rem' }}>Γùê</span>
+                        <span style={{ color: svc.popular ? 'var(--primary)' : 'var(--gold)', fontSize: '0.6rem', marginTop: '0.3rem' }}>◈</span>
                         {f}
                       </div>
                     ))}
@@ -956,7 +956,7 @@ export default function Home() {
                     className={svc.popular ? 'btn-primary' : 'btn-ghost'}
                     style={{ width: '100%', justifyContent: 'center', fontSize: '0.95rem', padding: '0.9rem' }}
                   >
-                    {svc.popular ? '╪º╪¡╪¼╪▓ ╪º┘ä╪ó┘å' : '╪º╪«╪¬╪▒ ╪º┘ä╪¿╪º┘é╪⌐'}
+                    {svc.popular ? 'احجز الآن' : 'اختر الباقة'}
                   </Link>
                 </div>
               </ScrollReveal>
@@ -967,7 +967,7 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* ΓöÇΓöÇ WHY CHOOSE US ΓöÇΓöÇ */}
+      {/* ── WHY CHOOSE US ── */}
       <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
         <div className="container">
           <div className="features-layout" style={{
@@ -978,7 +978,7 @@ export default function Home() {
           }}>
             <ScrollReveal>
               <div>
-                <SectionLabel>┘ä┘à╪º╪░╪º ╪». ╪«╪º┘ä╪» ╪¿╪¬╪▒╪¼┘è╪ƒ</SectionLabel>
+                <SectionLabel>لماذا د. خالد بترجي؟</SectionLabel>
                 <h2 style={{
                   fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
                   fontWeight: 900,
@@ -987,7 +987,7 @@ export default function Home() {
                   marginBottom: '1rem',
                   lineHeight: 1.15,
                 }}>
-                  ╪▒╪╣╪º┘è╪⌐ ╪╖╪¿┘è╪⌐ ╪¿┘à╪╣╪º┘è┘è╪▒ ╪╣╪º┘ä┘à┘è╪⌐ ΓÇö ┘à┘å ┘à┘å╪▓┘ä┘â
+                  رعاية طبية بمعايير عالمية — من منزلك
                 </h2>
                 <p style={{
                   fontSize: '0.95rem',
@@ -995,11 +995,11 @@ export default function Home() {
                   lineHeight: 1.9,
                   marginBottom: '2.5rem',
                 }}>
-                  ┘å╪╢╪╣┘â ┘ü┘è ┘é┘ä╪¿ ╪º┘ä╪▒╪╣╪º┘è╪⌐ ╪º┘ä╪╡╪¡┘è╪⌐. ┘à┘å╪╡╪⌐ ┘à╪¬┘â╪º┘à┘ä╪⌐ ╪¬╪¼┘à╪╣ ╪¿┘è┘å ╪º┘ä╪«╪¿╪▒╪⌐ ╪º┘ä╪╖╪¿┘è╪⌐ ┘ê╪º┘ä╪¬┘é┘å┘è╪⌐ ╪º┘ä╪¡╪»┘è╪½╪⌐ ┘ä╪¬┘ê┘ü┘è╪▒ ╪¬╪¼╪▒╪¿╪⌐ ╪º╪│╪¬╪┤╪º╪▒┘è╪⌐ ╪│┘ä╪│╪⌐ ┘ê╪ó┘à┘å╪⌐.
+                  نضعك في قلب الرعاية الصحية. منصة متكاملة تجمع بين الخبرة الطبية والتقنية الحديثة لتوفير تجربة استشارية سلسة وآمنة.
                 </p>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                   <Link href="/consultation/new" className="btn-primary" style={{ fontSize: '0.95rem', padding: '0.9rem 2rem' }}>
-                    ╪º╪¿╪»╪ú ╪º┘ä╪ó┘å
+                    ابدأ الآن
                   </Link>
                 </div>
 
@@ -1010,9 +1010,9 @@ export default function Home() {
                   gap: '1rem',
                 }}>
                   {[
-                    { num: '1,500+', label: '┘à╪▒┘è╪╢' },
-                    { num: '98%', label: '╪▒╪╢╪º ╪º┘ä┘à╪▒╪╢┘ë' },
-                    { num: '24', label: '╪│╪º╪╣╪⌐ ┘ä┘ä╪▒╪»' },
+                    { num: '1,500+', label: 'مريض' },
+                    { num: '98%', label: 'رضا المرضى' },
+                    { num: '24', label: 'ساعة للرد' },
                   ].map((s) => (
                     <div key={s.label} style={{
                       padding: '1.25rem', textAlign: 'center',
@@ -1102,7 +1102,7 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* ΓöÇΓöÇ TESTIMONIALS ΓöÇΓöÇ */}
+      {/* ── TESTIMONIALS ── */}
       <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -1110,7 +1110,7 @@ export default function Home() {
         }} />
         <div className="container" style={{ textAlign: 'center', position: 'relative' }}>
           <ScrollReveal>
-            <SectionLabel>╪ó╪▒╪º╪í ╪º┘ä┘à╪▒╪╢┘ë</SectionLabel>
+            <SectionLabel>آراء المرضى</SectionLabel>
             <h2 style={{
               fontSize: 'clamp(2rem, 4vw, 3rem)',
               fontWeight: 900,
@@ -1118,7 +1118,7 @@ export default function Home() {
               color: 'var(--fg)',
               marginBottom: '3rem',
             }}>
-              ┘à╪º╪░╪º ┘è┘é┘ê┘ä ┘à╪▒╪╢╪º┘å╪º╪ƒ
+              ماذا يقول مرضانا؟
             </h2>
           </ScrollReveal>
 
@@ -1210,12 +1210,12 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* ΓöÇΓöÇ HEALTH RESOURCES ΓöÇΓöÇ */}
+      {/* ── HEALTH RESOURCES ── */}
       <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
         <div className="container">
           <ScrollReveal>
             <div style={{ textAlign: 'center' }}>
-              <SectionLabel>╪º┘ä┘à┘â╪¬╪¿╪⌐ ╪º┘ä╪╖╪¿┘è╪⌐</SectionLabel>
+              <SectionLabel>المكتبة الطبية</SectionLabel>
               <h2 style={{
                 fontSize: 'clamp(2rem, 4vw, 3rem)',
                 fontWeight: 900,
@@ -1223,7 +1223,7 @@ export default function Home() {
                 color: 'var(--fg)',
                 marginBottom: '0.75rem',
               }}>
-                ┘à┘ê╪º╪▒╪» ╪╡╪¡┘è╪⌐ ┘ä┘â
+                موارد صحية لك
               </h2>
               <p style={{
                 fontSize: '1.05rem',
@@ -1232,7 +1232,7 @@ export default function Home() {
                 margin: '0 auto 4rem',
                 lineHeight: 1.8,
               }}>
-                ┘à┘é╪º┘ä╪º╪¬ ┘ê╪Ñ╪▒╪┤╪º╪»╪º╪¬ ╪╖╪¿┘è╪⌐ ┘à┘å ╪Ñ╪╣╪»╪º╪» ╪». ╪«╪º┘ä╪» ╪¿╪¬╪▒╪¼┘è ┘ä┘à╪│╪º╪╣╪»╪¬┘â ┘ü┘è ╪▒╪¡┘ä╪⌐ ╪╣┘ä╪º╪¼┘â
+                مقالات وإرشادات طبية من إعداد د. خالد بترجي لمساعدتك في رحلة علاجك
               </p>
             </div>
           </ScrollReveal>
@@ -1301,7 +1301,7 @@ export default function Home() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
                     </svg>
-                    <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 700 }}>{r.readTime}</span> ╪»┘é╪º╪ª┘é ┘é╪▒╪º╪í╪⌐
+                    <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 700 }}>{r.readTime}</span> دقائق قراءة
                   </div>
                 </Link>
               </ScrollReveal>
@@ -1312,7 +1312,7 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* ΓöÇΓöÇ FAQ ΓöÇΓöÇ */}
+      {/* ── FAQ ── */}
       <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -1327,7 +1327,7 @@ export default function Home() {
           }}>
             <ScrollReveal>
               <div>
-                <SectionLabel>╪º┘ä╪ú╪│╪ª┘ä╪⌐ ╪º┘ä╪┤╪º╪ª╪╣╪⌐</SectionLabel>
+                <SectionLabel>الأسئلة الشائعة</SectionLabel>
                 <h2 style={{
                   fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
                   fontWeight: 900,
@@ -1336,14 +1336,14 @@ export default function Home() {
                   marginBottom: '1rem',
                   lineHeight: 1.15,
                 }}>
-                  ┘â┘ä ┘à╪º ╪¬╪▒┘è╪» ┘à╪╣╪▒┘ü╪¬┘ç ╪╣┘å ╪º┘ä╪º╪│╪¬╪┤╪º╪▒╪⌐
+                  كل ما تريد معرفته عن الاستشارة
                 </h2>
                 <p style={{
                   fontSize: '0.95rem',
                   color: 'var(--fg-muted)',
                   lineHeight: 1.8,
                 }}>
-                  ╪Ñ╪¼╪º╪¿╪º╪¬ ╪│╪▒┘è╪╣╪⌐ ╪╣┘å ╪ú┘â╪½╪▒ ╪º┘ä╪ú╪│╪ª┘ä╪⌐ ╪┤┘è┘ê╪╣╪º┘ï. ╪Ñ┘å ┘â╪º┘å ┘ä╪»┘è┘â ╪│╪ñ╪º┘ä ╪ó╪«╪▒╪î ┘ä╪º ╪¬╪¬╪▒╪»╪» ┘ü┘è ╪º┘ä╪¬┘ê╪º╪╡┘ä ┘à╪╣┘å╪º.
+                  إجابات سريعة عن أكثر الأسئلة شيوعاً. إن كان لديك سؤال آخر، لا تتردد في التواصل معنا.
                 </p>
               </div>
             </ScrollReveal>
@@ -1404,7 +1404,7 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* ΓöÇΓöÇ FINAL CTA ΓöÇΓöÇ */}
+      {/* ── FINAL CTA ── */}
       <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
         <div className="container" style={{ position: 'relative' }}>
           <ScrollReveal>
@@ -1444,8 +1444,8 @@ export default function Home() {
                   background: 'oklch(100% 0 0 / 0.08)',
                   marginBottom: '1.5rem',
                 }}>
-                  <span style={{ fontSize: '0.6rem', animation: 'pulse-soft 2s ease-in-out infinite' }}>Γùç</span>
-                  ╪º╪¿╪»╪ú ╪▒╪¡┘ä╪⌐ ╪╣┘ä╪º╪¼┘â ╪º┘ä┘è┘ê┘à
+                  <span style={{ fontSize: '0.6rem', animation: 'pulse-soft 2s ease-in-out infinite' }}>◇</span>
+                  ابدأ رحلة علاجك اليوم
                 </div>
                 <h2 style={{
                   fontSize: 'clamp(2rem, 4vw, 3rem)',
@@ -1454,7 +1454,7 @@ export default function Home() {
                   lineHeight: 1.15,
                   marginBottom: '1rem',
                 }}>
-                  ╪º╪│╪¬╪┤╪▒ ┘å╪«╪¿╪⌐ ╪º┘ä╪ú╪╖╪¿╪º╪í ┘à┘å ┘à┘å╪▓┘ä┘â ╪º┘ä┘è┘ê┘à
+                  استشر نخبة الأطباء من منزلك اليوم
                 </h2>
                 <p style={{
                   fontSize: '1.05rem',
@@ -1463,7 +1463,7 @@ export default function Home() {
                   maxWidth: '520px',
                   margin: '0 auto 2rem',
                 }}>
-                  ╪º╪¡╪¼╪▓ ╪º╪│╪¬╪┤╪º╪▒╪¬┘â ╪º┘ä╪ó┘å ╪«┘ä╪º┘ä ╪»┘é╪º╪ª┘é ┘ê╪º╪«╪¬╪▒ ╪╖╪¿┘è╪¿┘â ╪º┘ä╪º╪│╪¬╪┤╪º╪▒┘è ╪º┘ä┘à┘ü╪╢┘ä. ╪▒╪╣╪º┘è╪⌐ ╪╖╪¿┘è╪⌐ ╪¬╪«╪╡╪╡┘è╪⌐ ╪¿┘à╪╣╪º┘è┘è╪▒ ╪╣╪º┘ä┘à┘è╪⌐ ┘ü┘è ┘à╪¬┘å╪º┘ê┘ä ┘è╪»┘â.
+                  احجز استشارتك الآن خلال دقائق واختر طبيبك الاستشاري المفضل. رعاية طبية تخصصية بمعايير عالمية في متناول يدك.
                 </p>
                 <Link
                   href="/consultation/new"
@@ -1493,11 +1493,11 @@ export default function Home() {
                     (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 14px oklch(0% 0 0 / 0.15)';
                   }}
                 >
-                  ╪º╪¿╪»╪ú ╪º┘ä╪º╪│╪¬╪┤╪º╪▒╪⌐
+                  ابدأ الاستشارة
                   <span style={{ fontSize: '1.2rem', lineHeight: 1, display: 'inline-block', transition: 'transform 200ms' }}
                     onMouseOver={e => (e.currentTarget as HTMLElement).style.transform = 'translateX(-4px)'}
                     onMouseOut={e => (e.currentTarget as HTMLElement).style.transform = 'translateX(0)'}
-                  >ΓåÉ</span>
+                  >←</span>
                 </Link>
               </div>
             </div>

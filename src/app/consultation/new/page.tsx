@@ -256,6 +256,39 @@ export default function NewConsultation() {
         appointment_date: selectedDate,
         appointment_time: selectedTime,
       })
+
+      // Create Google Calendar event if the doctor has connected their calendar
+      try {
+        const doctor = DOCTORS.find((d) => d.id === selectedDoctorId) || DOCTORS[0]
+        const res = await fetch('/api/calendar/event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'create',
+            doctorId: selectedDoctorId,
+            consultationId,
+            consultation: {
+              patientName: form.patient_name,
+              patientPhone: form.patient_phone,
+              chiefComplaint: form.chief_complaint,
+              date: selectedDate,
+              time: selectedTime,
+              doctorName: doctor.name,
+            },
+          }),
+        })
+        if (res.ok) {
+          const data = await res.json() as { eventId?: string | null }
+          if (data.eventId) {
+            await updateConsultation(consultationId, {
+              google_calendar_event_id: data.eventId,
+            })
+          }
+        }
+      } catch {
+        // Calendar event creation is best-effort — don't block booking
+      }
+
       router.push(`/consultation/success?doctor=${selectedDoctorId}&consultation=${consultationId}`)
     } catch (err) {
       console.error(err)

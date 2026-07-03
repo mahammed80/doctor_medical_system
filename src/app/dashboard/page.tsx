@@ -17,6 +17,10 @@ import {
   ChevronLeft,
   FileSearch,
   RotateCcw,
+  Link2,
+  Unlink,
+  ExternalLink,
+  Loader2,
 } from 'lucide-react'
 import { getConsultations, getDoctorSettings, saveDoctorSettings, DoctorScheduleSettings, EnhancedConsultation } from '@/lib/consultationService'
 import { getCachedSession, signOut, AuthSession } from '@/lib/auth'
@@ -97,6 +101,9 @@ export default function Dashboard() {
   const [savingSettings, setSavingSettings] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
 
+  const [calendarStatus, setCalendarStatus] = useState<{ connected: boolean; email: string | null; configured: boolean } | null>(null)
+  const [calendarLoading, setCalendarLoading] = useState(false)
+
   useEffect(() => {
     const cached = getCachedSession()
     if (!cached) {
@@ -130,6 +137,15 @@ export default function Dashboard() {
       setScheduleSettings(settings)
     }
     loadSettings()
+  }, [selectedDoctorFilter])
+
+  useEffect(() => {
+    const docId = selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter
+    setCalendarStatus(null)
+    fetch(`/api/calendar/status?doctorId=${encodeURIComponent(docId)}`)
+      .then((res) => res.json())
+      .then((data) => setCalendarStatus(data))
+      .catch(() => setCalendarStatus({ connected: false, email: null, configured: false }))
   }, [selectedDoctorFilter])
 
   const statusCounts = OVERVIEW_STATUSES.map((status) => {
@@ -173,6 +189,29 @@ export default function Dashboard() {
       toasts.push('خطأ أثناء حفظ الإعدادات', 'error')
     } finally {
       setSavingSettings(false)
+    }
+  }
+
+  async function handleConnectCalendar() {
+    const docId = selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter
+    window.location.href = `/api/calendar/oauth/connect?doctorId=${encodeURIComponent(docId)}`
+  }
+
+  async function handleDisconnectCalendar() {
+    const docId = selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter
+    setCalendarLoading(true)
+    try {
+      await fetch('/api/calendar/disconnect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ doctorId: docId }),
+      })
+      setCalendarStatus({ connected: false, email: null, configured: calendarStatus?.configured ?? false })
+      toasts.push('تم قطع اتصال Google Calendar', 'success')
+    } catch {
+      toasts.push('فشل قطع اتصال Google Calendar', 'error')
+    } finally {
+      setCalendarLoading(false)
     }
   }
 
@@ -550,6 +589,65 @@ export default function Dashboard() {
                 </select>
               </div>
             </div>
+          </div>
+
+          {/* Google Calendar Integration */}
+          <div className="dash-calendar-section">
+            <div className="dash-calendar-head">
+              <Link2 size={20} />
+              <h3 className="dash-group-title">تكامل Google Calendar</h3>
+            </div>
+            <p className="dash-calendar-desc">
+              عند ربط حساب Google Calendar، يتم إخفاء المواعيد المشغولة تلقائياً من المرضى،
+              وإنشاء حدث في تقويمك عند حجز مريض لموعد جديد.
+            </p>
+            {calendarStatus?.connected ? (
+              <div className="dash-calendar-connected">
+                <div className="dash-calendar-status">
+                  <span className="dash-calendar-dot" />
+                  <div>
+                    <span className="dash-calendar-status-label">متصل</span>
+                    {calendarStatus.email && (
+                      <span className="dash-calendar-email">{calendarStatus.email}</span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  className="dash-action dash-action-err"
+                  onClick={handleDisconnectCalendar}
+                  disabled={calendarLoading}
+                >
+                  {calendarLoading ? <Loader2 size={15} className="spin" /> : <Unlink size={15} />}
+                  قطع الاتصال
+                </button>
+              </div>
+            ) : (
+              <div className="dash-calendar-disconnected">
+                {!calendarStatus?.configured ? (
+                  <div className="dash-calendar-warning">
+                    <p>
+                      لتفعيل التكامل، أضف بيانات اعتماد Google OAuth في متغيرات البيئة:
+                    </p>
+                    <code>GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI</code>
+                    <a
+                      href="https://console.cloud.google.com/apis/credentials"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="dash-calendar-link"
+                    >
+                      <ExternalLink size={13} /> Google Cloud Console
+                    </a>
+                  </div>
+                ) : (
+                  <button
+                    className="dash-action dash-action-primary"
+                    onClick={handleConnectCalendar}
+                  >
+                    <Link2 size={15} /> ربط Google Calendar
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <button
