@@ -16,6 +16,22 @@ export function Step3Payment({ price, doctorName, paymentLoading, checkoutUrl, c
   return (
     <div>
       <div className="price-display">
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '220px', height: '220px',
+          borderRadius: '50%',
+          border: '1px solid oklch(68% 0.17 70 / 0.08)',
+          pointerEvents: 'none',
+        }} aria-hidden />
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '180px', height: '180px',
+          borderRadius: '50%',
+          border: '1px solid oklch(68% 0.17 70 / 0.04)',
+          pointerEvents: 'none',
+        }} aria-hidden />
         <div className="price-badge">
           <span style={{ fontSize: '0.55rem' }}>◇</span>
           رسوم الاستشارة

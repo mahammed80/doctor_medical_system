@@ -283,7 +283,11 @@ export default function NewConsultation() {
         <StepIndicator step={step} />
 
         <div style={{ marginBottom: '1.75rem' }}>
-          <h1 className="booking-step-title">{STEPS[step].label}</h1>
+          <h1 className="booking-step-title" style={{
+            fontSize: '1.6rem',
+            fontWeight: 900,
+            letterSpacing: '-0.02em',
+          }}>{STEPS[step].label}</h1>
           <p className="booking-step-desc">{STEPS[step].description}</p>
         </div>
 
