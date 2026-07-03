@@ -15,6 +15,7 @@ const CONFETTI_DIAMONDS = Array.from({ length: 20 }, (_, i) => ({
 
 export default function Success() {
   const [assignedDoc, setAssignedDoc] = useState(DOCTORS[0])
+  const [consultationId, setConsultationId] = useState<string | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -25,6 +26,10 @@ export default function Success() {
         // Initial sync from URL — runs once on mount.
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setAssignedDoc(doc)
+      }
+      const cId = params.get('consultation')
+      if (cId) {
+        setConsultationId(cId)
       }
     }
   }, [])
@@ -39,7 +44,6 @@ export default function Success() {
       position: 'relative',
       overflow: 'hidden',
     }}>
-      {/* Floating diamond celebration */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
         {CONFETTI_DIAMONDS.map((d, i) => (
           <div key={i} style={{
@@ -165,12 +169,14 @@ export default function Success() {
           طلبك بانتظار مراجعة وتأكيد الطبيب. سوف يصلك إشعار بالبريد الإلكتروني أو رسالة نصية فور مراجعة الموعد وقبوله.
         </p>
 
-        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-          <Link href="/" className="btn-primary">
+        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          {consultationId && (
+            <Link href={`/patient/consultation/${consultationId}`} className="btn-primary">
+              متابعة الطلب والمحادثة
+            </Link>
+          )}
+          <Link href="/" className="btn-ghost">
             العودة للرئيسية
-          </Link>
-          <Link href="/dashboard" className="btn-ghost">
-            لوحة التحكم
           </Link>
         </div>
 

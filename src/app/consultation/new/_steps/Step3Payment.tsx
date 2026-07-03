@@ -6,12 +6,13 @@ import { Spinner } from '../_components/Spinner'
 
 type Props = {
   price: string
+  doctorName: string
   paymentLoading: boolean
   checkoutUrl: string | null
   consultationId: string | null
 }
 
-export function Step3Payment({ price, paymentLoading, checkoutUrl, consultationId }: Props) {
+export function Step3Payment({ price, doctorName, paymentLoading, checkoutUrl, consultationId }: Props) {
   return (
     <div>
       <div className="price-display">
@@ -23,7 +24,7 @@ export function Step3Payment({ price, paymentLoading, checkoutUrl, consultationI
           <span className="price-amount num">{price}</span>
           <span className="price-currency">ريال</span>
         </div>
-        <div className="price-subtitle">استشارة مع د. خالد بترجي</div>
+        <div className="price-subtitle">استشارة مع {doctorName}</div>
       </div>
 
       <div className="price-divider">

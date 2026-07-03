@@ -60,6 +60,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </Link>
 
               <nav className="header-nav">
+                <Link href="/dashboard" className="btn-ghost btn-sm" style={{ height: 40, padding: '0 1rem' }}>
+                  لوحة التحكم
+                </Link>
                 <Link href="/consultation/new" className="btn-primary btn-sm">
                   احجز استشارتك
                 </Link>

@@ -7,13 +7,15 @@ import { supabase } from '@/lib/supabase'
 import {
   addConsultationFile,
   createConsultation,
+  getConsultationById,
   getDoctorSettings,
   getDoctorSlots,
   updateConsultation,
 } from '@/lib/consultationService'
-import type { DoctorScheduleSettings, TimeSlot } from '@/lib/consultationService'
+import type { DoctorScheduleSettings, TimeSlot, EnhancedConsultation } from '@/lib/consultationService'
 import { useToasts } from '@/components/Toaster'
 import { isDemoMode } from '@/lib/demoMode'
+import { DOCTORS } from '@/lib/doctors'
 import { StepIndicator } from './_components/StepIndicator'
 import { Step0PatientInfo } from './_steps/Step0PatientInfo'
 import { Step1Complaint } from './_steps/Step1Complaint'
@@ -136,27 +138,53 @@ export default function NewConsultation() {
     }
     setLoading(true)
     try {
-      const data = await createConsultation({
-        patient_name: form.patient_name,
-        patient_phone: form.patient_phone,
-        patient_age: Number(form.patient_age),
-        chief_complaint: form.chief_complaint,
-        medical_history: form.medical_history,
-        current_medications: form.current_medications,
-        doctor_id: selectedDoctorId,
-        pain_severity: form.pain_severity,
-        pain_natures: form.pain_natures,
-        pain_locations: form.pain_locations,
-        spinal_areas: form.spinal_areas,
-        symptom_start: form.symptom_start,
-        previous_treatments: form.previous_treatments,
-        previous_surgeries: form.previous_surgeries,
-        aggravating_factors: form.aggravating_factors,
-        relieving_factors: form.relieving_factors,
-        pain_duration: form.pain_duration,
-        pain_type: form.pain_natures.join(', '),
-        joint_swelling_stiffness: form.joint_swelling_stiffness,
-      })
+      let data
+      if (consultationId) {
+        const updated = await updateConsultation(consultationId, {
+          patient_name: form.patient_name,
+          patient_phone: form.patient_phone,
+          patient_age: Number(form.patient_age),
+          chief_complaint: form.chief_complaint,
+          medical_history: form.medical_history,
+          current_medications: form.current_medications,
+          doctor_id: selectedDoctorId,
+          pain_severity: form.pain_severity,
+          pain_natures: form.pain_natures,
+          pain_locations: form.pain_locations,
+          spinal_areas: form.spinal_areas,
+          symptom_start: form.symptom_start,
+          previous_treatments: form.previous_treatments,
+          previous_surgeries: form.previous_surgeries,
+          aggravating_factors: form.aggravating_factors,
+          relieving_factors: form.relieving_factors,
+          pain_duration: form.pain_duration,
+          pain_type: form.pain_natures.join(', '),
+          joint_swelling_stiffness: form.joint_swelling_stiffness,
+        })
+        data = updated || await getConsultationById(consultationId) as EnhancedConsultation
+      } else {
+        data = await createConsultation({
+          patient_name: form.patient_name,
+          patient_phone: form.patient_phone,
+          patient_age: Number(form.patient_age),
+          chief_complaint: form.chief_complaint,
+          medical_history: form.medical_history,
+          current_medications: form.current_medications,
+          doctor_id: selectedDoctorId,
+          pain_severity: form.pain_severity,
+          pain_natures: form.pain_natures,
+          pain_locations: form.pain_locations,
+          spinal_areas: form.spinal_areas,
+          symptom_start: form.symptom_start,
+          previous_treatments: form.previous_treatments,
+          previous_surgeries: form.previous_surgeries,
+          aggravating_factors: form.aggravating_factors,
+          relieving_factors: form.relieving_factors,
+          pain_duration: form.pain_duration,
+          pain_type: form.pain_natures.join(', '),
+          joint_swelling_stiffness: form.joint_swelling_stiffness,
+        })
+      }
       setConsultationId(data.id)
       if (form.id_file) {
         if (IS_DEMO) {
@@ -228,7 +256,7 @@ export default function NewConsultation() {
         appointment_date: selectedDate,
         appointment_time: selectedTime,
       })
-      router.push(`/patient/consultation/${consultationId}`)
+      router.push(`/consultation/success?doctor=${selectedDoctorId}&consultation=${consultationId}`)
     } catch (err) {
       console.error(err)
       toasts.push('حدث خطأ أثناء حجز الموعد', 'error')
@@ -265,7 +293,6 @@ export default function NewConsultation() {
               form={form}
               set={set}
               selectedDoctorId={selectedDoctorId}
-              onSelectDoctor={setSelectedDoctorId}
               loading={loading}
               onNext={nextFromStep0}
             />
@@ -290,6 +317,7 @@ export default function NewConsultation() {
           {step === 3 && (
             <Step3Payment
               price={PRICE}
+              doctorName={DOCTORS.find((d) => d.id === selectedDoctorId)?.name || DOCTORS[0].name}
               paymentLoading={paymentLoading}
               checkoutUrl={checkoutUrl}
               consultationId={consultationId}

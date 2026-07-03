@@ -95,17 +95,21 @@ export function AnimatedCounter({ end, suffix = '' }: { end: number; suffix?: st
     if (!started) return
     const el = ref.current
     if (!el) return
-    let current = 0
-    const step = Math.max(1, Math.floor(end / 50))
-    const interval = setInterval(() => {
-      current += step
-      if (current >= end) {
-        current = end
-        clearInterval(interval)
-      }
+    const duration = 1400
+    const startTime = performance.now()
+    let raf = 0
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - startTime) / duration)
+      // easeOutCubic for a natural deceleration
+      const eased = 1 - Math.pow(1 - progress, 3)
+      const current = Math.round(eased * end)
       el.textContent = current.toLocaleString('en-US') + suffix
-    }, 30)
-    return () => clearInterval(interval)
+      if (progress < 1) {
+        raf = requestAnimationFrame(tick)
+      }
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
   }, [started, end, suffix])
 
   return (

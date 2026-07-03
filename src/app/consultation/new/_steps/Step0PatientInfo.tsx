@@ -10,7 +10,6 @@ type Props = {
   form: FormData
   set: <K extends keyof FormData>(k: K, v: FormData[K]) => void
   selectedDoctorId: string
-  onSelectDoctor: (id: string) => void
   loading: boolean
   onNext: () => void
 }
@@ -19,55 +18,42 @@ export function Step0PatientInfo({
   form,
   set,
   selectedDoctorId,
-  onSelectDoctor,
   loading,
   onNext,
 }: Props) {
+  const selectedDoctor = DOCTORS.find((d) => d.id === selectedDoctorId) || DOCTORS[0]
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      <Field label="اختر الطبيب الاستشاري" required>
-        <div
-          role="radiogroup"
-          aria-label="قائمة الأطباء الاستشاريين"
-          className="doctor-grid"
-        >
-          {DOCTORS.map((d) => {
-            const isSelected = selectedDoctorId === d.id
-            return (
-              <div
-                key={d.id}
-                role="radio"
-                aria-checked={isSelected}
-                tabIndex={0}
-                onClick={() => onSelectDoctor(d.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    onSelectDoctor(d.id)
-                  }
-                }}
-                className={['doctor-card', isSelected && 'doctor-card-selected']
-                  .filter(Boolean)
-                  .join(' ')}
-              >
-                <div className="doctor-avatar">
-                  <Image
-                    src={d.image}
-                    alt={d.name}
-                    fill
-                    sizes="44px"
-                    style={{ objectFit: 'cover' }}
-                  />
-                </div>
-                <div style={{ overflow: 'hidden' }}>
-                  <div className="doctor-name">{d.name}</div>
-                  <div className="doctor-specialty">{d.specialty}</div>
-                </div>
-              </div>
-            )
-          })}
+      {/* Doctor context card */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.85rem',
+          padding: '0.85rem 1rem',
+          borderRadius: 'var(--r)',
+          background: 'var(--primary-50)',
+          border: '1.5px solid var(--primary-100)',
+        }}
+      >
+        <div className="doctor-avatar" style={{ width: 48, height: 48 }}>
+          <Image
+            src={selectedDoctor.image}
+            alt={selectedDoctor.name}
+            fill
+            sizes="48px"
+            style={{ objectFit: 'cover' }}
+          />
         </div>
-      </Field>
+        <div style={{ overflow: 'hidden' }}>
+          <div style={{ fontSize: '0.66rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            الطبيب الاستشاري
+          </div>
+          <div className="doctor-name">{selectedDoctor.name}</div>
+          <div className="doctor-specialty">{selectedDoctor.specialty}</div>
+        </div>
+      </div>
 
       <Field label="الاسم الكامل للمريض" required>
         <input

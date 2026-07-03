@@ -35,29 +35,7 @@ export default function ArticleDetail() {
         
         {/* Back Button */}
         <div style={{ marginBottom: '2rem' }}>
-          <Link href="/" style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            fontSize: '0.88rem',
-            fontWeight: 700,
-            color: 'var(--primary)',
-            textDecoration: 'none',
-            padding: '0.5rem 1rem',
-            borderRadius: 'var(--r)',
-            background: 'var(--primary-subtle)',
-            border: '1px solid var(--border-accent)',
-            transition: 'all 200ms var(--ease-out)',
-          }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = 'translateX(5px)'
-              e.currentTarget.style.background = 'var(--primary-soft)'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = 'translateX(0)'
-              e.currentTarget.style.background = 'var(--primary-subtle)'
-            }}
-          >
+          <Link href="/" className="article-back">
             → العودة للرئيسية
           </Link>
         </div>
@@ -171,7 +149,7 @@ export default function ArticleDetail() {
               
               <h3 style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--fg)', marginBottom: '0.5rem' }}>هل تعاني من آلام المفاصل؟</h3>
               <p style={{ fontSize: '0.8rem', color: 'var(--fg-muted)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                احجز استشارتك المرئية والمباشرة الآن مع الدكتور خالد بترجي من منزلك لتلقي التشخيص الدقيق والخطة العلاجية المناسبة.
+                احجز استشارتك الآن مع الدكتور خالد بترجي من منزلك لتلقي التشخيص الدقيق والخطة العلاجية المناسبة عبر محادثة آمنة.
               </p>
               
               <Link href="/consultation/new" className="btn-primary" style={{ width: '100%', justifyContent: 'center', fontSize: '0.9rem', padding: '0.8rem 1.25rem' }}>
@@ -191,11 +169,8 @@ export default function ArticleDetail() {
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {ARTICLES.filter(a => a.slug !== slug).map(a => (
-                  <Link key={a.slug} href={`/articles/${a.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
-                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--fg)', lineHeight: 1.4, transition: 'color 200ms' }}
-                         onMouseEnter={e => (e.currentTarget.style.color = 'var(--primary)')}
-                         onMouseLeave={e => (e.currentTarget.style.color = 'var(--fg)')}
-                    >
+                  <Link key={a.slug} href={`/articles/${a.slug}`} className="article-related-link">
+                    <div className="article-related-title">
                       {a.title}
                     </div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--fg-dim)', marginTop: '0.2rem' }}>
