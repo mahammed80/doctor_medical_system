@@ -1,9 +1,10 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ARTICLES } from '@/lib/articles'
+import { getDoctorSettings, type DoctorScheduleSettings } from '@/lib/consultationService'
 
 /* ── DATA ── */
 
@@ -298,6 +299,50 @@ function DiamondShower() {
 /* ── PAGE ── */
 
 export default function Home() {
+  const [docSettings, setDocSettings] = useState<DoctorScheduleSettings | null>(null)
+
+  useEffect(() => {
+    getDoctorSettings('khalid').then(setDocSettings)
+  }, [])
+
+  const dynamicServices = services.map((svc, idx) => {
+    if (!docSettings) return svc
+    if (idx === 0 && docSettings.consultationPrice != null) {
+      return { ...svc, price: docSettings.consultationPrice.toLocaleString('en-US') }
+    }
+    if (idx === 1 && docSettings.comprehensivePrice != null) {
+      return { ...svc, price: docSettings.comprehensivePrice.toLocaleString('en-US') }
+    }
+    if (idx === 2 && docSettings.packagePrice3 != null) {
+      const p3 = docSettings.packagePrice3
+      const p4 = docSettings.packagePrice4 ?? 3400
+      return {
+        ...svc,
+        price: p3.toLocaleString('en-US'),
+        features: [
+          `باقة 3 جلسات — بقيمة ${p3.toLocaleString('en-US')} ريال`,
+          `باقة 4 جلسات — بقيمة ${p4.toLocaleString('en-US')} ريال`,
+          ...svc.features.slice(2),
+        ]
+      }
+    }
+    return svc
+  })
+
+  const dynamicFaqs = faqs.map((faq) => {
+    if (!docSettings) return faq
+    if (faq.q === 'ما هي تكلفة الاستشارة الطبية؟') {
+      const p1 = docSettings.consultationPrice ?? 899
+      const p2 = docSettings.comprehensivePrice ?? 1700
+      const p3 = docSettings.packagePrice3 ?? 2500
+      return {
+        ...faq,
+        a: `تختلف التكلفة حسب مستوى الكشف المختار: الكشف الأساسي بقيمة ${p1.toLocaleString('en-US')} ريال، الكشف الشامل وإعداد الخطة العلاجية بقيمة ${p2.toLocaleString('en-US')} ريال، كما تتوفر باقات للمتابعات المتعددة تبدأ من ${p3.toLocaleString('en-US')} ريال لـ 3 جلسات.`
+      }
+    }
+    return faq
+  })
+
   return (
     <main
       style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}
@@ -858,7 +903,7 @@ export default function Home() {
             gap: '1.5rem',
             alignItems: 'start',
           }}>
-            {services.map((svc, i) => (
+            {dynamicServices.map((svc, i) => (
               <ScrollReveal key={svc.title} delay={i * 100}>
                 <div style={{
                   background: 'var(--surface)',
@@ -1350,7 +1395,7 @@ export default function Home() {
 
             <ScrollReveal delay={100}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {faqs.map(item => (
+                {dynamicFaqs.map(item => (
                   <details key={item.q} style={{
                     background: 'var(--surface)',
                     border: '1px solid var(--border-faint)',

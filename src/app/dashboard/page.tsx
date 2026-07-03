@@ -589,6 +589,42 @@ export default function Dashboard() {
                 </select>
               </div>
             </div>
+
+            <div>
+              <h3 className="dash-group-title">أسعار الجلسات والاستشارات</h3>
+              <div className="dash-field">
+                <label>سعر الكشف الأساسي (ريال)</label>
+                <input
+                  type="number"
+                  value={scheduleSettings.consultationPrice ?? 899}
+                  onChange={(e) => setScheduleSettings({ ...scheduleSettings, consultationPrice: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="dash-field" style={{ marginTop: '1rem' }}>
+                <label>سعر الكشف الشامل والخطة العلاجية (ريال)</label>
+                <input
+                  type="number"
+                  value={scheduleSettings.comprehensivePrice ?? 1700}
+                  onChange={(e) => setScheduleSettings({ ...scheduleSettings, comprehensivePrice: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="dash-field" style={{ marginTop: '1rem' }}>
+                <label>سعر باقة 3 جلسات متابعة (ريال)</label>
+                <input
+                  type="number"
+                  value={scheduleSettings.packagePrice3 ?? 2500}
+                  onChange={(e) => setScheduleSettings({ ...scheduleSettings, packagePrice3: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="dash-field" style={{ marginTop: '1rem' }}>
+                <label>سعر باقة 4 جلسات متابعة (ريال)</label>
+                <input
+                  type="number"
+                  value={scheduleSettings.packagePrice4 ?? 3400}
+                  onChange={(e) => setScheduleSettings({ ...scheduleSettings, packagePrice4: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Google Calendar Integration */}

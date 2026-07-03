@@ -73,6 +73,8 @@ export default function NewConsultation() {
     }
   }, [])
 
+  const currentPrice = String(docSettings?.consultationPrice ?? PRICE)
+
   useEffect(() => {
     if (step === 3 && consultationId && !checkoutUrl) {
       // Trigger network request; loading flag is set before the request fires.
@@ -82,7 +84,7 @@ export default function NewConsultation() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: Number(PRICE),
+          amount: Number(currentPrice),
           consultationId,
           patient: {
             name: form.patient_name,
@@ -101,7 +103,7 @@ export default function NewConsultation() {
         })
         .finally(() => setPaymentLoading(false))
     }
-  }, [step, consultationId, checkoutUrl, form.patient_name, form.patient_phone, toasts])
+  }, [step, consultationId, checkoutUrl, form.patient_name, form.patient_phone, toasts, currentPrice])
 
   useEffect(() => {
     getDoctorSettings(selectedDoctorId).then(setDocSettings)
@@ -353,7 +355,7 @@ export default function NewConsultation() {
           )}
           {step === 3 && (
             <Step3Payment
-              price={PRICE}
+              price={currentPrice}
               doctorName={DOCTORS.find((d) => d.id === selectedDoctorId)?.name || DOCTORS[0].name}
               paymentLoading={paymentLoading}
               checkoutUrl={checkoutUrl}

@@ -399,6 +399,10 @@ export type DoctorScheduleSettings = {
   slotDuration: number
   lunchStart: string
   lunchEnd: string
+  consultationPrice?: number
+  comprehensivePrice?: number
+  packagePrice3?: number
+  packagePrice4?: number
   googleCalendar?: {
     connected: boolean
     email?: string | null
@@ -412,6 +416,10 @@ const DEFAULT_SETTINGS: DoctorScheduleSettings = {
   slotDuration: 30,
   lunchStart: '12:00',
   lunchEnd: '13:00',
+  consultationPrice: 899,
+  comprehensivePrice: 1700,
+  packagePrice3: 2500,
+  packagePrice4: 3400,
 }
 
 export async function getDoctorSettings(doctorId: string): Promise<DoctorScheduleSettings> {
