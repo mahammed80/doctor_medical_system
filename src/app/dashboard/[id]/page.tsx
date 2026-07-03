@@ -7,7 +7,6 @@ import { useParams, useRouter } from 'next/navigation'
 import {
   Check,
   X,
-  AlertTriangle,
   Search,
   Send,
   Ban,
@@ -18,7 +17,8 @@ import {
   FlaskConical,
   ClipboardList,
   Paperclip,
-  User,
+  ArrowRight,
+  ExternalLink,
 } from 'lucide-react'
 import { getConsultationById, getConsultationFiles, updateConsultation, transitionStatus, EnhancedConsultation } from '@/lib/consultationService'
 import { getCachedSession, signOut, AuthSession } from '@/lib/auth'
@@ -35,19 +35,33 @@ import {
   STATUS_CONFIG,
   type ConsultationStatus,
 } from '@/lib/supabase'
+import { DashboardShell, DashboardGate, DashboardError } from '@/components/DashboardShell'
+import '../dashboard.css'
 
-const CATEGORY_COLORS: Record<string, { color: string; bg: string; icon: ReactNode }> = {
-  mri:          { color: 'var(--primary)', bg: 'var(--primary-soft)', icon: <Brain size={16} /> },
-  xray:         { color: 'var(--gold)',     bg: 'var(--gold-soft)',     icon: <ScanLine size={16} /> },
-  ct:           { color: 'var(--primary)', bg: 'var(--primary-soft)', icon: <Microscope size={16} /> },
-  lab_report:   { color: 'var(--ok)',       bg: 'var(--ok-soft)',       icon: <FlaskConical size={16} /> },
-  prescription: { color: 'oklch(40% 0.15 60)', bg: 'oklch(95% 0.05 80)', icon: <ClipboardList size={16} /> },
-  other:        { color: 'var(--fg-dim)',   bg: 'var(--surface)',       icon: <Paperclip size={16} /> },
-  id_card:      { color: 'var(--primary)', bg: 'var(--primary-soft)', icon: <User size={16} /> },
+const CATEGORY_STYLE: Record<string, { color: string; icon: ReactNode }> = {
+  mri:          { color: 'var(--dash-green)', icon: <Brain size={15} /> },
+  xray:         { color: 'var(--dash-gold)',  icon: <ScanLine size={15} /> },
+  ct:           { color: 'var(--dash-green)', icon: <Microscope size={15} /> },
+  lab_report:   { color: '#2E8B57',           icon: <FlaskConical size={15} /> },
+  prescription: { color: 'var(--dash-gold)',  icon: <ClipboardList size={15} /> },
+  other:        { color: 'var(--dash-dim)',   icon: <Paperclip size={15} /> },
+  id_card:      { color: 'var(--dash-green)', icon: <Paperclip size={15} /> },
 }
 
-function categoryStyle(cat: string | null | undefined) {
-  return CATEGORY_COLORS[cat || 'other'] || CATEGORY_COLORS.other
+function catStyle(cat: string | null | undefined) {
+  return CATEGORY_STYLE[cat || 'other'] || CATEGORY_STYLE.other
+}
+
+function severityFill(n: number | null | undefined): string {
+  if (n == null) return '0%'
+  return `${Math.min(100, Math.max(0, n * 10))}%`
+}
+
+function severityColor(n: number | null | undefined): string {
+  if (n == null) return 'var(--dash-dim)'
+  if (n <= 4) return '#2E8B57'
+  if (n <= 7) return 'var(--dash-gold)'
+  return 'var(--dash-err)'
 }
 
 export default function ConsultationDetail() {
@@ -63,44 +77,36 @@ export default function ConsultationDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Chat state
   const [messages, setMessages] = useState<ConsultationMessage[]>([])
   const [chatInput, setChatInput] = useState('')
   const [sendingMessage, setSendingMessage] = useState(false)
   const chatScrollRef = useRef<HTMLDivElement>(null)
 
-  // Doctor notes
   const [doctorNotes, setDoctorNotes] = useState('')
   const [savingNotes, setSavingNotes] = useState(false)
   const [notesSavedAt, setNotesSavedAt] = useState<string | null>(null)
 
-  // Reschedule
   const [showReschedule, setShowReschedule] = useState(false)
   const [reschedDate, setReschedDate] = useState('')
   const [reschedTime, setReschedTime] = useState('')
 
-  // Cancellation
   const [showCancel, setShowCancel] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
 
-  // Rejection
   const [showReject, setShowReject] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
 
-  // Auth guard
   useEffect(() => {
     const cached = getCachedSession()
     if (!cached) {
       router.replace('/dashboard/login')
       return
     }
-    // Initial sync from localStorage — runs once on mount.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSession(cached)
     setAuthChecked(true)
   }, [router])
 
-  // Load consultation + files
   useEffect(() => {
     if (!id || !authChecked) return
     let unsub: (() => void) | null = null
@@ -126,20 +132,17 @@ export default function ConsultationDetail() {
     return () => { if (unsub) unsub() }
   }, [id, authChecked])
 
-  // Auto-scroll chat
   useEffect(() => {
     if (chatScrollRef.current) {
       chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight
     }
   }, [messages])
 
-  // ── Action helpers ──────────────────────────────────────────────────────
   async function setStatus(next: ConsultationStatus, systemMessage?: string) {
     if (!consultation) return
     const updated = await transitionStatus(consultation.id, next, {}, systemMessage)
     if (updated) {
       setConsultation(updated)
-      // refresh messages after status change
       const list = await getMessages(updated.id)
       setMessages(list)
     }
@@ -217,7 +220,7 @@ export default function ConsultationDetail() {
       consultation.id,
       'submitted',
       {},
-      `تم إعادة جدولة الموعد إلى ${reschedDate} الساعة ${reschedTime}.`
+      `تم إعادة جدولة الموعد إلى ${reschedDate} الساعة ${reschedTime}.`,
     )
     const refreshed = await getConsultationById(consultation.id)
     if (refreshed) setConsultation(refreshed)
@@ -252,51 +255,31 @@ export default function ConsultationDetail() {
     }
   }
 
-  // ── Renders ─────────────────────────────────────────────────────────────
+  async function handleSignOut() {
+    await signOut()
+    router.replace('/dashboard/login')
+  }
+
   if (!authChecked || loading) {
     return (
-      <div className="geo-bg" style={{ minHeight: '100vh', padding: '3rem 0' }}>
-        <div className="container" style={{ textAlign: 'center', paddingTop: '10rem' }}>
-          <div className="card-warm" style={{ maxWidth: '400px', margin: '0 auto', padding: '3rem' }}>
-            <span style={{
-              display: 'inline-block', width: '40px', height: '40px',
-              border: '3px solid var(--primary-soft)', borderTopColor: 'var(--primary)',
-              borderRadius: '50%', animation: 'spin 1.7s linear infinite', marginBottom: '1rem',
-            }} />
-            <p style={{ fontWeight: 700, color: 'var(--fg-muted)' }}>
-              {authChecked ? 'جاري تحميل تفاصيل الاستشارة...' : 'جاري التحقق من تسجيل الدخول...'}
-            </p>
-          </div>
-        </div>
-      </div>
+      <DashboardGate
+        message={authChecked ? 'جاري تحميل تفاصيل الاستشارة...' : 'جاري التحقق من تسجيل الدخول...'}
+      />
     )
   }
 
   if (error || !consultation) {
-    return (
-      <div className="geo-bg" style={{ minHeight: '100vh', padding: '3rem 0' }}>
-        <div className="container" style={{ textAlign: 'center', paddingTop: '8rem' }}>
-          <div className="card-warm" style={{ maxWidth: '450px', margin: '0 auto', padding: '3rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-              <AlertTriangle size={32} />
-            </div>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 900, marginBottom: '0.5rem' }}>{error || 'الاستشارة غير موجودة'}</h2>
-            <Link href="/dashboard" className="btn-primary" style={{ fontSize: '0.9rem' }}>العودة للوحة التحكم</Link>
-          </div>
-        </div>
-      </div>
-    )
+    return <DashboardError message={error || 'الاستشارة غير موجودة'} onBack={() => router.push('/dashboard')} />
   }
 
   const config = STATUS_CONFIG[consultation.status]
   const doctorId = consultation.doctor_id || 'khalid'
-  const assignedDoc = DOCTORS.find(d => d.id === doctorId) || DOCTORS[0]
+  const assignedDoc = DOCTORS.find((d) => d.id === doctorId) || DOCTORS[0]
 
   const painNatures = (consultation.pain_natures || []).filter(Boolean)
   const painLocations = (consultation.pain_locations || []).filter(Boolean)
   const spinalAreas = (consultation.spinal_areas || []).filter(Boolean)
 
-  // Group files by category
   const filesByCategory = files.reduce<Record<string, ConsultationFile[]>>((acc, f) => {
     const key = f.category || 'other'
     if (!acc[key]) acc[key] = []
@@ -307,421 +290,364 @@ export default function ConsultationDetail() {
   const canActOnReview = ['submitted', 'under_review', 'patient_replied'].includes(consultation.status)
   const isClosed = ['completed', 'cancelled', 'declined'].includes(consultation.status)
 
+  const facts: [string, string | null | undefined][] = [
+    ['مدة الشكوى', consultation.pain_duration],
+    ['كيف بدأت الأعراض', consultation.symptom_start],
+    ['علاجات سابقة', consultation.previous_treatments],
+    ['عمليات سابقة', consultation.previous_surgeries],
+    ['عوامل تزيد الألم', consultation.aggravating_factors],
+    ['عوامل تخفف الألم', consultation.relieving_factors],
+    ['تورم/تيبس المفاصل', consultation.joint_swelling_stiffness],
+    ['التاريخ المرضي', consultation.medical_history],
+    ['الأدوية الحالية', consultation.current_medications],
+  ]
+
   return (
-    <div className="geo-bg" style={{ minHeight: '100vh', padding: '3rem 0', position: 'relative' }}>
-      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 1.5rem', position: 'relative', zIndex: 1 }}>
-        {/* Top bar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-          <Link href="/dashboard" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--fg-dim)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>
-            <span>→</span> العودة للوحة التحكم
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700 }}>{session?.display_name || session?.email}</span>
-            <button onClick={async () => { await signOut(); router.replace('/dashboard/login') }} className="btn-ghost" style={{ fontSize: '0.72rem', padding: '0.35rem 0.7rem' }}>
-              خروج
-            </button>
+    <DashboardShell active="requests" session={session} onSignOut={handleSignOut}>
+      {/* Topbar */}
+      <div className="dash-detail-topbar">
+        <Link href="/dashboard" className="dash-back">
+          <ArrowRight size={16} /> العودة للوحة التحكم
+        </Link>
+        <div className="dash-detail-heading">
+          <h1 className="dash-detail-title">تفاصيل استشارة: {consultation.patient_name}</h1>
+          <div className="dash-detail-sub">
+            <span className={`dash-badge dash-badge-${consultation.status}`}>{config?.label}</span>
+            <span className="dash-detail-meta">
+              {new Date(consultation.created_at).toLocaleString('ar-SA-u-nu-latn')}
+            </span>
           </div>
         </div>
+      </div>
 
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-          <div style={{ position: 'relative' }}>
-            <div style={{ position: 'absolute', right: '-0.75rem', top: '0.25rem', width: '4px', height: '28px', borderRadius: '2px', background: 'linear-gradient(180deg, var(--primary), var(--gold))' }} />
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 900, letterSpacing: '-0.02em', marginRight: '0.75rem' }}>
-              تفاصيل استشارة: {consultation.patient_name}
-            </h1>
-            <div style={{ marginTop: '0.5rem', marginRight: '0.75rem' }}>
-              <span className={config?.badge || 'badge-primary'}>{config?.label}</span>
-            </div>
-          </div>
-          <span className="num" style={{ fontSize: '0.78rem', color: 'var(--fg-dim)', direction: 'ltr', padding: '0.4rem 0.85rem', background: 'var(--bg)', borderRadius: 'var(--r-sm)', border: '1px solid var(--border-faint)', whiteSpace: 'nowrap' }}>
-            {new Date(consultation.created_at).toLocaleString('ar-SA-u-nu-latn')}
-          </span>
+      {/* Doctor banner */}
+      <div className="dash-doctor-banner" style={{ marginBottom: '1.1rem' }}>
+        <div className="dash-doctor-banner-avatar">
+          <Image src={assignedDoc.image} alt={assignedDoc.name} fill sizes="54px" style={{ objectFit: 'cover' }} />
         </div>
-
-        {/* Doctor card */}
-        <div className="card-warm" style={{ marginBottom: '1.25rem', padding: '1.1rem 1.5rem', border: '1.5px solid var(--border-accent)', background: 'var(--primary-subtle)', display: 'flex', alignItems: 'center', gap: '1.25rem', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, transparent, var(--gold), transparent)', opacity: 0.3 }} />
-          <div style={{ width: '52px', height: '52px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--primary)', position: 'relative', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
-            <Image src={assignedDoc.image} alt={assignedDoc.name} fill sizes="52px" style={{ objectFit: 'cover' }} />
-          </div>
-          <div>
-            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>الطبيب المعالج</div>
-            <h2 style={{ fontSize: '1rem', fontWeight: 900, color: 'var(--fg)' }}>{consultation.doctor_name || assignedDoc.name}</h2>
-            <p style={{ fontSize: '0.78rem', color: 'var(--fg-muted)' }}>{consultation.specialty || assignedDoc.specialty}</p>
-          </div>
-          {consultation.appointment_date && consultation.appointment_time && (
-            <div className="num" style={{ marginRight: 'auto', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-              <span style={{ fontSize: '0.66rem', color: 'var(--fg-dim)' }}>الموعد:</span>
-              <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary)' }}>
-                {new Date(consultation.appointment_date).toLocaleDateString('ar-SA-u-nu-latn', { weekday: 'short', day: 'numeric', month: 'short' })}
-              </span>
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--gold)' }}>{consultation.appointment_time}</span>
-            </div>
-          )}
+        <div>
+          <div className="dash-doctor-banner-kicker">الطبيب المعالج</div>
+          <div className="dash-doctor-banner-name">{consultation.doctor_name || assignedDoc.name}</div>
+          <div className="dash-doctor-banner-spec">{consultation.specialty || assignedDoc.specialty}</div>
         </div>
-
-        {/* Action toolbar */}
-        <div className="card-warm" style={{ marginBottom: '1.25rem', padding: '1rem 1.25rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-          {canActOnReview && (
-            <>
-              <button onClick={startReview} className="btn-ghost" style={{ fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><Search size={16} /> بدء المراجعة</button>
-              <button onClick={approve} className="btn-primary" style={{ fontSize: '0.78rem', background: 'var(--ok)', borderColor: 'var(--ok)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><Check size={16} /> قبول وتأكيد</button>
-              <button onClick={() => { setChatInput(QUICK_REPLY_TEMPLATES[0]); askForInfo() }} className="btn-ghost" style={{ fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><Send size={16} /> طلب معلومات</button>
-              <button onClick={() => setShowReject(true)} className="btn-ghost" style={{ fontSize: '0.78rem', color: 'var(--err)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><X size={16} /> رفض</button>
-            </>
-          )}
-          {consultation.status === 'approved' && (
-            <button onClick={startConsultation} className="btn-primary" style={{ fontSize: '0.78rem' }}>بدء الاستشارة وإغلاقها</button>
-          )}
-          {!isClosed && consultation.status !== 'pending_payment' && consultation.status !== 'pending_booking' && (
-            <>
-              <button onClick={() => setShowReschedule(true)} className="btn-ghost" style={{ fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><Calendar size={16} /> إعادة جدولة</button>
-              <button onClick={() => setShowCancel(true)} className="btn-ghost" style={{ fontSize: '0.78rem', color: 'var(--err)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><Ban size={16} /> إلغاء</button>
-            </>
-          )}
-          <a
-            href={`/patient/consultation/${consultation.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-ghost"
-            style={{ fontSize: '0.78rem' }}
-          >
-            ↗ عرض كالمريض
-          </a>
-        </div>
-
-        {/* Reschedule modal-ish */}
-        {showReschedule && (
-          <div className="card-warm" style={{ marginBottom: '1.25rem', padding: '1.25rem', border: '1.5px solid var(--primary)' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><Calendar size={16} /> إعادة جدولة الموعد</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <input type="date" className="input" value={reschedDate} onChange={e => setReschedDate(e.target.value)} />
-              <input type="time" className="input" value={reschedTime} onChange={e => setReschedTime(e.target.value)} />
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.85rem' }}>
-              <button onClick={reschedule} className="btn-primary" style={{ flex: 1 }}>تأكيد</button>
-              <button onClick={() => setShowReschedule(false)} className="btn-ghost" style={{ flex: 1 }}>إلغاء</button>
-            </div>
+        {consultation.appointment_date && consultation.appointment_time && (
+          <div className="dash-doctor-banner-appt">
+            <span className="dash-doctor-banner-appt-label">الموعد</span>
+            <span className="dash-doctor-banner-appt-date">
+              {new Date(consultation.appointment_date).toLocaleDateString('ar-SA-u-nu-latn', { weekday: 'short', day: 'numeric', month: 'short' })}
+            </span>
+            <span className="dash-doctor-banner-appt-time">{consultation.appointment_time}</span>
           </div>
         )}
+      </div>
 
-        {showCancel && (
-          <div className="card-warm" style={{ marginBottom: '1.25rem', padding: '1.25rem', border: '1.5px solid var(--err)' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '0.85rem', color: 'var(--err)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><Ban size={16} /> إلغاء الاستشارة</h3>
-            <textarea
-              className="input"
-              placeholder="سبب الإلغاء (سيظهر للمريض)..."
-              value={cancelReason}
-              onChange={e => setCancelReason(e.target.value)}
-              style={{ minHeight: '70px' }}
-            />
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.85rem' }}>
-              <button onClick={cancel} className="btn-primary" style={{ flex: 1, background: 'var(--err)', borderColor: 'var(--err)' }}>تأكيد الإلغاء</button>
-              <button onClick={() => setShowCancel(false)} className="btn-ghost" style={{ flex: 1 }}>تراجع</button>
+      {/* Actions */}
+      <div className="dash-actions">
+        {canActOnReview && (
+          <>
+            <button onClick={startReview} className="dash-action"><Search size={15} /> بدء المراجعة</button>
+            <button onClick={approve} className="dash-action dash-action-ok"><Check size={15} /> قبول وتأكيد</button>
+            <button onClick={() => { setChatInput(QUICK_REPLY_TEMPLATES[0]); askForInfo() }} className="dash-action"><Send size={15} /> طلب معلومات</button>
+            <button onClick={() => setShowReject(true)} className="dash-action dash-action-err"><X size={15} /> رفض</button>
+          </>
+        )}
+        {consultation.status === 'approved' && (
+          <button onClick={startConsultation} className="dash-action dash-action-primary">بدء الاستشارة وإغلاقها</button>
+        )}
+        {!isClosed && consultation.status !== 'pending_payment' && consultation.status !== 'pending_booking' && (
+          <>
+            <button onClick={() => setShowReschedule(true)} className="dash-action"><Calendar size={15} /> إعادة جدولة</button>
+            <button onClick={() => setShowCancel(true)} className="dash-action dash-action-err"><Ban size={15} /> إلغاء</button>
+          </>
+        )}
+        <a
+          href={`/patient/consultation/${consultation.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="dash-action"
+          style={{ marginInlineStart: 'auto' }}
+        >
+          <ExternalLink size={15} /> عرض كالمريض
+        </a>
+      </div>
+
+      {/* Confirm panels */}
+      {showReschedule && (
+        <div className="dash-confirm">
+          <div className="dash-confirm-title"><Calendar size={16} /> إعادة جدولة الموعد</div>
+          <div className="dash-field-row">
+            <div className="dash-field">
+              <label>التاريخ الجديد</label>
+              <input type="date" value={reschedDate} onChange={(e) => setReschedDate(e.target.value)} />
+            </div>
+            <div className="dash-field">
+              <label>الوقت الجديد</label>
+              <input type="time" value={reschedTime} onChange={(e) => setReschedTime(e.target.value)} />
             </div>
           </div>
-        )}
-
-        {showReject && (
-          <div className="card-warm" style={{ marginBottom: '1.25rem', padding: '1.25rem', border: '1.5px solid var(--err)' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '0.85rem', color: 'var(--err)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><X size={16} /> رفض طلب الاستشارة</h3>
-            <textarea
-              className="input"
-              placeholder="سبب الرفض (اختياري، سيظهر للمريض)..."
-              value={rejectReason}
-              onChange={e => setRejectReason(e.target.value)}
-              style={{ minHeight: '70px' }}
-            />
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.85rem' }}>
-              <button onClick={reject} className="btn-primary" style={{ flex: 1, background: 'var(--err)', borderColor: 'var(--err)' }}>تأكيد الرفض</button>
-              <button onClick={() => { setShowReject(false); setRejectReason('') }} className="btn-ghost" style={{ flex: 1 }}>تراجع</button>
-            </div>
+          <div className="dash-confirm-row">
+            <button onClick={reschedule} className="dash-action dash-action-primary">تأكيد</button>
+            <button onClick={() => setShowReschedule(false)} className="dash-action">إلغاء</button>
           </div>
-        )}
+        </div>
+      )}
 
-        <div className="detail-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-          {/* LEFT column: patient + assessment + files */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            {/* Patient + complaint */}
-            <div className="card-warm" style={{ position: 'relative', overflow: 'hidden' }}>
-              <SectionTitle color="var(--primary)">بيانات المريض والشكوى</SectionTitle>
-              <div className="num" style={{ padding: '0 1.25rem 1rem', display: 'grid', gridTemplateColumns: '110px 1fr', gap: '0.5px', background: 'var(--border-faint)', borderRadius: 'var(--r)', overflow: 'hidden' }}>
-                {[
-                  { l: 'الاسم',     v: consultation.patient_name },
-                  { l: 'الجوال',    v: consultation.patient_phone, dir: 'ltr' as const },
-                  { l: 'العمر',     v: `${consultation.patient_age} سنة` },
-                ].map(row => (
-                  <div key={row.l} style={{ display: 'contents' }}>
-                    <div style={{ padding: '0.7rem 0.9rem', fontSize: '0.78rem', fontWeight: 700, color: 'var(--fg-dim)', background: 'var(--surface)' }}>{row.l}</div>
-                    <div style={{ padding: '0.7rem 0.9rem', fontSize: '0.85rem', color: 'var(--fg)', background: 'var(--surface)', direction: row.dir, textAlign: row.dir === 'ltr' ? 'left' : 'right' }}>{row.v}</div>
-                  </div>
-                ))}
+      {showCancel && (
+        <div className="dash-confirm dash-confirm-err">
+          <div className="dash-confirm-title"><Ban size={16} /> إلغاء الاستشارة</div>
+          <textarea
+            placeholder="سبب الإلغاء (سيظهر للمريض)..."
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+          />
+          <div className="dash-confirm-row">
+            <button onClick={cancel} className="dash-action dash-action-err">تأكيد الإلغاء</button>
+            <button onClick={() => setShowCancel(false)} className="dash-action">تراجع</button>
+          </div>
+        </div>
+      )}
+
+      {showReject && (
+        <div className="dash-confirm dash-confirm-err">
+          <div className="dash-confirm-title"><X size={16} /> رفض طلب الاستشارة</div>
+          <textarea
+            placeholder="سبب الرفض (اختياري، سيظهر للمريض)..."
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+          />
+          <div className="dash-confirm-row">
+            <button onClick={reject} className="dash-action dash-action-err">تأكيد الرفض</button>
+            <button onClick={() => { setShowReject(false); setRejectReason('') }} className="dash-action">تراجع</button>
+          </div>
+        </div>
+      )}
+
+      {/* Two-column grid */}
+      <div className="dash-detail-grid">
+        {/* LEFT column */}
+        <div className="dash-col">
+          {/* Patient + complaint */}
+          <div className="dash-panel">
+            <div className="dash-panel-head">
+              <span className="dash-panel-head-spine" />
+              <span className="dash-panel-title">بيانات المريض والشكوى</span>
+            </div>
+            <div className="dash-panel-body">
+              <div className="dash-info-table">
+                <div className="dash-info-cell dash-info-key">الاسم</div>
+                <div className="dash-info-cell dash-info-val">{consultation.patient_name}</div>
+                <div className="dash-info-cell dash-info-key">الجوال</div>
+                <div className="dash-info-cell dash-info-val ltr">{consultation.patient_phone}</div>
+                <div className="dash-info-cell dash-info-key">العمر</div>
+                <div className="dash-info-cell dash-info-val">{consultation.patient_age} سنة</div>
               </div>
-              <div style={{ padding: '0 1.25rem 1.25rem' }}>
-                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--fg-dim)', marginBottom: '0.35rem' }}>الشكوى الرئيسية</div>
-                <div style={{ fontSize: '0.9rem', lineHeight: 1.6, color: 'var(--fg)' }}>{consultation.chief_complaint}</div>
+              <div className="dash-complaint-block">
+                <div className="dash-complaint-kicker">الشكوى الرئيسية</div>
+                <div className="dash-complaint-text">{consultation.chief_complaint}</div>
               </div>
             </div>
+          </div>
 
-            {/* Pain assessment */}
-            <div className="card-warm" style={{ position: 'relative', overflow: 'hidden' }}>
-              <SectionTitle color="var(--gold)">تقييم الألم</SectionTitle>
-              <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                {consultation.pain_severity != null && (
-                  <div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--fg-dim)', fontWeight: 700, marginBottom: '0.25rem' }}>الشدّة</div>
-                    <div className="num" style={{ fontSize: '1.5rem', fontWeight: 900, color: consultation.pain_severity <= 4 ? 'var(--ok)' : consultation.pain_severity <= 7 ? 'var(--gold)' : 'var(--err)' }}>
+          {/* Pain assessment */}
+          <div className="dash-panel">
+            <div className="dash-panel-head">
+              <span className="dash-panel-head-spine gold" />
+              <span className="dash-panel-title">تقييم الألم</span>
+            </div>
+            <div className="dash-panel-body" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              {consultation.pain_severity != null && (
+                <div>
+                  <div className="dash-severity-meter">
+                    <span className="dash-severity-num" style={{ color: severityColor(consultation.pain_severity) }}>
                       {consultation.pain_severity}/10
+                    </span>
+                    <span className="dash-severity-track">
+                      <span className="dash-severity-fill" style={{ width: severityFill(consultation.pain_severity) }} />
+                    </span>
+                  </div>
+                </div>
+              )}
+              {painNatures.length > 0 && (
+                <div>
+                  <div className="dash-complaint-kicker" style={{ marginBottom: '0.4rem' }}>طبيعة الألم</div>
+                  <div className="dash-tags">
+                    {painNatures.map((n) => (
+                      <span key={n} className="dash-tag dash-tag-green">{PAIN_NATURE_LABELS_AR[n as never] || n}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {painLocations.length > 0 && (
+                <div>
+                  <div className="dash-complaint-kicker" style={{ marginBottom: '0.4rem' }}>أماكن الألم</div>
+                  <div className="dash-tags">
+                    {painLocations.map((l) => (
+                      <span key={l} className="dash-tag dash-tag-err">{PAIN_LOCATION_LABELS_AR[l as never] || l}</span>
+                    ))}
+                    {spinalAreas.map((s) => (
+                      <span key={s} className="dash-tag dash-tag-gold">{SPINAL_AREA_LABELS_AR[s as never] || s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {facts.filter(([, v]) => v).length > 0 && (
+                <div className="dash-fact-list">
+                  {facts.filter(([, v]) => v).map(([l, v]) => (
+                    <div key={l} className="dash-fact">
+                      <div className="dash-fact-key">{l}</div>
+                      <div className="dash-fact-val">{v as string}</div>
                     </div>
-                  </div>
-                )}
-                {painNatures.length > 0 && (
-                  <div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--fg-dim)', fontWeight: 700, marginBottom: '0.4rem' }}>طبيعة الألم</div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                      {painNatures.map(n => (
-                        <span key={n} style={{ padding: '0.3rem 0.7rem', background: 'var(--primary-soft)', color: 'var(--primary)', borderRadius: '9999px', fontSize: '0.78rem', fontWeight: 700 }}>
-                          {PAIN_NATURE_LABELS_AR[n as never] || n}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {painLocations.length > 0 && (
-                  <div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--fg-dim)', fontWeight: 700, marginBottom: '0.4rem' }}>أماكن الألم</div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                      {painLocations.map(l => (
-                        <span key={l} style={{ padding: '0.3rem 0.7rem', background: 'var(--err-soft)', color: 'var(--err)', borderRadius: '9999px', fontSize: '0.78rem', fontWeight: 700 }}>
-                          {PAIN_LOCATION_LABELS_AR[l as never] || l}
-                        </span>
-                      ))}
-                      {spinalAreas.map(s => (
-                        <span key={s} style={{ padding: '0.3rem 0.7rem', background: 'var(--gold-soft)', color: 'var(--gold)', borderRadius: '9999px', fontSize: '0.78rem', fontWeight: 700 }}>
-                          {SPINAL_AREA_LABELS_AR[s as never] || s}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {[
-                  ['مدة الشكوى',         consultation.pain_duration],
-                  ['كيف بدأت الأعراض',   consultation.symptom_start],
-                  ['علاجات سابقة',       consultation.previous_treatments],
-                  ['عمليات سابقة',       consultation.previous_surgeries],
-                  ['عوامل تزيد الألم',   consultation.aggravating_factors],
-                  ['عوامل تخفف الألم',   consultation.relieving_factors],
-                  ['تورم/تيبس المفاصل',  consultation.joint_swelling_stiffness],
-                  ['التاريخ المرضي',     consultation.medical_history],
-                  ['الأدوية الحالية',     consultation.current_medications],
-                ].filter(([, v]) => v).map(([l, v]) => (
-                  <div key={l as string}>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--fg-dim)', fontWeight: 700, marginBottom: '0.2rem' }}>{l}</div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--fg)' }}>{v as string}</div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
+          </div>
 
-            {/* Files grouped by category */}
-            <div className="card-warm" style={{ position: 'relative', overflow: 'hidden' }}>
-              <SectionTitle color="var(--gold)">الملفات المرفقة ({files.length})</SectionTitle>
-              <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                {files.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--fg-dim)', background: 'var(--bg)', borderRadius: 'var(--r)', border: '1px dashed var(--border)' }}>
-                    لا توجد ملفات مرفقة
-                  </div>
-                ) : (
-                  Object.entries(filesByCategory).map(([cat, list]) => {
-                    const style = categoryStyle(cat)
-                    return (
-                      <div key={cat}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: style.color, marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          <span>{style.icon}</span>
-                          {FILE_CATEGORY_LABELS_AR[cat as never] || cat} ({list.length})
-                        </div>
-                        {list.map(f => (
+          {/* Files */}
+          <div className="dash-panel">
+            <div className="dash-panel-head">
+              <span className="dash-panel-head-spine gold" />
+              <span className="dash-panel-title">الملفات المرفقة</span>
+              <span className="dash-panel-count">{files.length}</span>
+            </div>
+            <div className="dash-panel-body">
+              {files.length === 0 ? (
+                <div className="dash-files-empty">لا توجد ملفات مرفقة</div>
+              ) : (
+                Object.entries(filesByCategory).map(([cat, list]) => {
+                  const style = catStyle(cat)
+                  return (
+                    <div key={cat}>
+                      <div className="dash-file-cat-head" style={{ color: style.color }}>
+                        <span>{style.icon}</span>
+                        {FILE_CATEGORY_LABELS_AR[cat as never] || cat} ({list.length})
+                      </div>
+                      <div className="dash-file-list">
+                        {list.map((f) => (
                           <a
                             key={f.id}
                             href={f.file_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{
-                              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                              padding: '0.5rem 0.75rem', marginBottom: '0.3rem',
-                              background: 'var(--bg)', borderRadius: 'var(--r-sm)',
-                              border: '1px solid var(--border-faint)', textDecoration: 'none',
-                              transition: 'all 200ms',
-                            }}
+                            className="dash-file-item"
                           >
-                            <span style={{ fontSize: '0.82rem', color: 'var(--fg)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>{f.file_name}</span>
-                            <span style={{ fontSize: '0.7rem', color: style.color, fontWeight: 700 }}>فتح ↗</span>
+                            <span className="dash-file-name">{f.file_name}</span>
+                            <span className="dash-file-open" style={{ color: style.color }}>فتح ↗</span>
                           </a>
                         ))}
                       </div>
-                    )
-                  })
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT column: chat + notes */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            {/* Chat */}
-            <div className="card-warm" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-              <SectionTitle color="var(--primary)" inline>المحادثة مع المريض</SectionTitle>
-              <div
-                ref={chatScrollRef}
-                style={{
-                  padding: '1rem',
-                  minHeight: '280px',
-                  maxHeight: '400px',
-                  overflowY: 'auto',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.5rem',
-                  background: 'var(--bg)',
-                }}
-              >
-                {messages.length === 0 && (
-                  <p style={{ textAlign: 'center', color: 'var(--fg-dim)', fontSize: '0.82rem', padding: '1.5rem 0' }}>
-                    لا توجد رسائل بعد. ابدأ المحادثة بإرسال رسالة أو اطلب معلومات.
-                  </p>
-                )}
-                {messages.map(m => {
-                  const isDoctor = m.sender_role === 'doctor'
-                  const isSystem = m.sender_role === 'system'
-                  if (isSystem) {
-                    return (
-                      <div key={m.id} style={{ textAlign: 'center', fontSize: '0.72rem', color: 'var(--fg-dim)' }}>
-                        <span style={{ display: 'inline-block', padding: '0.2rem 0.75rem', background: 'var(--surface)', borderRadius: '9999px', border: '1px solid var(--border-faint)' }}>{m.body}</span>
-                      </div>
-                    )
-                  }
-                  return (
-                    <div
-                      key={m.id}
-                      style={{
-                        alignSelf: isDoctor ? 'flex-end' : 'flex-start',
-                        maxWidth: '82%',
-                        padding: '0.5rem 0.8rem',
-                        borderRadius: '12px',
-                        background: isDoctor ? 'var(--primary)' : 'var(--surface)',
-                        color: isDoctor ? 'white' : 'var(--fg)',
-                        border: isDoctor ? 'none' : '1px solid var(--border-faint)',
-                        fontSize: '0.85rem',
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      <div style={{ fontSize: '0.65rem', fontWeight: 700, opacity: 0.7, marginBottom: '0.15rem' }}>
-                        {isDoctor ? 'أنا (الطبيب)' : consultation.patient_name}
-                      </div>
-                      <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{m.body}</div>
-                      <div style={{ fontSize: '0.6rem', opacity: 0.65, marginTop: '0.2rem' }}>
-                        <span className="num" style={{ direction: 'ltr' }}>
-                          {new Date(m.created_at).toLocaleTimeString('ar-SA-u-nu-latn', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
                     </div>
                   )
-                })}
-              </div>
-
-              <form onSubmit={sendChat} style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', borderTop: '1px solid var(--border-faint)', background: 'var(--surface)' }}>
-                <textarea
-                  value={chatInput}
-                  onChange={e => setChatInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(e as unknown as React.FormEvent) } }}
-                  placeholder="اكتب رسالة للمريض..."
-                  rows={2}
-                  className="input"
-                  style={{ resize: 'none' }}
-                  disabled={sendingMessage}
-                />
-                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                  <button type="submit" className="btn-primary" disabled={!chatInput.trim() || sendingMessage} style={{ flex: 1, padding: '0.55rem' }}>
-                    {sendingMessage ? '...' : 'إرسال'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={askForInfo}
-                    className="btn-ghost"
-                    disabled={!chatInput.trim() || sendingMessage}
-                    style={{ fontSize: '0.78rem', padding: '0.5rem 0.75rem' }}
-                    title="إرسال الرسالة وتغيير الحالة إلى 'يحتاج معلومات'"
-                  >
-                    <Send size={16} /> اطلب معلومات
-                  </button>
-                </div>
-                {/* Quick reply templates */}
-                <details style={{ fontSize: '0.78rem' }}>
-                  <summary style={{ cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, padding: '0.25rem 0' }}>قوالب جاهزة</summary>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginTop: '0.4rem' }}>
-                    {QUICK_REPLY_TEMPLATES.map(t => (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => setChatInput(t)}
-                        style={{ textAlign: 'right', padding: '0.4rem 0.6rem', background: 'var(--bg)', border: '1px solid var(--border-faint)', borderRadius: 'var(--r-sm)', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--fg-muted)' }}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
-                </details>
-              </form>
+                })
+              )}
             </div>
-
-            {/* Doctor notes */}
-            <div className="card-warm" style={{ padding: 0, overflow: 'hidden' }}>
-              <SectionTitle color="var(--gold)" inline>ملاحظات الطبيب (خاصة)</SectionTitle>
-              <div style={{ padding: '1rem 1.25rem' }}>
-                <textarea
-                  value={doctorNotes}
-                  onChange={e => setDoctorNotes(e.target.value)}
-                  placeholder="ملاحظاتك الخاصة حول هذه الحالة..."
-                  rows={6}
-                  className="input"
-                  style={{ resize: 'vertical', minHeight: '120px' }}
-                />
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '0.6rem' }}>
-                  <button onClick={saveNotes} className="btn-primary" disabled={savingNotes} style={{ fontSize: '0.8rem', padding: '0.5rem 1rem' }}>
-                    {savingNotes ? 'جاري الحفظ...' : 'حفظ الملاحظات'}
-                  </button>
-                  {notesSavedAt && (
-                    <span style={{ fontSize: '0.72rem', color: 'var(--ok)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><Check size={16} /> تم الحفظ {notesSavedAt}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Cancellation reason display */}
-            {consultation.cancellation_reason && (
-              <div className="card-warm" style={{ padding: '1rem 1.25rem', borderRight: '4px solid var(--err)' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--err)', fontWeight: 700, marginBottom: '0.3rem' }}>سبب الإلغاء/الرفض</div>
-                <div style={{ fontSize: '0.88rem', color: 'var(--fg)' }}>{consultation.cancellation_reason}</div>
-              </div>
-            )}
           </div>
         </div>
-      </div>
-    </div>
-  )
-}
 
-function SectionTitle({ children, color, inline }: { children: React.ReactNode; color: string; inline?: boolean }) {
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: '0.5rem',
-      padding: inline ? '0.85rem 1.25rem' : '1rem 1.25rem 0.85rem',
-      borderBottom: inline ? '1px solid var(--border-faint)' : 'none',
-    }}>
-      <div style={{ width: '4px', height: '18px', borderRadius: '2px', background: color }} />
-      <h2 style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--fg-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-        {children}
-      </h2>
-    </div>
+        {/* RIGHT column */}
+        <div className="dash-col">
+          {/* Chat */}
+          <div className="dash-panel dash-chat">
+            <div className="dash-panel-head">
+              <span className="dash-panel-head-spine" />
+              <span className="dash-panel-title">المحادثة مع المريض</span>
+              <span className="dash-panel-count">{messages.length}</span>
+            </div>
+            <div ref={chatScrollRef} className="dash-chat-log">
+              {messages.length === 0 && (
+                <p className="dash-chat-empty">لا توجد رسائل بعد. ابدأ المحادثة بإرسال رسالة أو اطلب معلومات.</p>
+              )}
+              {messages.map((m) => {
+                const isDoctor = m.sender_role === 'doctor'
+                const isSystem = m.sender_role === 'system'
+                if (isSystem) {
+                  return (
+                    <div key={m.id} className="dash-bubble dash-bubble-system">
+                      <span>{m.body}</span>
+                    </div>
+                  )
+                }
+                return (
+                  <div key={m.id} className={`dash-bubble ${isDoctor ? 'dash-bubble-doctor' : 'dash-bubble-patient'}`}>
+                    <div className="dash-bubble-author">{isDoctor ? 'أنا (الطبيب)' : consultation.patient_name}</div>
+                    <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{m.body}</div>
+                    <div className="dash-bubble-time">
+                      <span>{new Date(m.created_at).toLocaleTimeString('ar-SA-u-nu-latn', { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            <form onSubmit={sendChat} className="dash-chat-composer">
+              <textarea
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(e as unknown as React.FormEvent) } }}
+                placeholder="اكتب رسالة للمريض..."
+                rows={2}
+                disabled={sendingMessage}
+              />
+              <div className="dash-chat-row">
+                <button type="submit" className="dash-action dash-action-primary" disabled={!chatInput.trim() || sendingMessage}>
+                  {sendingMessage ? '...' : 'إرسال'}
+                </button>
+                <button
+                  type="button"
+                  onClick={askForInfo}
+                  className="dash-action"
+                  disabled={!chatInput.trim() || sendingMessage}
+                  title="إرسال الرسالة وتغيير الحالة إلى «يحتاج معلومات»"
+                >
+                  <Send size={15} /> اطلب معلومات
+                </button>
+              </div>
+              <details className="dash-templates">
+                <summary>قوالب جاهزة</summary>
+                <div className="dash-templates-list">
+                  {QUICK_REPLY_TEMPLATES.map((t) => (
+                    <button key={t} type="button" className="dash-template-btn" onClick={() => setChatInput(t)}>
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </details>
+            </form>
+          </div>
+
+          {/* Doctor notes */}
+          <div className="dash-panel">
+            <div className="dash-panel-head">
+              <span className="dash-panel-head-spine gold" />
+              <span className="dash-panel-title">ملاحظات الطبيب (خاصة)</span>
+            </div>
+            <div className="dash-panel-body">
+              <textarea
+                value={doctorNotes}
+                onChange={(e) => setDoctorNotes(e.target.value)}
+                placeholder="ملاحظاتك الخاصة حول هذه الحالة..."
+                className="dash-notes-area"
+              />
+              <div className="dash-notes-row">
+                <button onClick={saveNotes} className="dash-action dash-action-primary" disabled={savingNotes}>
+                  {savingNotes ? 'جاري الحفظ...' : 'حفظ الملاحظات'}
+                </button>
+                {notesSavedAt && (
+                  <span className="dash-notes-saved"><Check size={15} /> تم الحفظ {notesSavedAt}</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Cancellation reason */}
+          {consultation.cancellation_reason && (
+            <div className="dash-reason">
+              <div className="dash-reason-key">سبب الإلغاء/الرفض</div>
+              <div className="dash-reason-val">{consultation.cancellation_reason}</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </DashboardShell>
   )
 }

@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState, type ReactNode } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
@@ -15,14 +14,16 @@ import {
   Calendar,
   CalendarDays,
   CreditCard,
-  User,
-  Settings,
+  ChevronLeft,
+  FileSearch,
+  RotateCcw,
 } from 'lucide-react'
 import { getConsultations, getDoctorSettings, saveDoctorSettings, DoctorScheduleSettings, EnhancedConsultation } from '@/lib/consultationService'
 import { getCachedSession, signOut, AuthSession } from '@/lib/auth'
 import { DOCTORS } from '@/lib/doctors'
 import { STATUS_CONFIG, type ConsultationStatus } from '@/lib/supabase'
 import { useToasts } from '@/components/Toaster'
+import { DashboardShell, DashboardGate } from '@/components/DashboardShell'
 import './dashboard.css'
 
 const OVERVIEW_STATUSES: ConsultationStatus[] = [
@@ -33,29 +34,51 @@ const OVERVIEW_STATUSES: ConsultationStatus[] = [
   'completed',
 ]
 
-const STATUS_META: Record<ConsultationStatus, { icon: ReactNode; color: string; soft: string; border: string }> = {
-  submitted:       { icon: <Inbox size={20} />,      color: 'var(--accent)',      soft: 'var(--accent-50)',      border: 'var(--border-accent)' },
-  under_review:    { icon: <Search size={20} />,     color: 'var(--primary)',     soft: 'var(--primary-50)',     border: 'var(--primary-100)' },
-  needs_info:      { icon: <HelpCircle size={20} />, color: 'var(--warn)',        soft: 'var(--warn-soft)',      border: 'rgba(184, 134, 75, 0.25)' },
-  patient_replied: { icon: <MessageCircle size={20} />, color: 'var(--primary-500)', soft: 'rgba(26, 60, 47, 0.08)', border: 'rgba(26, 60, 47, 0.14)' },
-  approved:        { icon: <Check size={20} />,      color: 'var(--ok)',          soft: 'var(--ok-soft)',        border: 'rgba(26, 60, 47, 0.18)' },
-  completed:       { icon: <Check size={20} />,       color: 'var(--primary)',     soft: 'var(--primary-50)',     border: 'var(--primary-100)' },
-  declined:        { icon: <X size={20} />,          color: 'var(--err)',         soft: 'var(--err-soft)',       border: 'rgba(165, 62, 62, 0.2)' },
-  cancelled:       { icon: <Ban size={20} />,        color: 'var(--err)',         soft: 'var(--err-soft)',       border: 'rgba(165, 62, 62, 0.2)' },
-  pending_payment: { icon: <CreditCard size={20} />, color: 'var(--accent)',      soft: 'var(--accent-50)',      border: 'var(--border-accent)' },
-  pending_booking: { icon: <Calendar size={20} />,   color: 'var(--primary)',     soft: 'var(--primary-50)',     border: 'var(--primary-100)' },
-  booked:          { icon: <Check size={20} />,      color: 'var(--ok)',          soft: 'var(--ok-soft)',        border: 'rgba(26, 60, 47, 0.18)' },
+type StatMeta = { icon: ReactNode; color: string; soft: string; line: string }
+
+const STATUS_META: Record<ConsultationStatus, StatMeta> = {
+  submitted:       { icon: <Inbox size={20} />,         color: 'var(--dash-terra)',  soft: 'var(--dash-terra-50)',  line: 'rgba(196,106,79,0.25)' },
+  under_review:    { icon: <FileSearch size={20} />,    color: 'var(--dash-green)',  soft: 'var(--dash-green-50)',  line: 'var(--dash-green-100)' },
+  needs_info:      { icon: <HelpCircle size={20} />,    color: 'var(--dash-gold)',   soft: 'var(--dash-amber-soft)', line: 'rgba(184,134,75,0.28)' },
+  patient_replied: { icon: <MessageCircle size={20} />, color: '#235344',            soft: 'var(--dash-green-50)',  line: 'var(--dash-green-100)' },
+  approved:        { icon: <Check size={20} />,         color: 'var(--dash-ok)',     soft: 'var(--dash-ok-soft)',   line: 'rgba(26,60,47,0.18)' },
+  completed:       { icon: <Check size={20} />,         color: 'var(--dash-green)',  soft: 'var(--dash-green-50)',  line: 'var(--dash-green-100)' },
+  declined:        { icon: <X size={20} />,             color: 'var(--dash-err)',    soft: 'var(--dash-err-soft)',  line: 'rgba(165,62,62,0.22)' },
+  cancelled:       { icon: <Ban size={20} />,           color: 'var(--dash-err)',    soft: 'var(--dash-err-soft)',  line: 'rgba(165,62,62,0.22)' },
+  pending_payment: { icon: <CreditCard size={20} />,    color: 'var(--dash-terra)',  soft: 'var(--dash-terra-50)',  line: 'rgba(196,106,79,0.25)' },
+  pending_booking: { icon: <Calendar size={20} />,      color: 'var(--dash-green)',  soft: 'var(--dash-green-50)',  line: 'var(--dash-green-100)' },
+  booked:          { icon: <Check size={20} />,         color: 'var(--dash-ok)',     soft: 'var(--dash-ok-soft)',   line: 'rgba(26,60,47,0.18)' },
 }
 
 const DAYS = [
-  { val: 0, label: 'الأحد (Sunday)' },
-  { val: 1, label: 'الاثنين (Monday)' },
-  { val: 2, label: 'الثلاثاء (Tuesday)' },
-  { val: 3, label: 'الأربعاء (Wednesday)' },
-  { val: 4, label: 'الخميس (Thursday)' },
-  { val: 5, label: 'الجمعة (Friday)' },
-  { val: 6, label: 'السبت (Saturday)' },
+  { val: 0, label: 'الأحد', en: 'Sunday' },
+  { val: 1, label: 'الاثنين', en: 'Monday' },
+  { val: 2, label: 'الثلاثاء', en: 'Tuesday' },
+  { val: 3, label: 'الأربعاء', en: 'Wednesday' },
+  { val: 4, label: 'الخميس', en: 'Thursday' },
+  { val: 5, label: 'الجمعة', en: 'Friday' },
+  { val: 6, label: 'السبت', en: 'Saturday' },
 ]
+
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const m = Math.floor(diff / 60000)
+  if (m < 1) return 'الآن'
+  if (m < 60) return `منذ ${m} دقيقة`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `منذ ${h} ساعة`
+  const d = Math.floor(h / 24)
+  if (d < 30) return `منذ ${d} يوم`
+  const mo = Math.floor(d / 30)
+  return `منذ ${mo} شهر`
+}
+
+function severityColor(n: number | null | undefined): string {
+  if (n == null) return 'var(--dash-dim)'
+  if (n <= 4) return '#2E8B57'
+  if (n <= 7) return 'var(--dash-gold)'
+  return 'var(--dash-err)'
+}
 
 export default function Dashboard() {
   const router = useRouter()
@@ -80,7 +103,6 @@ export default function Dashboard() {
       router.replace('/dashboard/login')
       return
     }
-    // Initial sync from localStorage — runs once on mount.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSession(cached)
     setAuthChecked(true)
@@ -114,8 +136,10 @@ export default function Dashboard() {
     const count = consultations.filter(
       (c) => c.status === status || (status === 'approved' && c.status === 'booked')
     ).length
-    return { status, count, ...STATUS_CONFIG[status], ...STATUS_META[status] }
+    return { status, count, label: STATUS_CONFIG[status].label, ...STATUS_META[status] }
   })
+  const maxCount = Math.max(1, ...statusCounts.map((s) => s.count))
+  const pendingCount = consultations.filter((c) => c.status === 'submitted').length
 
   const filteredConsultations = consultations.filter((c) => {
     const matchesSearch =
@@ -130,10 +154,10 @@ export default function Dashboard() {
 
   const activeFilters = searchQuery || selectedDoctorFilter !== 'all' || selectedStatusFilter !== 'all'
 
-  function resetFilters() {
-    setSearchQuery('')
-    setSelectedDoctorFilter('all')
-    setSelectedStatusFilter('all')
+  function clearFilter(kind: 'search' | 'doctor' | 'status') {
+    if (kind === 'search') setSearchQuery('')
+    if (kind === 'doctor') setSelectedDoctorFilter('all')
+    if (kind === 'status') setSelectedStatusFilter('all')
   }
 
   async function handleSaveSettings() {
@@ -152,362 +176,391 @@ export default function Dashboard() {
     }
   }
 
+  async function handleSignOut() {
+    await signOut()
+    router.replace('/dashboard/login')
+  }
+
   if (!authChecked || loading) {
     return (
-      <div className="dashboard-shell">
-        <div className="container">
-          <div className="dashboard-skeleton">
-            <div className="dashboard-skeleton-card">
-              <div className="dashboard-skeleton-spinner" />
-              <p className="dashboard-skeleton-text">
-                {authChecked ? 'جاري تحميل الاستشارات...' : 'جاري التحقق من تسجيل الدخول...'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DashboardGate
+        message={authChecked ? 'جاري تحميل الاستشارات...' : 'جاري التحقق من تسجيل الدخول...'}
+      />
     )
   }
 
+  const todayLabel = new Date().toLocaleDateString('ar-SA-u-nu-latn', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  })
+
   return (
-    <div className="dashboard-shell">
-      <div className="container">
-        {/* Header */}
-        <header className="dashboard-header">
-          <div className="dashboard-header-start">
-            <span className="dashboard-eyebrow">لوحة التحكم المشتركة</span>
-            <h1 className="dashboard-title">مركز بترجي للاستشارات الطبية</h1>
-            <p className="dashboard-subtitle">متابعة طلبات وحجوزات الاستشارات بكفاءة ورؤية واضحة.</p>
-          </div>
-          <div className="dashboard-header-end">
-            {session && (
-              <span className="dashboard-pill dashboard-pill-user" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                <User size={16} /> {session.display_name || session.email}
-              </span>
-            )}
-            <span className="dashboard-pill">
-              إجمالي: <strong>{consultations.length}</strong> استشارة
-            </span>
-            <button
-              onClick={async () => {
-                await signOut()
-                router.replace('/dashboard/login')
+    <DashboardShell
+      active={activeTab}
+      session={session}
+      onSignOut={handleSignOut}
+      onNavigate={setActiveTab}
+      pendingCount={pendingCount}
+    >
+      {/* Topbar */}
+      <div className="dash-topbar">
+        <div className="dash-topbar-start">
+          <span className="dash-eyebrow">لوحة التحكم المشتركة</span>
+          <h1 className="dash-title">
+            {activeTab === 'requests' ? 'مركز بترجي للاستشارات الطبية' : 'ضبط جدول العمل والعيادة'}
+          </h1>
+          <p className="dash-subtitle">
+            {activeTab === 'requests'
+              ? 'متابعة طلبات وحجوزات الاستشارات بكفاءة ورؤية واضحة لكل حالة.'
+              : 'تحديد أيام وساعات العمل ومدة الاستشارة لكل طبيب.'}
+          </p>
+        </div>
+        <div className="dash-topbar-end">
+          <span className="dash-pill"><CalendarDays size={14} /> {todayLabel}</span>
+          <span className="dash-pill">
+            إجمالي: <strong className="dash-pill-num">{consultations.length}</strong> استشارة
+          </span>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="dash-stats">
+        {statusCounts.map(({ status, count, label, icon, color, soft, line }, i) => {
+          const isActive = selectedStatusFilter === status
+          return (
+            <div
+              key={status}
+              className={`dash-stat ${isActive ? 'dash-stat-active' : ''}`}
+              role="button"
+              tabIndex={0}
+              aria-pressed={isActive}
+              aria-label={`تصفية حسب حالة: ${label}`}
+              style={{
+                '--stat-color': color,
+                '--stat-soft': soft,
+                '--stat-line': line,
+                '--bar-w': `${(count / maxCount) * 100}%`,
+                animationDelay: `${i * 0.06}s`,
+              } as React.CSSProperties}
+              onClick={() => {
+                setActiveTab('requests')
+                setSelectedStatusFilter(isActive ? 'all' : status)
               }}
-              className="dashboard-btn-ghost"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  setActiveTab('requests')
+                  setSelectedStatusFilter(isActive ? 'all' : status)
+                }
+              }}
             >
-              تسجيل الخروج
-            </button>
-          </div>
-        </header>
-
-        {/* Stats */}
-        <div className="dashboard-stats">
-          {statusCounts.map(({ status, count, label, icon, color, soft, border }, i) => {
-            const isActive = selectedStatusFilter === status
-            return (
-              <div
-                key={status}
-                className={`dashboard-stat ${isActive ? 'dashboard-stat-active' : ''}`}
-                role="button"
-                tabIndex={0}
-                aria-pressed={isActive}
-                aria-label={`تصفية حسب حالة: ${label}`}
-                style={{
-                  '--stat-color': color,
-                  '--stat-soft': soft,
-                  '--stat-border': border,
-                  animationDelay: `${i * 0.06}s`,
-                } as React.CSSProperties}
-                onClick={() => setSelectedStatusFilter(isActive ? 'all' : status)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    setSelectedStatusFilter(isActive ? 'all' : status)
-                  }
-                }}
-              >
-                <div className="dashboard-stat-icon">{icon}</div>
-                <div className="dashboard-stat-body">
-                  <span className="dashboard-stat-value">{count}</span>
-                  <span className="dashboard-stat-label">{label}</span>
-                  <span className="dashboard-stat-hint">
-                    {count === 0 ? 'لا توجد' : count === 1 ? 'استشارة واحدة' : `${count} استشارات`}
-                  </span>
-                </div>
+              <span className="dash-stat-spine" />
+              <div className="dash-stat-head">
+                <div className="dash-stat-icon">{icon}</div>
+                <span className="dash-stat-trend">{count === 0 ? '—' : `${count}`}</span>
               </div>
-            )
-          })}
-        </div>
-
-        {/* Tabs */}
-        <div className="dashboard-tabs" role="tablist">
-          <button
-            role="tab"
-            aria-selected={activeTab === 'requests'}
-            className={`dashboard-tab ${activeTab === 'requests' ? 'dashboard-tab-active' : ''}`}
-            onClick={() => setActiveTab('requests')}
-          >
-            <Inbox size={16} /> طلبات الاستشارات
-          </button>
-          <button
-            role="tab"
-            aria-selected={activeTab === 'settings'}
-            className={`dashboard-tab ${activeTab === 'settings' ? 'dashboard-tab-active' : ''}`}
-            onClick={() => setActiveTab('settings')}
-          >
-            <Settings size={16} /> إعدادات العيادة
-          </button>
-        </div>
-
-        {activeTab === 'requests' && (
-          <>
-            {/* Filters */}
-            <div className="dashboard-filters">
-              <div className="dashboard-search">
-                <input
-                  type="text"
-                  placeholder="ابحث باسم المريض، الجوال، أو سبب الشكوى..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <span className="dashboard-search-icon"><Search size={16} /></span>
+              <div className="dash-stat-body">
+                <span className="dash-stat-value">{count}</span>
+                <span className="dash-stat-label">{label}</span>
+                <span className="dash-stat-hint">
+                  {count === 0 ? 'لا توجد' : count === 1 ? 'استشارة واحدة' : `${count} استشارات`}
+                </span>
               </div>
+              <span className="dash-stat-bar" />
+            </div>
+          )
+        })}
+      </div>
 
-              <div className="dashboard-filter-group">
-                <span className="dashboard-filter-label">الطبيب:</span>
-                <select
-                  className="dashboard-select"
-                  value={selectedDoctorFilter}
-                  onChange={(e) => setSelectedDoctorFilter(e.target.value)}
-                >
-                  <option value="all">الكل</option>
-                  {DOCTORS.map((d) => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="dashboard-filter-group">
-                <span className="dashboard-filter-label">الحالة:</span>
-                <select
-                  className="dashboard-select"
-                  value={selectedStatusFilter}
-                  onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                >
-                  <option value="all">الكل</option>
-                  <option value="submitted">بانتظار المراجعة</option>
-                  <option value="under_review">قيد المراجعة</option>
-                  <option value="needs_info">يحتاج معلومات</option>
-                  <option value="patient_replied">رد المريض</option>
-                  <option value="approved">مقبول ومؤكد</option>
-                  <option value="completed">مكتمل</option>
-                  <option value="declined">مرفوض</option>
-                  <option value="cancelled">ملغي</option>
-                  <option value="pending_payment">في انتظار الدفع</option>
-                  <option value="pending_booking">في انتظار الحجز</option>
-                </select>
-              </div>
-
-              {activeFilters && (
-                <button className="dashboard-reset" onClick={resetFilters}>
-                  إعادة ضبط
-                </button>
-              )}
+      {activeTab === 'requests' && (
+        <>
+          {/* Toolbar */}
+          <div className="dash-toolbar">
+            <div className="dash-search">
+              <input
+                type="text"
+                placeholder="ابحث باسم المريض، الجوال، أو سبب الشكوى..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <span className="dash-search-icon"><Search size={16} /></span>
             </div>
 
-            {/* Table */}
-            <div className="dashboard-table-card">
-              {!filteredConsultations.length ? (
-                <div className="dashboard-empty">
-                  <div className="dashboard-empty-icon">—</div>
-                  <p className="dashboard-empty-title">لا توجد استشارات مطابقة</p>
-                  <p className="dashboard-empty-desc">جرب تعديل خيارات التصفية أو البحث في الأعلى</p>
-                </div>
-              ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <table className="dashboard-table">
-                    <thead>
-                      <tr>
-                        <th>المريض</th>
-                        <th>الطبيب المختص</th>
-                        <th>سبب الاستشارة</th>
-                        <th>الحالة</th>
-                        <th>التاريخ</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredConsultations.map((c) => {
-                        const config = STATUS_CONFIG[c.status]
-                        const doctorId = c.doctor_id || 'khalid'
-                        const assignedDoc = DOCTORS.find((d) => d.id === doctorId) || DOCTORS[0]
-                        return (
-                          <tr key={c.id}>
-                            <td>
-                              <div className="dashboard-patient">
-                                <span className="dashboard-patient-name">{c.patient_name}</span>
-                                <span className="dashboard-patient-meta">
-                                  {c.patient_phone} • {c.patient_age} سنة
-                                </span>
+            <div className="dash-filter-group">
+              <span className="dash-filter-label">الطبيب:</span>
+              <select
+                className="dash-select"
+                value={selectedDoctorFilter}
+                onChange={(e) => setSelectedDoctorFilter(e.target.value)}
+              >
+                <option value="all">الكل</option>
+                {DOCTORS.map((d) => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="dash-filter-group">
+              <span className="dash-filter-label">الحالة:</span>
+              <select
+                className="dash-select"
+                value={selectedStatusFilter}
+                onChange={(e) => setSelectedStatusFilter(e.target.value)}
+              >
+                <option value="all">الكل</option>
+                <option value="submitted">بانتظار المراجعة</option>
+                <option value="under_review">قيد المراجعة</option>
+                <option value="needs_info">يحتاج معلومات</option>
+                <option value="patient_replied">رد المريض</option>
+                <option value="approved">مقبول ومؤكد</option>
+                <option value="completed">مكتمل</option>
+                <option value="declined">مرفوض</option>
+                <option value="cancelled">ملغي</option>
+                <option value="pending_payment">في انتظار الدفع</option>
+                <option value="pending_booking">في انتظار الحجز</option>
+              </select>
+            </div>
+
+            {activeFilters && (
+              <button className="dash-reset" onClick={() => { setSearchQuery(''); setSelectedDoctorFilter('all'); setSelectedStatusFilter('all') }}>
+                <RotateCcw size={14} /> إعادة ضبط
+              </button>
+            )}
+          </div>
+
+          {/* Active filter chips */}
+          {activeFilters && (
+            <div className="dash-chips">
+              {searchQuery && (
+                <span className="dash-chip">
+                  بحث: «{searchQuery}»
+                  <button aria-label="إزالة البحث" onClick={() => clearFilter('search')}>×</button>
+                </span>
+              )}
+              {selectedDoctorFilter !== 'all' && (
+                <span className="dash-chip">
+                  {DOCTORS.find((d) => d.id === selectedDoctorFilter)?.name}
+                  <button aria-label="إزالة تصفية الطبيب" onClick={() => clearFilter('doctor')}>×</button>
+                </span>
+              )}
+              {selectedStatusFilter !== 'all' && (
+                <span className="dash-chip">
+                  {STATUS_CONFIG[selectedStatusFilter as ConsultationStatus]?.label}
+                  <button aria-label="إزالة تصفية الحالة" onClick={() => clearFilter('status')}>×</button>
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Result count */}
+          <div className="dash-result-count">
+            عرض <strong>{filteredConsultations.length}</strong> من {consultations.length} استشارة
+          </div>
+
+          {/* Table */}
+          <div className="dash-card">
+            {!filteredConsultations.length ? (
+              <div className="dash-empty">
+                <div className="dash-empty-glyph"><Inbox size={30} /></div>
+                <p className="dash-empty-title">لا توجد استشارات مطابقة</p>
+                <p className="dash-empty-desc">جرب تعديل خيارات التصفية أو البحث في الأعلى.</p>
+              </div>
+            ) : (
+              <div className="dash-table-scroll">
+                <table className="dash-table">
+                  <thead>
+                    <tr>
+                      <th>المريض</th>
+                      <th>الطبيب المختص</th>
+                      <th>سبب الاستشارة</th>
+                      <th>الحالة</th>
+                      <th>التاريخ</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredConsultations.map((c) => {
+                      const config = STATUS_CONFIG[c.status]
+                      const doctorId = c.doctor_id || 'khalid'
+                      const assignedDoc = DOCTORS.find((d) => d.id === doctorId) || DOCTORS[0]
+                      return (
+                        <tr key={c.id} onClick={() => router.push(`/dashboard/${c.id}`)}>
+                          <td>
+                            <div className="dash-patient">
+                              <span className="dash-patient-name">{c.patient_name}</span>
+                              <span className="dash-patient-meta">{c.patient_phone} · {c.patient_age} سنة</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="dash-doctor">
+                              <div className="dash-doctor-avatar">
+                                <Image
+                                  src={assignedDoc.image}
+                                  alt={assignedDoc.name}
+                                  fill
+                                  sizes="34px"
+                                  style={{ objectFit: 'cover' }}
+                                />
                               </div>
-                            </td>
-                            <td>
-                              <div className="dashboard-doctor">
-                                <div className="dashboard-doctor-avatar">
-                                  <Image
-                                    src={assignedDoc.image}
-                                    alt={assignedDoc.name}
-                                    fill
-                                    sizes="34px"
-                                    style={{ objectFit: 'cover' }}
-                                  />
-                                </div>
-                                <div>
-                                  <div className="dashboard-doctor-name">{c.doctor_name || assignedDoc.name}</div>
-                                  <div className="dashboard-doctor-specialty">{c.specialty || assignedDoc.specialty}</div>
-                                </div>
+                              <div>
+                                <div className="dash-doctor-name">{c.doctor_name || assignedDoc.name}</div>
+                                <div className="dash-doctor-specialty">{c.specialty || assignedDoc.specialty}</div>
                               </div>
-                            </td>
-                            <td>
-                              <span className="dashboard-complaint">{c.chief_complaint}</span>
-                            </td>
-                            <td>
-                              <span className={`dashboard-badge dashboard-badge-${c.status}`}>
-                                {config?.label}
+                            </div>
+                          </td>
+                          <td>
+                            <span className="dash-complaint">{c.chief_complaint}</span>
+                            {c.pain_severity != null && (
+                              <span className="dash-severity" style={{ marginTop: '0.2rem' }}>
+                                <span className="dash-severity-dot" style={{ background: severityColor(c.pain_severity) }} />
+                                {c.pain_severity}/10
                               </span>
-                            </td>
-                            <td>
-                              <span className="dashboard-date">
+                            )}
+                          </td>
+                          <td>
+                            <span className={`dash-badge dash-badge-${c.status}`}>{config?.label}</span>
+                          </td>
+                          <td>
+                            <div className="dash-date-cell">
+                              <span className="dash-date">
                                 {new Date(c.created_at).toLocaleDateString('ar-SA-u-nu-latn')}
                               </span>
-                            </td>
-                            <td>
-                              <Link href={`/dashboard/${c.id}`} className="dashboard-action">
-                                عرض التفاصيل
-                              </Link>
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </>
-        )}
-
-        {activeTab === 'settings' && scheduleSettings && (
-          <div className="dashboard-settings">
-            <h2 className="dashboard-settings-title" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-              <CalendarDays size={24} /> ضبط جدول العمل والعيادة
-              <span style={{ color: 'var(--fg-dim)', fontSize: '0.85rem', fontWeight: 500 }}>
-                ({DOCTORS.find((d) => d.id === (selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter))?.name})
-              </span>
-            </h2>
-
-            {saveSuccess && (
-              <div className="dashboard-success" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Check size={16} />
-                تم حفظ إعدادات المواعيد وجدول العمل بنجاح!
+                              <span className="dash-timeago">{timeAgo(c.created_at)}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <ChevronLeft size={18} className="dash-row-chevron" />
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
+          </div>
+        </>
+      )}
 
-            <div className="dashboard-settings-grid">
-              <div>
-                <h3 className="dashboard-settings-group-title">أيام العمل الأسبوعية</h3>
-                <div className="dashboard-checkbox-list">
-                  {DAYS.map((day) => {
-                    const isChecked = scheduleSettings.workingDays.includes(day.val)
-                    return (
-                      <label key={day.val} className="dashboard-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={(e) => {
-                            const newList = e.target.checked
-                              ? [...scheduleSettings.workingDays, day.val].sort()
-                              : scheduleSettings.workingDays.filter((v) => v !== day.val)
-                            setScheduleSettings({ ...scheduleSettings, workingDays: newList })
-                          }}
-                        />
-                        <span style={{ fontWeight: isChecked ? 700 : 500, color: isChecked ? 'var(--fg)' : undefined }}>
-                          {day.label}
-                        </span>
-                      </label>
-                    )
-                  })}
-                </div>
-              </div>
+      {activeTab === 'settings' && scheduleSettings && (
+        <div className="dash-settings">
+          <div className="dash-settings-head">
+            <CalendarDays size={22} />
+            <h2 className="dash-settings-title">ضبط جدول العمل والعيادة</h2>
+            <span className="dash-settings-doctor">
+              ({DOCTORS.find((d) => d.id === (selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter))?.name})
+            </span>
+          </div>
 
-              <div>
-                <h3 className="dashboard-settings-group-title">ساعات الدوام اليومي</h3>
-                <div className="dashboard-field-row">
-                  <div className="dashboard-field">
-                    <label>بداية الدوام</label>
-                    <input
-                      type="time"
-                      value={scheduleSettings.startTime}
-                      onChange={(e) => setScheduleSettings({ ...scheduleSettings, startTime: e.target.value })}
-                    />
-                  </div>
-                  <div className="dashboard-field">
-                    <label>نهاية الدوام</label>
-                    <input
-                      type="time"
-                      value={scheduleSettings.endTime}
-                      onChange={(e) => setScheduleSettings({ ...scheduleSettings, endTime: e.target.value })}
-                    />
-                  </div>
-                </div>
+          {saveSuccess && (
+            <div className="dash-success">
+              <Check size={16} />
+              تم حفظ إعدادات المواعيد وجدول العمل بنجاح!
+            </div>
+          )}
 
-                <h3 className="dashboard-settings-group-title" style={{ marginTop: '1rem' }}>
-                  فترة الاستراحة / الغداء
-                </h3>
-                <div className="dashboard-field-row">
-                  <div className="dashboard-field">
-                    <label>بداية الاستراحة</label>
-                    <input
-                      type="time"
-                      value={scheduleSettings.lunchStart}
-                      onChange={(e) => setScheduleSettings({ ...scheduleSettings, lunchStart: e.target.value })}
-                    />
-                  </div>
-                  <div className="dashboard-field">
-                    <label>نهاية الاستراحة</label>
-                    <input
-                      type="time"
-                      value={scheduleSettings.lunchEnd}
-                      onChange={(e) => setScheduleSettings({ ...scheduleSettings, lunchEnd: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="dashboard-field" style={{ marginTop: '1rem' }}>
-                  <label>مدة الاستشارة (دقيقة)</label>
-                  <select
-                    value={scheduleSettings.slotDuration}
-                    onChange={(e) => setScheduleSettings({ ...scheduleSettings, slotDuration: parseInt(e.target.value) })}
-                  >
-                    <option value="15">15 دقيقة</option>
-                    <option value="30">30 دقيقة</option>
-                    <option value="45">45 دقيقة</option>
-                    <option value="60">60 دقيقة (ساعة كاملة)</option>
-                  </select>
-                </div>
+          <div className="dash-settings-grid">
+            <div>
+              <h3 className="dash-group-title">أيام العمل الأسبوعية</h3>
+              <div className="dash-day-list">
+                {DAYS.map((day) => {
+                  const isOn = scheduleSettings.workingDays.includes(day.val)
+                  return (
+                    <div
+                      key={day.val}
+                      className={`dash-day-chip ${isOn ? 'dash-day-chip-on' : ''}`}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => {
+                        const newList = isOn
+                          ? scheduleSettings.workingDays.filter((v) => v !== day.val)
+                          : [...scheduleSettings.workingDays, day.val].sort()
+                        setScheduleSettings({ ...scheduleSettings, workingDays: newList })
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          const newList = isOn
+                            ? scheduleSettings.workingDays.filter((v) => v !== day.val)
+                            : [...scheduleSettings.workingDays, day.val].sort()
+                          setScheduleSettings({ ...scheduleSettings, workingDays: newList })
+                        }
+                      }}
+                    >
+                      <span>{day.label} <span style={{ color: 'var(--dash-dim)', fontWeight: 500, fontSize: '0.72rem' }}>({day.en})</span></span>
+                      <span className="dash-day-toggle" />
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
-            <button
-              className="dashboard-save-btn"
-              disabled={savingSettings}
-              onClick={handleSaveSettings}
-            >
-              {savingSettings ? 'جاري الحفظ...' : 'حفظ التعديلات وإعدادات الدوام'}
-            </button>
+            <div>
+              <h3 className="dash-group-title">ساعات الدوام اليومي</h3>
+              <div className="dash-field-row">
+                <div className="dash-field">
+                  <label>بداية الدوام</label>
+                  <input
+                    type="time"
+                    value={scheduleSettings.startTime}
+                    onChange={(e) => setScheduleSettings({ ...scheduleSettings, startTime: e.target.value })}
+                  />
+                </div>
+                <div className="dash-field">
+                  <label>نهاية الدوام</label>
+                  <input
+                    type="time"
+                    value={scheduleSettings.endTime}
+                    onChange={(e) => setScheduleSettings({ ...scheduleSettings, endTime: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <h3 className="dash-group-title" style={{ marginTop: '1rem' }}>فترة الاستراحة / الغداء</h3>
+              <div className="dash-field-row">
+                <div className="dash-field">
+                  <label>بداية الاستراحة</label>
+                  <input
+                    type="time"
+                    value={scheduleSettings.lunchStart}
+                    onChange={(e) => setScheduleSettings({ ...scheduleSettings, lunchStart: e.target.value })}
+                  />
+                </div>
+                <div className="dash-field">
+                  <label>نهاية الاستراحة</label>
+                  <input
+                    type="time"
+                    value={scheduleSettings.lunchEnd}
+                    onChange={(e) => setScheduleSettings({ ...scheduleSettings, lunchEnd: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="dash-field" style={{ marginTop: '1rem' }}>
+                <label>مدة الاستشارة (دقيقة)</label>
+                <select
+                  value={scheduleSettings.slotDuration}
+                  onChange={(e) => setScheduleSettings({ ...scheduleSettings, slotDuration: parseInt(e.target.value) })}
+                >
+                  <option value="15">15 دقيقة</option>
+                  <option value="30">30 دقيقة</option>
+                  <option value="45">45 دقيقة</option>
+                  <option value="60">60 دقيقة (ساعة كاملة)</option>
+                </select>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
-    </div>
+
+          <button
+            className="dash-save-btn"
+            disabled={savingSettings}
+            onClick={handleSaveSettings}
+          >
+            {savingSettings ? 'جاري الحفظ...' : 'حفظ التعديلات وإعدادات الدوام'}
+          </button>
+        </div>
+      )}
+    </DashboardShell>
   )
 }
