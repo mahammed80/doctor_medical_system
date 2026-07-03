@@ -326,19 +326,6 @@ export default function Dashboard() {
               <span className="dash-search-icon"><Search size={16} /></span>
             </div>
 
-            <div className="dash-filter-group">
-              <span className="dash-filter-label">الطبيب:</span>
-              <select
-                className="dash-select"
-                value={selectedDoctorFilter}
-                onChange={(e) => setSelectedDoctorFilter(e.target.value)}
-              >
-                <option value="all">الكل</option>
-                {DOCTORS.map((d) => (
-                  <option key={d.id} value={d.id}>{d.name}</option>
-                ))}
-              </select>
-            </div>
 
             <div className="dash-filter-group">
               <span className="dash-filter-label">الحالة:</span>
@@ -377,12 +364,7 @@ export default function Dashboard() {
                   <button aria-label="إزالة البحث" onClick={() => clearFilter('search')}>×</button>
                 </span>
               )}
-              {selectedDoctorFilter !== 'all' && (
-                <span className="dash-chip">
-                  {DOCTORS.find((d) => d.id === selectedDoctorFilter)?.name}
-                  <button aria-label="إزالة تصفية الطبيب" onClick={() => clearFilter('doctor')}>×</button>
-                </span>
-              )}
+
               {selectedStatusFilter !== 'all' && (
                 <span className="dash-chip">
                   {STATUS_CONFIG[selectedStatusFilter as ConsultationStatus]?.label}
@@ -411,7 +393,6 @@ export default function Dashboard() {
                   <thead>
                     <tr>
                       <th>المريض</th>
-                      <th>الطبيب المختص</th>
                       <th>سبب الاستشارة</th>
                       <th>الحالة</th>
                       <th>التاريخ</th>
@@ -431,23 +412,7 @@ export default function Dashboard() {
                               <span className="dash-patient-meta">{c.patient_phone} · {c.patient_age} سنة</span>
                             </div>
                           </td>
-                          <td>
-                            <div className="dash-doctor">
-                              <div className="dash-doctor-avatar">
-                                <Image
-                                  src={assignedDoc.image}
-                                  alt={assignedDoc.name}
-                                  fill
-                                  sizes="34px"
-                                  style={{ objectFit: 'cover' }}
-                                />
-                              </div>
-                              <div>
-                                <div className="dash-doctor-name">{c.doctor_name || assignedDoc.name}</div>
-                                <div className="dash-doctor-specialty">{c.specialty || assignedDoc.specialty}</div>
-                              </div>
-                            </div>
-                          </td>
+
                           <td>
                             <span className="dash-complaint">{c.chief_complaint}</span>
                             {c.pain_severity != null && (
