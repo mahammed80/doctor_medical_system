@@ -188,7 +188,7 @@ function DiamondShower() {
 /* ── PAGE ── */
 
 export default function Home() {
-  const { t, isRtl } = useLanguage()
+  const { t, isRtl, lang } = useLanguage()
   const [docSettings, setDocSettings] = useState<DoctorScheduleSettings | null>(null)
 
   useEffect(() => {
