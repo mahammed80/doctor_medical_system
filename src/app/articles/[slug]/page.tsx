@@ -41,15 +41,11 @@ export default function ArticleDetail() {
         </div>
 
         {/* Article Container Grid */}
-        <div className="article-grid" style={{
-          display: 'grid',
-          gridTemplateColumns: '2.5fr 1fr',
-          gap: '2.5rem',
+        <div className="grid grid-cols-1 lg:grid-cols-[2.5fr_1fr] gap-10" style={{
           alignItems: 'start',
         }}>
           {/* Main Content Card */}
-          <article className="card-warm" style={{
-            padding: '3rem 2.5rem',
+          <article className="card-warm p-6 md:p-10" style={{
             background: 'rgba(255, 255, 255, 0.8)',
             border: '1.5px solid var(--border-accent)',
             boxShadow: 'var(--shadow-md)',
@@ -117,7 +113,7 @@ export default function ArticleDetail() {
           </article>
 
           {/* Sidebar Area */}
-          <aside style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', position: 'sticky', top: '100px' }}>
+          <aside className="lg:sticky lg:top-[100px]" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             
             {/* Consultation Booking Card */}
             <div className="card-warm" style={{
