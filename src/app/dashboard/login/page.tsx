@@ -104,7 +104,7 @@ export default function LoginPage() {
         </form>
 
         <div className="dash-login-hint">
-          للتجربة استخدم حساب الاختبار —{' '}
+          للتجربة استخدم حساب الاختبار:{' '}
           <button
             type="button"
             onClick={fillTestCreds}

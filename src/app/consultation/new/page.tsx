@@ -26,7 +26,7 @@ import { STEPS } from './constants'
 import type { FormData } from './types'
 import { FORM_INITIAL } from './types'
 
-const PRICE = process.env.NEXT_PUBLIC_CONSULTATION_PRICE || '899'
+const PRICE = process.env.NEXT_PUBLIC_CONSULTATION_PRICE || '799'
 const IS_DEMO = isDemoMode()
 
 export default function NewConsultation() {

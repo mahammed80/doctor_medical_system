@@ -31,7 +31,7 @@ const oswald = Oswald({
 
 export const metadata: Metadata = {
   title: 'استشارات د. خالد بترجي',
-  description: 'احجز استشارتك الطبية مع د. خالد بترجي بسهولة — أون لاين، آمن، وسريع.',
+  description: 'احجز استشارتك الطبية مع د. خالد بترجي بسهولة وبشكل آمن وسريع أونلاين.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -45,10 +45,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             position: 'sticky',
             top: 5,
             zIndex: 50,
-            background: 'oklch(100% 0 0 / 0.85)',
+            background: 'var(--surface)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
-            borderBottom: '1px solid var(--border-faint)',
+            borderBottom: '1px solid var(--border)',
           }}>
             <div className="container" style={{
               display: 'flex',
@@ -85,8 +85,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </div>
               </Link>
 
-              <nav style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Link href="/consultation/new" className="btn-primary btn-sm">
+              <nav className="hidden lg:flex items-center gap-7" style={{ direction: 'rtl' }}>
+                <Link href="/" className="nav-link">الرئيسية</Link>
+                <Link href="/#about-section" className="nav-link">عن الدكتور</Link>
+                <Link href="/#steps-section" className="nav-link">خطوات الحجز</Link>
+                <Link href="/#services-section" className="nav-link">الباقات</Link>
+                <Link href="/#testimonials-section" className="nav-link">آراء المرضى</Link>
+                <Link href="/#faq-section" className="nav-link">الأسئلة الشائعة</Link>
+              </nav>
+
+              <nav style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <Link href="/consultation/new" className="btn-primary btn-sm btn-primary-shimmer" style={{ borderRadius: 'var(--r-sm)' }}>
                   ابدأ الاستشارة
                 </Link>
               </nav>

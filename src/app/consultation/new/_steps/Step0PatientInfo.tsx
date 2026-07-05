@@ -39,7 +39,7 @@ export function Step0PatientInfo({
       >
         <div className="doctor-avatar" style={{ width: 48, height: 48 }}>
           <Image
-            src={selectedDoctor.image}
+            src={selectedDoctor.image === '/main_image.jpeg' ? '/doctor_centered_landscape.jpg' : selectedDoctor.image}
             alt={selectedDoctor.name}
             fill
             sizes="48px"

@@ -561,7 +561,7 @@ export default function Dashboard() {
                 <label>سعر الكشف الأساسي (ريال)</label>
                 <input
                   type="number"
-                  value={scheduleSettings.consultationPrice ?? 899}
+                  value={scheduleSettings.consultationPrice ?? 799}
                   onChange={(e) => setScheduleSettings({ ...scheduleSettings, consultationPrice: parseInt(e.target.value) || 0 })}
                 />
               </div>
@@ -577,7 +577,7 @@ export default function Dashboard() {
                 <label>سعر باقة 3 جلسات متابعة (ريال)</label>
                 <input
                   type="number"
-                  value={scheduleSettings.packagePrice3 ?? 2500}
+                  value={scheduleSettings.packagePrice3 ?? 2000}
                   onChange={(e) => setScheduleSettings({ ...scheduleSettings, packagePrice3: parseInt(e.target.value) || 0 })}
                 />
               </div>
@@ -587,6 +587,14 @@ export default function Dashboard() {
                   type="number"
                   value={scheduleSettings.packagePrice4 ?? 3400}
                   onChange={(e) => setScheduleSettings({ ...scheduleSettings, packagePrice4: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="dash-field" style={{ marginTop: '1rem' }}>
+                <label>سعر باقة المتابعة المتعددة والعرض الترويجي (ريال)</label>
+                <input
+                  type="number"
+                  value={scheduleSettings.packagePricePromo ?? 2500}
+                  onChange={(e) => setScheduleSettings({ ...scheduleSettings, packagePricePromo: parseInt(e.target.value) || 0 })}
                 />
               </div>
             </div>

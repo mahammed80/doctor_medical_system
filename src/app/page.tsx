@@ -24,7 +24,7 @@ const steps = [
 const services = [
   {
     title: 'الكشف الأساسي',
-    price: '899',
+    price: '799',
     period: 'ريال',
     desc: 'جلسة استشارية شاملة لمدة 30 دقيقة مع الطبيب لتقييم حالتك وتشخيصها بدقة.',
     features: [
@@ -56,8 +56,8 @@ const services = [
     period: 'ريال',
     desc: 'جلسات متعددة بسعر مخفّض للمرضى المحتاجين لمتابعة مستمرة بعد العمليات.',
     features: [
-      'باقة 3 جلسات — بقيمة 2,500 ريال',
-      'باقة 4 جلسات — بقيمة 3,400 ريال',
+      'باقة 3 جلسات بقيمة 2,000 ريال',
+      'باقة 4 جلسات بقيمة 3,400 ريال',
       'توفير يصل إلى 200 ريال',
       'متابعة ما بعد الجراحة وإصابات الملاعب',
       'مرونة عالية في حجز المواعيد',
@@ -101,16 +101,16 @@ const features = [
 
 const faqs = [
   { q: 'كيف يمكنني حجز استشارة في مركز بترجي؟', a: 'العملية بسيطة للغاية وتستغرق أقل من 5 دقائق: املأ بياناتك الطبية وأرفق الأشعة إن وجدت، قم بسداد رسوم الاستشارة بأمان، ثم اختر الموعد المناسب لك من جدول الطبيب المباشر لتلقي رابط الجلسة المرئية.' },
-  { q: 'ما هي تكلفة الاستشارة الطبية؟', a: 'تختلف التكلفة حسب مستوى الكشف المختار: الكشف الأساسي بقيمة 899 ريال، الكشف الشامل وإعداد الخطة العلاجية بقيمة 1,700 ريال، كما تتوفر باقات للمتابعات المتعددة تبدأ من 2,500 ريال لـ 3 جلسات.' },
+  { q: 'ما هي تكلفة الاستشارة الطبية؟', a: 'تختلف التكلفة حسب مستوى الكشف المختار: الكشف الأساسي بقيمة 799 ريال، الكشف الشامل وإعداد الخطة العلاجية بقيمة 1,700 ريال، كما تتوفر باقات للمتابعات المتعددة تبدأ من 2,000 ريال لـ 3 جلسات.' },
   { q: 'هل يمكنني مراجعة الطبيب مجاناً بعد الجلسة؟', a: 'نعم، تشمل جميع الاستشارات الطبية كفترة مراجعة (متابعة مجانية) صالحة لمدة 10 أيام من تاريخ الجلسة الأساسية لمناقشة نتائج التحاليل أو تحديث خطة العلاج.' },
   { q: 'هل خدمة توصيل الأدوية متاحة لجميع المرضى؟', a: 'نعم، بعد استشارتك مع الطبيب، إذا قرر لك وصفة علاجية، يتم إرسالها لك إلكترونياً، ونوفر خيار توصيل الأدوية لباب منزلك بالتعاون مع كبرى الصيدليات المعتمدة.' },
   { q: 'كيف أرفع الفحوصات وصور الأشعة الخاصة بي؟', a: 'أثناء تعبئة نموذج الاستشارة، ستجد منطقة مخصصة لرفع الملفات، حيث يمكنك سحب وإفلات التقارير الطبية وصور الأشعة. يدعم نظامنا جميع الصيغ المعتمدة مثل PDF وJPG وPNG بالإضافة لصيغة DICOM للأشعات المتخصصة.' },
 ]
 
 const testimonials = [
-  { text: 'المركز يقدم رعاية ممتازة جداً وخبرة طبية متميزة. استشرت د. خالد بترجي بخصوص عملية الركبة وكان تشخيصه دقيقاً جداً وأراحني كثيراً. وفر علي عناء السفر.', name: 'عبدالرحمن العتيبي', title: 'مريض — عيادة جراحة المفاصل' },
-  { text: 'تجربة حجز سهلة وسريعة للغاية، والأروع هو إمكانية رفع الأشعة وملفات الرنين المغناطيسي ليقوم د. خالد بترجي بتحليلها ووصف العلاج المناسب لي دون الحاجة لمغادرة المنزل.', name: 'نورة الدوسري', title: 'مريضة — جراحة العظام' },
-  { text: 'بعد إصابتي في الركبة، تواصلت مع د. خالد بترجي وأعدّ لي برنامج تأهيل حركي منزلي رائع وتابع معي خطوة بخطوة حتى عدت لممارسة الرياضة بشكل طبيعي.', name: 'فهد السبيعي', title: 'مريض — جراحة العظام والمفاصل' },
+  { text: 'المركز يقدم رعاية ممتازة جداً وخبرة طبية متميزة. استشرت د. خالد بترجي بخصوص عملية الركبة وكان تشخيصه دقيقاً جداً وأراحني كثيراً. وفر علي عناء السفر.', name: 'عبدالرحمن العتيبي', title: 'مريض (عيادة جراحة المفاصل)' },
+  { text: 'تجربة حجز سهلة وسريعة للغاية، والأروع هو إمكانية رفع الأشعة وملفات الرنين المغناطيسي ليقوم د. خالد بترجي بتحليلها ووصف العلاج المناسب لي دون الحاجة لمغادرة المنزل.', name: 'نورة الدوسري', title: 'مريضة (جراحة العظام)' },
+  { text: 'بعد إصابتي في الركبة، تواصلت مع د. خالد بترجي وأعدّ لي برنامج تأهيل حركي منزلي رائع وتابع معي خطوة بخطوة حتى عدت لممارسة الرياضة بشكل طبيعي.', name: 'فهد السبيعي', title: 'مريض (جراحة العظام والمفاصل)' },
 ]
 
 const qualifications = [
@@ -211,9 +211,9 @@ function AnimatedCounter({ end, suffix = '' }: { end: number; suffix?: string })
 }
 
 const ORB_COLORS = [
-  'radial-gradient(circle, oklch(46% 0.19 260 / 0.12) 0%, transparent 70%)',
+  'radial-gradient(circle, oklch(38% 0.11 150 / 0.12) 0%, transparent 70%)',
   'radial-gradient(circle, oklch(68% 0.17 70 / 0.08) 0%, transparent 70%)',
-  'radial-gradient(circle, oklch(50% 0.15 155 / 0.06) 0%, transparent 70%)',
+  'radial-gradient(circle, oklch(38% 0.11 150 / 0.06) 0%, transparent 70%)',
 ]
 
 function FloatingOrbs() {
@@ -250,7 +250,7 @@ function MouseGlow() {
       if (!ref.current) return
       const x = e.clientX / window.innerWidth
       const y = e.clientY / window.innerHeight
-      ref.current.style.background = `radial-gradient(600px at ${x * 100}% ${y * 100}%, oklch(46% 0.19 260 / 0.04) 0%, transparent 70%)`
+      ref.current.style.background = `radial-gradient(600px at ${x * 100}% ${y * 100}%, oklch(38% 0.11 150 / 0.04) 0%, transparent 70%)`
     }
     window.addEventListener('mousemove', handleMouse)
     return () => window.removeEventListener('mousemove', handleMouse)
@@ -313,15 +313,16 @@ export default function Home() {
     if (idx === 1 && docSettings.comprehensivePrice != null) {
       return { ...svc, price: docSettings.comprehensivePrice.toLocaleString('en-US') }
     }
-    if (idx === 2 && docSettings.packagePrice3 != null) {
-      const p3 = docSettings.packagePrice3
+    if (idx === 2) {
+      const promo = docSettings.packagePricePromo ?? 2500
+      const p3 = docSettings.packagePrice3 ?? 2000
       const p4 = docSettings.packagePrice4 ?? 3400
       return {
         ...svc,
-        price: p3.toLocaleString('en-US'),
+        price: promo.toLocaleString('en-US'),
         features: [
-          `باقة 3 جلسات — بقيمة ${p3.toLocaleString('en-US')} ريال`,
-          `باقة 4 جلسات — بقيمة ${p4.toLocaleString('en-US')} ريال`,
+          `باقة 3 جلسات بقيمة ${p3.toLocaleString('en-US')} ريال`,
+          `باقة 4 جلسات بقيمة ${p4.toLocaleString('en-US')} ريال`,
           ...svc.features.slice(2),
         ]
       }
@@ -332,9 +333,9 @@ export default function Home() {
   const dynamicFaqs = faqs.map((faq) => {
     if (!docSettings) return faq
     if (faq.q === 'ما هي تكلفة الاستشارة الطبية؟') {
-      const p1 = docSettings.consultationPrice ?? 899
+      const p1 = docSettings.consultationPrice ?? 799
       const p2 = docSettings.comprehensivePrice ?? 1700
-      const p3 = docSettings.packagePrice3 ?? 2500
+      const p3 = docSettings.packagePrice3 ?? 2000
       return {
         ...faq,
         a: `تختلف التكلفة حسب مستوى الكشف المختار: الكشف الأساسي بقيمة ${p1.toLocaleString('en-US')} ريال، الكشف الشامل وإعداد الخطة العلاجية بقيمة ${p2.toLocaleString('en-US')} ريال، كما تتوفر باقات للمتابعات المتعددة تبدأ من ${p3.toLocaleString('en-US')} ريال لـ 3 جلسات.`
@@ -348,16 +349,14 @@ export default function Home() {
       style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}
     >
       <div className="geo-bg" style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }} />
-      <FloatingOrbs />
-      <DiamondShower />
       <MouseGlow />
 
       {/* ── HERO ── */}
-      <section style={{ position: 'relative', zIndex: 2, padding: '5rem 0 6rem' }}>
+      <section id="hero-section" style={{ position: 'relative', zIndex: 2, padding: '8rem 0 9rem' }}>
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0,
           height: '85%',
-          background: 'linear-gradient(170deg, oklch(97% 0.008 85) 0%, var(--bg) 40%, transparent 100%)',
+          background: 'linear-gradient(170deg, oklch(99.5% 0.001 85) 0%, var(--bg) 60%, transparent 100%)',
           pointerEvents: 'none',
         }} />
 
@@ -365,56 +364,63 @@ export default function Home() {
           <div className="hero-grid" style={{
             display: 'grid',
             gridTemplateColumns: '1.2fr 1fr',
-            gap: '4rem',
+            gap: '5rem',
             alignItems: 'stretch',
           }}>
             {/* Hero Text */}
             <div>
               <div className="anim-fade" style={{
-                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.06em',
-                color: 'var(--gold)',
-                padding: '0.45rem 1.25rem', borderRadius: '9999px',
-                border: '1px solid oklch(68% 0.17 70 / 0.25)',
-                background: 'var(--gold-soft)', marginBottom: '2rem',
-                boxShadow: '0 0 20px var(--gold-glow)',
+                display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
+                fontSize: '0.8rem', fontWeight: 600,
+                color: 'var(--primary)',
+                padding: '0.4rem 1.1rem', borderRadius: '9999px',
+                border: '1px solid oklch(38% 0.11 150 / 0.15)',
+                background: 'oklch(38% 0.11 150 / 0.05)', marginBottom: '2rem',
               }}>
                 <span style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  background: 'var(--primary)',
                   display: 'inline-block',
-                  animation: 'pulse-soft 2s ease-in-out infinite',
-                  fontSize: '0.7rem',
-                }}>✦</span>
+                }} />
                 مركز بترجي للاستشارات الطبية التخصصية
               </div>
 
               <h1 className="anim-fade-1" style={{
-                fontSize: 'clamp(2.5rem, 5.5vw, 3.8rem)',
-                fontWeight: 900,
-                lineHeight: 1.15,
-                letterSpacing: '-0.03em',
+                fontSize: 'clamp(2.5rem, 5.5vw, 4.1rem)',
+                fontWeight: 'normal',
+                fontFamily: 'var(--font-display), serif',
+                lineHeight: 1.1,
+                letterSpacing: '-0.02em',
                 color: 'var(--fg)',
                 marginBottom: '1.5rem',
               }}>
-                استشارات د. خالد بترجي{' '}
+                د. خالد بترجي{' '}
                 <br />
                 <span style={{
-                  background: 'linear-gradient(135deg, var(--primary) 0%, oklch(55% 0.22 260) 50%, var(--primary-down) 100%)',
+                  fontFamily: 'var(--font-body), sans-serif',
+                  fontWeight: 900,
+                  fontSize: 'clamp(1.8rem, 3.8vw, 2.5rem)',
+                  background: 'linear-gradient(135deg, var(--primary) 0%, oklch(44% 0.12 150) 50%, var(--primary-down) 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
                   backgroundSize: '200% 200%',
                   animation: 'shimmer 4s ease-in-out infinite',
-                  display: 'inline-block',
+                  display: 'block',
                   paddingTop: '10px',
                 }}>
                   استشاري جراحة العظام والمفاصل
                 </span>
                 <span style={{
-                  fontSize: 'clamp(1.1rem, 2.2vw, 1.5rem)',
+                  fontFamily: 'var(--font-body), sans-serif',
+                  fontSize: 'clamp(1.1rem, 2.2vw, 1.4rem)',
                   fontWeight: 500,
                   color: 'var(--fg-muted)',
                   display: 'block',
                   marginTop: '0.75rem',
+                  lineHeight: 1.6,
                   letterSpacing: '-0.01em',
                 }}>
                   رعاية طبية فائقة لجراحات الركبة والمفاصل الصناعية والمناظير أونلاين من منزلك
@@ -432,7 +438,7 @@ export default function Home() {
               </p>
 
               <div className="anim-fade-2" style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                <Link href="/consultation/new" className="btn-primary" style={{
+                <Link href="/consultation/new" className="btn-primary btn-primary-shimmer" style={{
                   fontSize: '1.1rem',
                   padding: '1.1rem 2.8rem',
                   gap: '0.75rem',
@@ -454,42 +460,42 @@ export default function Home() {
             <div className="anim-scale" style={{
               width: '100%',
               height: '100%',
-              minHeight: '520px',
+              minHeight: '480px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}>
               <div className="photo-frame" style={{
-                width: '70%',
-                height: '70%',
+                width: '100%',
+                maxWidth: '480px',
+                aspectRatio: '1024/876',
                 position: 'relative',
-                boxShadow: '0 16px 64px oklch(0% 0 0 / 0.1), 0 4px 16px oklch(60% 0.08 60 / 0.08)',
+                boxShadow: 'var(--shadow-xl)',
                 transform: 'perspective(1000px) rotateY(-2deg)',
                 transition: 'transform 500ms var(--ease-out)',
-                flexGrow: 1,
               }}
                 onMouseOver={e => (e.currentTarget as HTMLElement).style.transform = 'perspective(1000px) rotateY(0deg)'}
                 onMouseOut={e => (e.currentTarget as HTMLElement).style.transform = 'perspective(1000px) rotateY(-2deg)'}
               >
                 <div style={{
                   position: 'absolute', inset: 2,
-                  background: 'linear-gradient(180deg, transparent 40%, oklch(15% 0.015 265 / 0.35) 100%)',
-                  pointerEvents: 'none', zIndex: 2, borderRadius: 'var(--r-xl)',
+                  background: 'linear-gradient(180deg, transparent 40%, oklch(15% 0.01 150 / 0.35) 100%)',
+                  pointerEvents: 'none', zIndex: 2, borderRadius: 'var(--radius-xl)',
                 }} />
                 
                 <Image
-                  src="/main_image.jpeg"
+                  src="/doctor_centered_landscape.jpg"
                   alt="د. خالد بترجي"
                   fill
-                  sizes="(max-width: 900px) 100vw, 550px"
-                  style={{ objectFit: 'cover', scale: '1.02', borderRadius: 'var(--r-xl)' }}
+                  sizes="(max-width: 900px) 100vw, 480px"
+                  style={{ objectFit: 'cover', objectPosition: 'center', scale: '1.02', borderRadius: 'var(--radius-xl)' }}
                   priority
                 />
 
                 <div style={{
                   position: 'absolute', bottom: 2, left: 2, right: 2, height: '4px',
                   background: 'linear-gradient(90deg, var(--gold) 0%, oklch(68% 0.17 70 / 0.4) 50%, var(--primary) 100%)',
-                  zIndex: 3, borderRadius: '0 0 var(--r-xl) var(--r-xl)',
+                  zIndex: 3, borderRadius: '0 0 var(--radius-xl) var(--radius-xl)',
                 }} />
                 
                 {/* Decorative gold corner accents */}
@@ -511,19 +517,14 @@ export default function Home() {
                 }} />
 
                 {/* Floating Profile Card */}
-                <div style={{
+                <div className="doctor-glass-card" style={{
                   position: 'absolute',
                   bottom: '1.5rem',
                   left: '1.5rem',
                   right: '1.5rem',
                   textAlign: 'center',
                   padding: '1.1rem 1.5rem',
-                  background: 'oklch(100% 0 0 / 0.85)',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
                   borderRadius: 'var(--r-lg)',
-                  border: '1px solid var(--border-faint)',
-                  boxShadow: 'var(--shadow-lg)',
                   zIndex: 4,
                 }}>
                   <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--fg)' }}>د. خالد بترجي</div>
@@ -537,7 +538,7 @@ export default function Home() {
                       animation: 'pulse-soft 2s ease-in-out infinite',
                       boxShadow: '0 0 6px var(--ok-soft)',
                     }} />
-                    رئيس مجلس إدارة المركز — متاح للحجز
+                    رئيس مجلس إدارة المركز (متاح للحجز)
                   </div>
                 </div>
               </div>
@@ -551,12 +552,12 @@ export default function Home() {
         <div className="container">
           <ScrollReveal>
             <div style={{
-              background: 'linear-gradient(135deg, oklch(100% 0 0 / 0.8) 0%, oklch(98.5% 0.004 85 / 0.8) 100%)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1.5px solid var(--border-accent)',
-              borderRadius: 'var(--r-2xl)',
-              boxShadow: 'var(--shadow-lg), 0 20px 50px oklch(60% 0.08 60 / 0.04)',
+              background: 'var(--surface)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid var(--border-accent)',
+              borderRadius: 'var(--radius-xl)',
+              boxShadow: 'var(--shadow-xl)',
               padding: '3rem 2.5rem',
               display: 'grid',
               gridTemplateColumns: 'repeat(3, 1fr)',
@@ -606,11 +607,11 @@ export default function Home() {
               flexWrap: 'wrap',
               gap: '2.5rem 4rem',
               padding: '2rem 2.5rem',
-              background: 'oklch(100% 0 0 / 0.7)',
-              backdropFilter: 'blur(16px)',
-              borderRadius: 'var(--r-xl)',
-              border: '1px solid var(--border-faint)',
-              boxShadow: 'var(--shadow-warm)',
+              background: 'var(--surface)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 'var(--radius-xl)',
+              border: '1px solid var(--border)',
+              boxShadow: 'var(--shadow-md)',
             }}>
               {['جراحة العظام والمفاصل', 'المناظير الجراحية', 'علاج الآلام المزمنة', 'تأهيل ما بعد العمليات', 'استشارات أون لاين'].map((item, i) => (
                 <div key={item} style={{
@@ -646,16 +647,18 @@ export default function Home() {
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '1rem',
+              gap: '2.5rem',
               padding: '3rem',
-              background: 'linear-gradient(135deg, oklch(46% 0.19 260 / 0.03), oklch(68% 0.17 70 / 0.03))',
-              borderRadius: 'var(--r-xl)',
-              border: '1px solid var(--border-accent)',
+              background: 'var(--surface)',
+              backdropFilter: 'blur(24px)',
+              borderRadius: 'var(--radius-xl)',
+              border: '1px solid var(--border)',
+              boxShadow: 'var(--shadow-md)',
             }}>
               {[
                 { end: 1500, label: 'مريض', suffix: '+', sub: 'تمت استشارتهم' },
                 { end: 35, label: 'عاماً', suffix: '+', sub: 'خبرة في المجال الطبي' },
-                { end: 98, label: '٪', suffix: '', sub: 'نسبة رضا المرضى' },
+                { end: 98, label: 'رضا المرضى', suffix: '٪', sub: 'نسبة تقييمات إيجابية' },
                 { end: 24, label: 'ساعة', suffix: '', sub: 'الرد على الاستفسارات' },
               ].map((c, i) => (
                 <div key={c.label} style={{
@@ -670,13 +673,13 @@ export default function Home() {
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
-                    marginBottom: '0.15rem',
+                    marginBottom: '0.4rem',
                     lineHeight: 1.1,
                   }}>
                     <AnimatedCounter end={c.end} suffix={c.suffix} />
                   </div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--fg)' }}>{c.label}</div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--fg-dim)', marginTop: '0.05rem' }}>{c.sub}</div>
+                  <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--fg)', marginBottom: '0.15rem' }}>{c.label}</div>
+                  <div style={{ fontSize: '0.9rem', color: 'var(--fg-muted)', lineHeight: 1.4 }}>{c.sub}</div>
                 </div>
               ))}
             </div>
@@ -775,7 +778,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── HOW IT WORKS ── */}
-      <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
+      <section id="steps-section" style={{ position: 'relative', zIndex: 2, padding: '9rem 0' }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
           background: 'linear-gradient(180deg, transparent 0%, oklch(97% 0.008 85) 50%, transparent 100%)',
@@ -784,8 +787,9 @@ export default function Home() {
           <ScrollReveal>
             <SectionLabel>خطوات الحجز</SectionLabel>
             <h2 style={{
-              fontSize: 'clamp(2rem, 4vw, 3rem)',
-              fontWeight: 900,
+              fontSize: 'clamp(2rem, 4vw, 3.2rem)',
+              fontWeight: 'normal',
+              fontFamily: 'var(--font-display), serif',
               letterSpacing: '-0.02em',
               color: 'var(--fg)',
               marginBottom: '0.75rem',
@@ -830,22 +834,22 @@ export default function Home() {
                     width: '5rem', height: '5rem',
                     borderRadius: '50%',
                     background: i === 0 ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-down) 100%)' : 'var(--surface)',
-                    border: i === 0 ? 'none' : '2px solid var(--border)',
+                    border: i === 0 ? 'none' : '1px solid var(--border)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '1.2rem',
                     fontWeight: 800,
                     color: i === 0 ? 'white' : 'var(--fg-dim)',
-                    boxShadow: i === 0 ? '0 4px 20px var(--primary-glow)' : 'var(--shadow-sm)',
+                    boxShadow: i === 0 ? '0 8px 24px oklch(38% 0.11 150 / 0.15)' : 'var(--shadow-sm)',
                     transition: 'all 400ms var(--ease-spring)',
                     position: 'relative',
                     fontFamily: 'var(--font-inter), sans-serif',
                   }}
                     onMouseOver={e => {
                       const el = e.currentTarget as HTMLElement
-                      el.style.transform = 'scale(1.1)'
-                      if (i !== 0) { el.style.borderColor = 'var(--primary)'; el.style.color = 'var(--primary)'; el.style.boxShadow = '0 4px 20px var(--primary-glow)' }
+                      el.style.transform = 'scale(1.08)'
+                      if (i !== 0) { el.style.borderColor = 'var(--primary)'; el.style.color = 'var(--primary)'; el.style.boxShadow = 'var(--shadow-md)' }
                     }}
                     onMouseOut={e => {
                       const el = e.currentTarget as HTMLElement
@@ -869,7 +873,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── SERVICES ── */}
-      <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
+      <section id="services-section" style={{ position: 'relative', zIndex: 2, padding: '9rem 0' }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
           background: 'linear-gradient(180deg, var(--bg) 0%, oklch(97% 0.008 85) 50%, var(--bg) 100%)',
@@ -878,8 +882,9 @@ export default function Home() {
           <ScrollReveal>
             <SectionLabel>الباقات والأسعار</SectionLabel>
             <h2 style={{
-              fontSize: 'clamp(2rem, 4vw, 3rem)',
-              fontWeight: 900,
+              fontSize: 'clamp(2rem, 4vw, 3.2rem)',
+              fontWeight: 'normal',
+              fontFamily: 'var(--font-display), serif',
               letterSpacing: '-0.02em',
               color: 'var(--fg)',
               marginBottom: '0.75rem',
@@ -907,24 +912,31 @@ export default function Home() {
               <ScrollReveal key={svc.title} delay={i * 100}>
                 <div style={{
                   background: 'var(--surface)',
-                  border: svc.popular ? '2px solid var(--primary)' : '1px solid var(--border-faint)',
-                  borderRadius: 'var(--r-xl)',
-                  padding: svc.popular ? '2.5rem 2rem' : '2rem',
-                  boxShadow: svc.popular ? '0 8px 40px var(--primary-glow), 0 4px 16px oklch(0% 0 0 / 0.04)' : 'var(--shadow-warm)',
+                  backdropFilter: 'blur(16px)',
+                  border: svc.popular ? '1px solid var(--primary)' : '1px solid var(--border)',
+                  borderRadius: 'var(--radius-xl)',
+                  padding: '3rem 2rem 2.5rem',
+                  boxShadow: svc.popular ? '0 20px 50px oklch(38% 0.11 150 / 0.08), 0 2px 12px oklch(38% 0.11 150 / 0.03), inset 0 1px 0 oklch(100% 0 0 / 0.7)' : 'var(--shadow-lg)',
                   textAlign: 'right',
                   position: 'relative',
                   overflow: 'hidden',
-                  transition: 'transform 400ms var(--ease-spring), box-shadow 400ms',
+                  transition: 'all 400ms var(--ease-out)',
                 }}
                   onMouseOver={e => {
                     const el = e.currentTarget as HTMLElement
-                    el.style.transform = 'translateY(-8px)'
-                    el.style.boxShadow = svc.popular ? '0 12px 48px var(--primary-glow), 0 4px 16px oklch(0% 0 0 / 0.04)' : '0 12px 40px oklch(0% 0 0 / 0.1)'
+                    el.style.transform = 'translateY(-6px)'
+                    el.style.boxShadow = svc.popular 
+                      ? '0 30px 60px oklch(38% 0.11 150 / 0.12), 0 2px 16px oklch(38% 0.11 150 / 0.04)' 
+                      : 'var(--shadow-xl)'
+                    if (!svc.popular) el.style.borderColor = 'var(--border-accent)'
                   }}
                   onMouseOut={e => {
                     const el = e.currentTarget as HTMLElement
-                    el.style.transform = 'translateY(0)'
-                    el.style.boxShadow = svc.popular ? '0 8px 40px var(--primary-glow), 0 4px 16px oklch(0% 0 0 / 0.04)' : 'var(--shadow-warm)'
+                    el.style.transform = 'none'
+                    el.style.boxShadow = svc.popular 
+                      ? '0 20px 50px oklch(38% 0.11 150 / 0.08), 0 2px 12px oklch(38% 0.11 150 / 0.03), inset 0 1px 0 oklch(100% 0 0 / 0.7)' 
+                      : 'var(--shadow-lg)'
+                    if (!svc.popular) el.style.borderColor = 'var(--border)'
                   }}
                 >
                   {/* Gold decorative corner */}
@@ -961,7 +973,7 @@ export default function Home() {
                       <div style={{
                         position: 'absolute', top: 0, right: 0,
                         width: '120px', height: '120px',
-                        background: 'radial-gradient(circle at top right, oklch(46% 0.19 260 / 0.06), transparent 70%)',
+                        background: 'radial-gradient(circle at top right, oklch(38% 0.11 150 / 0.06), transparent 70%)',
                         pointerEvents: 'none',
                       }} />
                     </>
@@ -970,7 +982,7 @@ export default function Home() {
                     fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)',
                     marginBottom: '0.5rem', letterSpacing: '0.05em',
                   }}>
-                    {svc.popular ? '— مطوّر' : '— باقة'}
+                    {svc.popular ? 'باقة مطورة' : 'باقة أساسية'}
                   </div>
                   <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--fg)', marginBottom: '0.3rem' }}>{svc.title}</div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem', marginBottom: '1rem', direction: 'ltr' }}>
@@ -1013,7 +1025,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── WHY CHOOSE US ── */}
-      <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
+      <section style={{ position: 'relative', zIndex: 2, padding: '9rem 0' }}>
         <div className="container">
           <div className="features-layout" style={{
             display: 'grid',
@@ -1026,13 +1038,14 @@ export default function Home() {
                 <SectionLabel>لماذا د. خالد بترجي؟</SectionLabel>
                 <h2 style={{
                   fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
-                  fontWeight: 900,
+                  fontWeight: 'normal',
+                  fontFamily: 'var(--font-display), serif',
                   letterSpacing: '-0.02em',
                   color: 'var(--fg)',
                   marginBottom: '1rem',
                   lineHeight: 1.15,
                 }}>
-                  رعاية طبية بمعايير عالمية — من منزلك
+                  رعاية طبية بمعايير عالمية من منزلك
                 </h2>
                 <p style={{
                   fontSize: '0.95rem',
@@ -1062,12 +1075,23 @@ export default function Home() {
                     <div key={s.label} style={{
                       padding: '1.25rem', textAlign: 'center',
                       background: 'var(--surface)',
-                      borderRadius: 'var(--r-lg)',
-                      border: '1px solid var(--border-faint)',
-                      transition: 'transform 300ms var(--ease-spring)',
+                      borderRadius: 'var(--radius-lg)',
+                      border: '1px solid var(--border)',
+                      boxShadow: 'var(--shadow-sm)',
+                      transition: 'all 300ms var(--ease-out)',
                     }}
-                      onMouseOver={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'}
-                      onMouseOut={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'}
+                      onMouseOver={e => {
+                        const el = e.currentTarget as HTMLElement
+                        el.style.transform = 'translateY(-4px)'
+                        el.style.borderColor = 'var(--border-accent)'
+                        el.style.boxShadow = 'var(--shadow-md)'
+                      }}
+                      onMouseOut={e => {
+                        const el = e.currentTarget as HTMLElement
+                        el.style.transform = 'none'
+                        el.style.borderColor = 'var(--border)'
+                        el.style.boxShadow = 'var(--shadow-sm)'
+                      }}
                     >
                       <div className="num" style={{
                         fontSize: '1.6rem', fontWeight: 900, color: 'var(--primary)',
@@ -1091,25 +1115,25 @@ export default function Home() {
                   <div style={{
                     padding: '1.5rem',
                     background: 'var(--surface)',
-                    borderRadius: 'var(--r-lg)',
-                    border: '1px solid var(--border-faint)',
-                    boxShadow: 'var(--shadow-sm)',
-                    transition: 'transform 350ms var(--ease-spring), box-shadow 350ms, border-color 350ms',
+                    borderRadius: 'var(--radius-lg)',
+                    border: '1px solid var(--border)',
+                    boxShadow: 'var(--shadow-md)',
+                    transition: 'all 400ms var(--ease-out)',
                     cursor: 'default',
                     position: 'relative',
                     overflow: 'hidden',
                   }}
                     onMouseOver={e => {
                       const el = e.currentTarget as HTMLElement
-                      el.style.transform = 'translateY(-6px)'
-                      el.style.boxShadow = 'var(--shadow-md)'
+                      el.style.transform = 'translateY(-4px)'
+                      el.style.boxShadow = 'var(--shadow-xl)'
                       el.style.borderColor = 'var(--border-accent)'
                     }}
                     onMouseOut={e => {
                       const el = e.currentTarget as HTMLElement
-                      el.style.transform = 'translateY(0)'
-                      el.style.boxShadow = 'var(--shadow-sm)'
-                      el.style.borderColor = 'var(--border-faint)'
+                      el.style.transform = 'none'
+                      el.style.boxShadow = 'var(--shadow-md)'
+                      el.style.borderColor = 'var(--border)'
                     }}
                   >
                     {/* Hover shimmer overlay */}
@@ -1127,7 +1151,7 @@ export default function Home() {
                     <div style={{
                       width: '2.75rem', height: '2.75rem',
                       borderRadius: 'var(--r)',
-                      background: 'linear-gradient(135deg, var(--primary-subtle) 0%, oklch(46% 0.19 260 / 0.08) 100%)',
+                      background: 'linear-gradient(135deg, var(--primary-subtle) 0%, oklch(38% 0.11 150 / 0.08) 100%)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       color: 'var(--primary)',
                       marginBottom: '0.75rem',
@@ -1148,7 +1172,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── TESTIMONIALS ── */}
-      <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
+      <section id="testimonials-section" style={{ position: 'relative', zIndex: 2, padding: '9rem 0' }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
           background: 'linear-gradient(180deg, var(--bg) 0%, oklch(97% 0.008 85) 50%, var(--bg) 100%)',
@@ -1157,8 +1181,9 @@ export default function Home() {
           <ScrollReveal>
             <SectionLabel>آراء المرضى</SectionLabel>
             <h2 style={{
-              fontSize: 'clamp(2rem, 4vw, 3rem)',
-              fontWeight: 900,
+              fontSize: 'clamp(2rem, 4vw, 3.2rem)',
+              fontWeight: 'normal',
+              fontFamily: 'var(--font-display), serif',
               letterSpacing: '-0.02em',
               color: 'var(--fg)',
               marginBottom: '3rem',
@@ -1170,29 +1195,32 @@ export default function Home() {
           <div className="testimonials-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '1.5rem',
+            gap: '2rem',
           }}>
             {testimonials.map((t, i) => (
               <ScrollReveal key={t.name} delay={i * 120}>
                 <div style={{
-                  padding: '2rem',
+                  padding: '2.5rem 2rem',
                   background: 'var(--surface)',
-                  borderRadius: 'var(--r-xl)',
-                  border: '1px solid var(--border-faint)',
-                  boxShadow: 'var(--shadow-warm)',
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: 'var(--radius-xl)',
+                  border: '1px solid var(--border)',
+                  boxShadow: 'var(--shadow-md)',
                   textAlign: 'right',
                   position: 'relative',
-                  transition: 'transform 350ms var(--ease-spring), box-shadow 350ms, border-color 350ms',
+                  transition: 'all 450ms var(--ease-out)',
                 }}
                   onMouseOver={e => {
-                    (e.currentTarget as HTMLElement).style.transform = 'translateY(-6px)';
-                    (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-lg)';
-                    (e.currentTarget as HTMLElement).style.borderColor = 'oklch(68% 0.17 70 / 0.2)';
+                    const el = e.currentTarget as HTMLElement
+                    el.style.transform = 'translateY(-5px)'
+                    el.style.boxShadow = 'var(--shadow-xl)'
+                    el.style.borderColor = 'var(--border-accent)'
                   }}
                   onMouseOut={e => {
-                    (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-                    (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-warm)';
-                    (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-faint)';
+                    const el = e.currentTarget as HTMLElement
+                    el.style.transform = 'none'
+                    el.style.boxShadow = 'var(--shadow-md)'
+                    el.style.borderColor = 'var(--border)'
                   }}
                 >
                   {/* Gold accent top border */}
@@ -1358,7 +1386,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── FAQ ── */}
-      <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
+      <section id="faq-section" style={{ position: 'relative', zIndex: 2, padding: '9rem 0' }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
           background: 'linear-gradient(180deg, transparent 0%, oklch(97% 0.008 85) 50%, transparent 100%)',
@@ -1367,7 +1395,7 @@ export default function Home() {
           <div className="faq-layout" style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1.5fr',
-            gap: '3rem',
+            gap: '4.5rem',
             alignItems: 'start',
           }}>
             <ScrollReveal>
@@ -1375,7 +1403,8 @@ export default function Home() {
                 <SectionLabel>الأسئلة الشائعة</SectionLabel>
                 <h2 style={{
                   fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
-                  fontWeight: 900,
+                  fontWeight: 'normal',
+                  fontFamily: 'var(--font-display), serif',
                   letterSpacing: '-0.02em',
                   color: 'var(--fg)',
                   marginBottom: '1rem',
@@ -1394,15 +1423,15 @@ export default function Home() {
             </ScrollReveal>
 
             <ScrollReveal delay={100}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                 {dynamicFaqs.map(item => (
                   <details key={item.q} style={{
                     background: 'var(--surface)',
-                    border: '1px solid var(--border-faint)',
-                    borderRadius: 'var(--r-lg)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-lg)',
                     padding: '0',
                     overflow: 'hidden',
-                    transition: 'box-shadow 300ms, border-color 300ms',
+                    transition: 'all 300ms var(--ease-out)',
                     boxShadow: 'var(--shadow-sm)',
                   }}>
                     <summary style={{
@@ -1450,17 +1479,17 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── FINAL CTA ── */}
-      <section style={{ position: 'relative', zIndex: 2, padding: '6rem 0' }}>
+      <section style={{ position: 'relative', zIndex: 2, padding: '9rem 0' }}>
         <div className="container" style={{ position: 'relative' }}>
           <ScrollReveal>
             <div style={{
-              padding: '5rem 4rem',
-              borderRadius: 'var(--r-xl)',
-              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-up) 50%, oklch(35% 0.22 260) 100%)',
+              padding: '6rem 4rem',
+              borderRadius: 'var(--radius-xl)',
+              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-up) 50%, oklch(32% 0.10 150) 100%)',
               textAlign: 'center',
               position: 'relative',
               overflow: 'hidden',
-              boxShadow: '0 16px 64px var(--primary-glow)',
+              boxShadow: '0 24px 70px oklch(38% 0.11 150 / 0.16)',
             }}>
               <div style={{
                 position: 'absolute', top: '-40%', right: '-10%',

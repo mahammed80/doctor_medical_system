@@ -116,7 +116,7 @@ export default function Success() {
             flexShrink: 0
           }}>
             <Image
-              src={assignedDoc.image}
+              src={assignedDoc.image === '/main_image.jpeg' ? '/doctor_centered_landscape.jpg' : assignedDoc.image}
               alt={assignedDoc.name}
               fill
               sizes="48px"

@@ -358,7 +358,7 @@ export default function ConsultationDetail() {
       {/* Doctor banner */}
       <div className="dash-doctor-banner" style={{ marginBottom: '1.1rem' }}>
         <div className="dash-doctor-banner-avatar">
-          <Image src={assignedDoc.image} alt={assignedDoc.name} fill sizes="54px" style={{ objectFit: 'cover' }} />
+          <Image src={assignedDoc.image === '/main_image.jpeg' ? '/doctor_centered_landscape.jpg' : assignedDoc.image} alt={assignedDoc.name} fill sizes="54px" style={{ objectFit: 'cover' }} />
         </div>
         <div>
           <div className="dash-doctor-banner-kicker">الطبيب المعالج</div>

@@ -69,7 +69,7 @@ export function IdDropZone({
           <span className="drop-zone-text">
             اسحب صورة الهوية أو جواز السفر هنا أو اختر من جهازك
           </span>
-          <p className="drop-zone-hint">PDF · JPG · PNG — الحد الأقصى 10MB</p>
+          <p className="drop-zone-hint">PDF · JPG · PNG (الحد الأقصى 10 ميجابايت)</p>
         </div>
       )}
     </div>

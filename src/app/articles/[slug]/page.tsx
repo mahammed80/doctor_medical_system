@@ -139,7 +139,7 @@ export default function ArticleDetail() {
                 position: 'relative',
               }}>
                 <Image
-                  src="/main_image.jpeg"
+                  src="/doctor_centered_landscape.jpg"
                   alt="د. خالد بترجي"
                   fill
                   sizes="80px"
