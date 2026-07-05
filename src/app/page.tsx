@@ -5,120 +5,9 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ARTICLES } from '@/lib/articles'
 import { getDoctorSettings, type DoctorScheduleSettings } from '@/lib/consultationService'
+import { useLanguage } from '@/context/LanguageContext'
 
 /* ── DATA ── */
-
-const stats = [
-  { num: '35+', label: 'سنة من الخبرة', desc: 'في جراحة العظام والمفاصل' },
-  { num: '100%', label: 'استشارة أون لاين', desc: 'مرئية، آمنة ومريحة' },
-  { num: '1,500+', label: 'مريض تم علاجهم', desc: 'بنسبة رضا تفوق 98%' },
-]
-
-const steps = [
-  { step: '01', title: 'احجز الاستشارة', desc: 'اختر الباقة الطبية المناسبة لحالتك لبدء حجز موعدك' },
-  { step: '02', title: 'سجّل بياناتك الطبية', desc: 'املأ معلوماتك الشخصية وارفع الأشعة والتحاليل في دقائق' },
-  { step: '03', title: 'سدد الرسوم بأمان', desc: 'ادفع عبر بوابات الدفع الإلكتروني المعتمدة والسريعة' },
-  { step: '04', title: 'احجز موعدك وتواصل', desc: 'اختر الموعد المناسب لجلستك المرئية المباشرة مع الطبيب' },
-]
-
-const services = [
-  {
-    title: 'الكشف الأساسي',
-    price: '799',
-    period: 'ريال',
-    desc: 'جلسة استشارية شاملة لمدة 30 دقيقة مع الطبيب لتقييم حالتك وتشخيصها بدقة.',
-    features: [
-      'كشفية أساسية مع الاستشاري',
-      'عرض وتحليل الأشعة والتحاليل',
-      'تشخيص طبي دقيق للحالة',
-      'مدة الجلسة: 30 دقيقة',
-      'متابعة مجانية لمدة 10 أيام',
-    ],
-    popular: false,
-  },
-  {
-    title: 'الكشف الشامل والخطة العلاجية',
-    price: '1,700',
-    period: 'ريال',
-    desc: 'استشارة موسعة مع إعداد برنامج علاجي متكامل وتقييم الحاجة للجراحة.',
-    features: [
-      'كل ما في الباقة الأساسية',
-      'إعداد برنامج علاجي متكامل',
-      'تقييم الحاجة للجراحة',
-      'مناقشة الخيارات البديلة والجراحية',
-      'متابعة أولى مجانية بعد العملية',
-    ],
-    popular: true,
-  },
-  {
-    title: 'باقات المتابعة المتعددة',
-    price: '2,500',
-    period: 'ريال',
-    desc: 'جلسات متعددة بسعر مخفّض للمرضى المحتاجين لمتابعة مستمرة بعد العمليات.',
-    features: [
-      'باقة 3 جلسات بقيمة 2,000 ريال',
-      'باقة 4 جلسات بقيمة 3,400 ريال',
-      'توفير يصل إلى 200 ريال',
-      'متابعة ما بعد الجراحة وإصابات الملاعب',
-      'مرونة عالية في حجز المواعيد',
-    ],
-    popular: false,
-  },
-]
-
-const features = [
-  {
-    icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>,
-    title: 'خبرة طبية عريقة',
-    desc: 'يحمل د. خالد بترجي درجات البورد والزمالات الكندية والبريطانية مع خبرة طبية تفوق 35 عاماً.',
-  },
-  {
-    icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
-    title: 'خصوصية تامة للملفات',
-    desc: 'تشفير كامل لملفاتك وأشعاتك الطبية وفقاً لأعلى معايير الأمن السيبراني الطبية.',
-  },
-  {
-    icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>,
-    title: 'جدولة مواعيد فورية',
-    desc: 'اختر وقتك المناسب مباشرة من جدول الطبيب المتاح دون فترات انتظار.',
-  },
-  {
-    icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><line x1="8" y1="7" x2="16" y2="7" /><line x1="8" y1="11" x2="14" y2="11" /></svg>,
-    title: 'دعم جميع الصيغ الطبية',
-    desc: 'ارفع تقاريرك وأشعاتك بسهولة فائقة بمختلف الصيغ الطبية بما فيها ملفات DICOM.',
-  },
-  {
-    icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6" /><path d="M10 22h4" /><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" /></svg>,
-    title: 'توصيل الوصفة للمنزل',
-    desc: 'نوفر خدمة إرسال وصفتك الطبية المعتمدة رقمياً وتوصيل الأدوية مباشرة لباب بيتك.',
-  },
-  {
-    icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>,
-    title: 'بوابة دفع آمنة ومعتمدة',
-    desc: 'خيارات دفع سعودية موثوقة تدعم بطاقات مدى، فيزا، ماستركارد، وأبل باي.',
-  },
-]
-
-const faqs = [
-  { q: 'كيف يمكنني حجز استشارة في مركز بترجي؟', a: 'العملية بسيطة للغاية وتستغرق أقل من 5 دقائق: املأ بياناتك الطبية وأرفق الأشعة إن وجدت، قم بسداد رسوم الاستشارة بأمان، ثم اختر الموعد المناسب لك من جدول الطبيب المباشر لتلقي رابط الجلسة المرئية.' },
-  { q: 'ما هي تكلفة الاستشارة الطبية؟', a: 'تختلف التكلفة حسب مستوى الكشف المختار: الكشف الأساسي بقيمة 799 ريال، الكشف الشامل وإعداد الخطة العلاجية بقيمة 1,700 ريال، كما تتوفر باقات للمتابعات المتعددة تبدأ من 2,000 ريال لـ 3 جلسات.' },
-  { q: 'هل يمكنني مراجعة الطبيب مجاناً بعد الجلسة؟', a: 'نعم، تشمل جميع الاستشارات الطبية كفترة مراجعة (متابعة مجانية) صالحة لمدة 10 أيام من تاريخ الجلسة الأساسية لمناقشة نتائج التحاليل أو تحديث خطة العلاج.' },
-  { q: 'هل خدمة توصيل الأدوية متاحة لجميع المرضى؟', a: 'نعم، بعد استشارتك مع الطبيب، إذا قرر لك وصفة علاجية، يتم إرسالها لك إلكترونياً، ونوفر خيار توصيل الأدوية لباب منزلك بالتعاون مع كبرى الصيدليات المعتمدة.' },
-  { q: 'كيف أرفع الفحوصات وصور الأشعة الخاصة بي؟', a: 'أثناء تعبئة نموذج الاستشارة، ستجد منطقة مخصصة لرفع الملفات، حيث يمكنك سحب وإفلات التقارير الطبية وصور الأشعة. يدعم نظامنا جميع الصيغ المعتمدة مثل PDF وJPG وPNG بالإضافة لصيغة DICOM للأشعات المتخصصة.' },
-]
-
-const testimonials = [
-  { text: 'المركز يقدم رعاية ممتازة جداً وخبرة طبية متميزة. استشرت د. خالد بترجي بخصوص عملية الركبة وكان تشخيصه دقيقاً جداً وأراحني كثيراً. وفر علي عناء السفر.', name: 'عبدالرحمن العتيبي', title: 'مريض (عيادة جراحة المفاصل)' },
-  { text: 'تجربة حجز سهلة وسريعة للغاية، والأروع هو إمكانية رفع الأشعة وملفات الرنين المغناطيسي ليقوم د. خالد بترجي بتحليلها ووصف العلاج المناسب لي دون الحاجة لمغادرة المنزل.', name: 'نورة الدوسري', title: 'مريضة (جراحة العظام)' },
-  { text: 'بعد إصابتي في الركبة، تواصلت مع د. خالد بترجي وأعدّ لي برنامج تأهيل حركي منزلي رائع وتابع معي خطوة بخطوة حتى عدت لممارسة الرياضة بشكل طبيعي.', name: 'فهد السبيعي', title: 'مريض (جراحة العظام والمفاصل)' },
-]
-
-const qualifications = [
-  { year: '1991', title: 'تأسيس مركز بترجي الطبي', inst: 'رؤية لتقديم أفضل الخدمات الطبية التخصصية' },
-  { year: '2012', title: 'إطلاق العيادات المتكاملة', inst: 'توسعة الأقسام لتشمل العمود الفقري والروماتيزم والتأهيل' },
-  { year: '2020', title: 'التكامل الرقمي الكامل', inst: 'تحويل جميع الاستشارات إلى استشارات مرنية تفاعلية عن بعد' },
-  { year: '2026', title: 'نظام الاستشارات المطور', inst: 'إطلاق المنصة الجديدة وتفعيل ميزات التخزين الطبي الآمن وتوصيل الأدوية' },
-]
 
 
 
@@ -299,11 +188,124 @@ function DiamondShower() {
 /* ── PAGE ── */
 
 export default function Home() {
+  const { t, isRtl } = useLanguage()
   const [docSettings, setDocSettings] = useState<DoctorScheduleSettings | null>(null)
 
   useEffect(() => {
     getDoctorSettings('khalid').then(setDocSettings)
   }, [])
+
+  const stats = [
+    { num: t('stat_experience_num'), label: t('stat_experience_label'), desc: t('stat_experience_desc') },
+    { num: t('stat_online_num'), label: t('stat_online_label'), desc: t('stat_online_desc') },
+    { num: t('stat_satisfaction_num'), label: t('stat_satisfaction_label'), desc: t('stat_satisfaction_desc') },
+  ]
+
+  const steps = [
+    { step: '01', title: t('step1_title'), desc: t('step1_desc') },
+    { step: '02', title: t('step2_title'), desc: t('step2_desc') },
+    { step: '03', title: t('step3_title'), desc: t('step3_desc') },
+    { step: '04', title: t('step4_title'), desc: t('step4_desc') },
+  ]
+
+  const services = [
+    {
+      title: t('pkg_basic_title'),
+      price: '799',
+      period: t('currency_sar'),
+      desc: t('pkg_basic_desc'),
+      features: [
+        t('pkg_basic_f1'),
+        t('pkg_basic_f2'),
+        t('pkg_basic_f3'),
+        t('pkg_basic_f4'),
+        t('pkg_basic_f5'),
+      ],
+      popular: false,
+    },
+    {
+      title: t('pkg_comprehensive_title'),
+      price: '1,700',
+      period: t('currency_sar'),
+      desc: t('pkg_comprehensive_desc'),
+      features: [
+        t('pkg_comprehensive_f1'),
+        t('pkg_comprehensive_f2'),
+        t('pkg_comprehensive_f3'),
+        t('pkg_comprehensive_f4'),
+        t('pkg_comprehensive_f5'),
+      ],
+      popular: true,
+    },
+    {
+      title: t('pkg_followup_title'),
+      price: '2,500',
+      period: t('currency_sar'),
+      desc: t('pkg_followup_desc'),
+      features: [
+        '',
+        '',
+        t('pkg_followup_f3'),
+        t('pkg_followup_f4'),
+        t('pkg_followup_f5'),
+      ],
+      popular: false,
+    },
+  ]
+
+  const features = [
+    {
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>,
+      title: t('why_f1_title'),
+      desc: t('why_f1_desc'),
+    },
+    {
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+      title: t('why_f2_title'),
+      desc: t('why_f2_desc'),
+    },
+    {
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>,
+      title: t('why_f3_title'),
+      desc: t('why_f3_desc'),
+    },
+    {
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><line x1="8" y1="7" x2="16" y2="7" /><line x1="8" y1="11" x2="14" y2="11" /></svg>,
+      title: t('why_f4_title'),
+      desc: t('why_f4_desc'),
+    },
+    {
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6" /><path d="M10 22h4" /><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" /></svg>,
+      title: t('why_f5_title'),
+      desc: t('why_f5_desc'),
+    },
+    {
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>,
+      title: t('why_f6_title'),
+      desc: t('why_f6_desc'),
+    },
+  ]
+
+  const faqs = [
+    { q: t('faq_1_q'), a: t('faq_1_a') },
+    { q: t('faq_2_q'), a: '' },
+    { q: t('faq_3_q'), a: t('faq_3_a') },
+    { q: t('faq_4_q'), a: t('faq_4_a') },
+    { q: t('faq_5_q'), a: t('faq_5_a') },
+  ]
+
+  const testimonials = [
+    { text: t('test_1_text'), name: t('test_1_name'), title: t('test_1_title') },
+    { text: t('test_2_text'), name: t('test_2_name'), title: t('test_2_title') },
+    { text: t('test_3_text'), name: t('test_3_name'), title: t('test_3_title') },
+  ]
+
+  const qualifications = [
+    { year: '1991', title: t('qual_1991_title'), inst: t('qual_1991_inst') },
+    { year: '2012', title: t('qual_2012_title'), inst: t('qual_2012_inst') },
+    { year: '2020', title: t('qual_2020_title'), inst: t('qual_2020_inst') },
+    { year: '2026', title: t('qual_2026_title'), inst: t('qual_2026_inst') },
+  ]
 
   const dynamicServices = services.map((svc, idx) => {
     if (!docSettings) return svc
@@ -321,8 +323,8 @@ export default function Home() {
         ...svc,
         price: promo.toLocaleString('en-US'),
         features: [
-          `باقة 3 جلسات بقيمة ${p3.toLocaleString('en-US')} ريال`,
-          `باقة 4 جلسات بقيمة ${p4.toLocaleString('en-US')} ريال`,
+          t('pkg_followup_f1_template').replace('{p3}', p3.toLocaleString('en-US')),
+          t('pkg_followup_f2_template').replace('{p4}', p4.toLocaleString('en-US')),
           ...svc.features.slice(2),
         ]
       }
@@ -332,13 +334,16 @@ export default function Home() {
 
   const dynamicFaqs = faqs.map((faq) => {
     if (!docSettings) return faq
-    if (faq.q === 'ما هي تكلفة الاستشارة الطبية؟') {
+    if (faq.q === t('faq_2_q')) {
       const p1 = docSettings.consultationPrice ?? 799
       const p2 = docSettings.comprehensivePrice ?? 1700
       const p3 = docSettings.packagePrice3 ?? 2000
       return {
         ...faq,
-        a: `تختلف التكلفة حسب مستوى الكشف المختار: الكشف الأساسي بقيمة ${p1.toLocaleString('en-US')} ريال، الكشف الشامل وإعداد الخطة العلاجية بقيمة ${p2.toLocaleString('en-US')} ريال، كما تتوفر باقات للمتابعات المتعددة تبدأ من ${p3.toLocaleString('en-US')} ريال لـ 3 جلسات.`
+        a: t('faq_2_a_template')
+          .replace('{p1}', p1.toLocaleString('en-US'))
+          .replace('{p2}', p2.toLocaleString('en-US'))
+          .replace('{p3}', p3.toLocaleString('en-US'))
       }
     }
     return faq
@@ -366,12 +371,12 @@ export default function Home() {
           }}>
             {/* Hero Text */}
             <div>
-              <div className="anim-fade" style={{
-                display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
-                fontSize: '0.8rem', fontWeight: 600,
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+                fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.04em',
                 color: 'var(--primary)',
-                padding: '0.4rem 1.1rem', borderRadius: '9999px',
-                border: '1px solid oklch(38% 0.11 150 / 0.15)',
+                padding: '0.35rem 0.85rem', borderRadius: '6px',
+                border: '1px solid var(--border-accent)',
                 background: 'oklch(38% 0.11 150 / 0.05)', marginBottom: '2rem',
               }}>
                 <span style={{
@@ -381,7 +386,7 @@ export default function Home() {
                   background: 'var(--primary)',
                   display: 'inline-block',
                 }} />
-                مركز بترجي للاستشارات الطبية التخصصية
+                {t('hero_badge')}
               </div>
 
               <h1 className="anim-fade-1" style={{
@@ -393,7 +398,7 @@ export default function Home() {
                 color: 'var(--fg)',
                 marginBottom: '1.5rem',
               }}>
-                د. خالد بترجي{' '}
+                {t('hero_title_dr')}{' '}
                 <br />
                 <span style={{
                   fontFamily: 'var(--font-body), sans-serif',
@@ -408,7 +413,7 @@ export default function Home() {
                   display: 'block',
                   paddingTop: '10px',
                 }}>
-                  استشاري جراحة العظام والمفاصل
+                  {t('hero_title_title')}
                 </span>
                 <span style={{
                   fontFamily: 'var(--font-body), sans-serif',
@@ -420,7 +425,7 @@ export default function Home() {
                   lineHeight: 1.6,
                   letterSpacing: '-0.01em',
                 }}>
-                  رعاية طبية فائقة لجراحات الركبة والمفاصل الصناعية والمناظير أونلاين من منزلك
+                  {t('hero_title_sub')}
                 </span>
               </h1>
 
@@ -431,7 +436,7 @@ export default function Home() {
                 marginBottom: '2.5rem',
                 maxWidth: '540px',
               }}>
-                أول منصة استشارات طبية متكاملة تجمع بين خبرة الاستشاريين وسهولة التقنية. احجز استشارتك المرئية في دقائق، وارفع فحوصاتك وتقاريرك بخصوصية تامة وتلقى التشخيص والخطة العلاجية من منزلك.
+                {t('hero_para')}
               </p>
 
               <div className="anim-fade-2" style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -441,12 +446,12 @@ export default function Home() {
                   gap: '0.75rem',
                   borderRadius: 'var(--r-lg)',
                 }}>
-                  ابدأ الاستشارة الآن
+                  {t('hero_btn_start')}
                   <span style={{ fontSize: '1.2rem', lineHeight: 1, display: 'inline-block', transform: 'translateX(0)', transition: 'transform 200ms' }}
-                  >←</span>
+                  >{isRtl ? '←' : '→'}</span>
                 </Link>
                 <Link href="#about-section" className="btn-ghost" style={{ fontSize: '0.95rem', padding: '0.9rem 1.75rem' }}>
-                  تعرّف على الدكتور
+                  {t('hero_btn_about')}
                 </Link>
               </div>
 
@@ -523,7 +528,7 @@ export default function Home() {
                   borderRadius: 'var(--r-lg)',
                   zIndex: 4,
                 }}>
-                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--fg)' }}>د. خالد بترجي</div>
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--fg)' }}>{t('hero_title_dr')}</div>
                   <div style={{
                     fontSize: '0.82rem', color: 'var(--fg-muted)', marginTop: '0.2rem',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
@@ -534,7 +539,7 @@ export default function Home() {
                       animation: 'pulse-soft 2s ease-in-out infinite',
                       boxShadow: '0 0 6px var(--ok-soft)',
                     }} />
-                    رئيس مجلس إدارة المركز (متاح للحجز)
+                    {t('hero_status_online')}
                   </div>
                 </div>
               </div>
@@ -601,7 +606,7 @@ export default function Home() {
               border: '1px solid var(--border)',
               boxShadow: 'var(--shadow-md)',
             }}>
-              {['جراحة العظام والمفاصل', 'المناظير الجراحية', 'علاج الآلام المزمنة', 'تأهيل ما بعد العمليات', 'استشارات أون لاين'].map((item, i) => (
+              {[t('exp_joints'), t('exp_scopes'), t('exp_pain'), t('exp_rehab'), t('exp_online')].map((item, i) => (
                 <div key={item} style={{
                   display: 'flex', alignItems: 'center', gap: '0.5rem',
                   fontSize: '0.85rem', fontWeight: 600,
@@ -644,10 +649,10 @@ export default function Home() {
               boxShadow: 'var(--shadow-md)',
             }}>
               {[
-                { end: 1500, label: 'مريض', suffix: '+', sub: 'تمت استشارتهم' },
-                { end: 35, label: 'عاماً', suffix: '+', sub: 'خبرة في المجال الطبي' },
-                { end: 98, label: 'رضا المرضى', suffix: '٪', sub: 'نسبة تقييمات إيجابية' },
-                { end: 24, label: 'ساعة', suffix: '', sub: 'الرد على الاستفسارات' },
+                { end: 1500, label: t('counter_patients_label'), suffix: '+', sub: t('counter_patients_sub') },
+                { end: 35, label: t('counter_experience_label'), suffix: '+', sub: t('counter_experience_sub') },
+                { end: 98, label: t('counter_satisfaction_label'), suffix: isRtl ? '٪' : '%', sub: t('counter_satisfaction_sub') },
+                { end: 24, label: t('counter_response_label'), suffix: '', sub: t('counter_response_sub') },
               ].map((c, i) => (
                 <div key={c.label} style={{
                   textAlign: 'center',
@@ -685,7 +690,7 @@ export default function Home() {
           }}>
             <ScrollReveal>
               <div>
-                <SectionLabel>المؤهلات العلمية</SectionLabel>
+                <SectionLabel>{t('qual_label')}</SectionLabel>
                 <h2 style={{
                   fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
                   fontWeight: 900,
@@ -694,7 +699,11 @@ export default function Home() {
                   marginBottom: '1rem',
                   lineHeight: 1.15,
                 }}>
-                  خبرة تمتد لأكثر من <span style={{ color: 'var(--primary)' }}>ثلاثة عقود</span>
+                  {isRtl ? (
+                    <>خبرة تمتد لأكثر من <span style={{ color: 'var(--primary)' }}>ثلاثة عقود</span></>
+                  ) : (
+                    <>Experience extending over <span style={{ color: 'var(--primary)' }}>three decades</span></>
+                  )}
                 </h2>
                 <p style={{
                   fontSize: '0.95rem',
@@ -702,10 +711,10 @@ export default function Home() {
                   lineHeight: 1.9,
                   marginBottom: '2.5rem',
                 }}>
-                  يتمتع الدكتور خالد بترجي بسيرة ذاتية حافلة بالإنجازات الأكاديمية والعملية في مجال جراحة العظام والمفاصل، مع أكثر من 35 عاماً من الخبرة المتراكمة.
+                  {t('qual_desc')}
                 </p>
                 <Link href="/consultation/new" className="btn-primary" style={{ fontSize: '0.9rem', padding: '0.85rem 1.75rem' }}>
-                  احجز استشارتك
+                  {t('qual_btn')}
                 </Link>
               </div>
             </ScrollReveal>
@@ -770,7 +779,7 @@ export default function Home() {
         }} />
         <div className="container" style={{ textAlign: 'center', position: 'relative' }}>
           <ScrollReveal>
-            <SectionLabel>خطوات الحجز</SectionLabel>
+            <SectionLabel>{t('steps_label')}</SectionLabel>
             <h2 style={{
               fontSize: 'clamp(2rem, 4vw, 3.2rem)',
               fontWeight: 'normal',
@@ -779,7 +788,7 @@ export default function Home() {
               color: 'var(--fg)',
               marginBottom: '0.75rem',
             }}>
-              كيف تعمل الخدمة؟
+              {t('steps_title')}
             </h2>
             <p style={{
               fontSize: '1.05rem',
@@ -788,7 +797,7 @@ export default function Home() {
               margin: '0 auto 4rem',
               lineHeight: 1.8,
             }}>
-              من التسجيل إلى الجلسة مع الدكتور في 4 خطوات بسيطة
+              {t('steps_subtitle')}
             </p>
           </ScrollReveal>
 
@@ -798,7 +807,7 @@ export default function Home() {
             <div className="hidden md:block" style={{
               position: 'absolute', top: '2.5rem', left: 'calc(12.5% + 1.5rem)',
               right: 'calc(12.5% + 1.5rem)', height: '2px',
-              background: 'linear-gradient(90deg, var(--primary) 0%, var(--border) 50%, var(--border) 100%)',
+              background: `linear-gradient(${isRtl ? '270deg' : '90deg'}, var(--primary) 0%, var(--border) 50%, var(--border) 100%)`,
               zIndex: 0,
             }} />
 
@@ -862,7 +871,7 @@ export default function Home() {
         }} />
         <div className="container" style={{ textAlign: 'center', position: 'relative' }}>
           <ScrollReveal>
-            <SectionLabel>الباقات والأسعار</SectionLabel>
+            <SectionLabel>{t('pricing_label')}</SectionLabel>
             <h2 style={{
               fontSize: 'clamp(2rem, 4vw, 3.2rem)',
               fontWeight: 'normal',
@@ -871,7 +880,7 @@ export default function Home() {
               color: 'var(--fg)',
               marginBottom: '0.75rem',
             }}>
-              اختر الباقة المناسبة لك
+              {t('pricing_title')}
             </h2>
             <p style={{
               fontSize: '1.05rem',
@@ -880,7 +889,7 @@ export default function Home() {
               margin: '0 auto 4rem',
               lineHeight: 1.8,
             }}>
-              استشارات مرنة بأسعار تنافسية تناسب جميع الحالات
+              {t('pricing_subtitle')}
             </p>
           </ScrollReveal>
 
@@ -894,7 +903,7 @@ export default function Home() {
                   borderRadius: 'var(--radius-xl)',
                   padding: '3rem 2rem 2.5rem',
                   boxShadow: svc.popular ? '0 20px 50px oklch(38% 0.11 150 / 0.08), 0 2px 12px oklch(38% 0.11 150 / 0.03), inset 0 1px 0 oklch(100% 0 0 / 0.7)' : 'var(--shadow-lg)',
-                  textAlign: 'right',
+                  textAlign: isRtl ? 'right' : 'left',
                   position: 'relative',
                   overflow: 'hidden',
                   transition: 'all 400ms var(--ease-out)',
@@ -918,20 +927,30 @@ export default function Home() {
                 >
                   {/* Gold decorative corner */}
                   <div style={{
-                    position: 'absolute', top: '1rem', right: '1rem',
-                    width: '24px', height: '24px',
+                    position: 'absolute',
+                    top: '1rem',
+                    right: isRtl ? '1rem' : 'auto',
+                    left: !isRtl ? '1rem' : 'auto',
+                    width: '24px',
+                    height: '24px',
                     borderTop: svc.popular ? '2px solid var(--gold)' : '1px solid var(--border)',
-                    borderRight: svc.popular ? '2px solid var(--gold)' : '1px solid var(--border)',
-                    borderRadius: '0 6px 0 0',
+                    borderRight: isRtl ? (svc.popular ? '2px solid var(--gold)' : '1px solid var(--border)') : 'none',
+                    borderLeft: !isRtl ? (svc.popular ? '2px solid var(--gold)' : '1px solid var(--border)') : 'none',
+                    borderRadius: isRtl ? '0 6px 0 0' : '6px 0 0 0',
                     opacity: svc.popular ? 0.5 : 0.15,
                     pointerEvents: 'none',
                   }} />
                   <div style={{
-                    position: 'absolute', bottom: '1rem', left: '1rem',
-                    width: '24px', height: '24px',
+                    position: 'absolute',
+                    bottom: '1rem',
+                    left: isRtl ? '1rem' : 'auto',
+                    right: !isRtl ? '1rem' : 'auto',
+                    width: '24px',
+                    height: '24px',
                     borderBottom: svc.popular ? '2px solid var(--gold)' : '1px solid var(--border)',
-                    borderLeft: svc.popular ? '2px solid var(--gold)' : '1px solid var(--border)',
-                    borderRadius: '0 0 0 6px',
+                    borderLeft: isRtl ? (svc.popular ? '2px solid var(--gold)' : '1px solid var(--border)') : 'none',
+                    borderRight: !isRtl ? (svc.popular ? '2px solid var(--gold)' : '1px solid var(--border)') : 'none',
+                    borderRadius: isRtl ? '0 0 0 6px' : '0 0 6px 0',
                     opacity: svc.popular ? 0.5 : 0.15,
                     pointerEvents: 'none',
                   }} />
@@ -945,12 +964,16 @@ export default function Home() {
                         color: 'white', fontSize: '0.65rem', fontWeight: 700,
                         padding: '0.25rem 3.5rem', letterSpacing: '0.08em',
                       }}>
-                        الأكثر طلباً
+                        {t('pkg_popular')}
                       </div>
                       <div style={{
-                        position: 'absolute', top: 0, right: 0,
-                        width: '120px', height: '120px',
-                        background: 'radial-gradient(circle at top right, oklch(38% 0.11 150 / 0.06), transparent 70%)',
+                        position: 'absolute',
+                        top: 0,
+                        right: isRtl ? 0 : 'auto',
+                        left: !isRtl ? 0 : 'auto',
+                        width: '120px',
+                        height: '120px',
+                        background: `radial-gradient(circle at top ${isRtl ? 'right' : 'left'}, oklch(38% 0.11 150 / 0.06), transparent 70%)`,
                         pointerEvents: 'none',
                       }} />
                     </>
@@ -959,7 +982,7 @@ export default function Home() {
                     fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)',
                     marginBottom: '0.5rem', letterSpacing: '0.05em',
                   }}>
-                    {svc.popular ? 'باقة مطورة' : 'باقة أساسية'}
+                    {svc.popular ? t('pkg_advanced_label') : t('pkg_basic_label')}
                   </div>
                   <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--fg)', marginBottom: '0.3rem' }}>{svc.title}</div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem', marginBottom: '1rem', direction: 'ltr' }}>
@@ -990,7 +1013,7 @@ export default function Home() {
                     className={svc.popular ? 'btn-primary' : 'btn-ghost'}
                     style={{ width: '100%', justifyContent: 'center', fontSize: '0.95rem', padding: '0.9rem' }}
                   >
-                    {svc.popular ? 'احجز الآن' : 'اختر الباقة'}
+                    {svc.popular ? t('pkg_btn_book') : t('pkg_btn_choose')}
                   </Link>
                 </div>
               </ScrollReveal>
@@ -1009,7 +1032,7 @@ export default function Home() {
           }}>
             <ScrollReveal>
               <div className="features-copy">
-                <SectionLabel>لماذا د. خالد بترجي؟</SectionLabel>
+                <SectionLabel>{t('why_label')}</SectionLabel>
                 <h2 style={{
                   fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
                   fontWeight: 'normal',
@@ -1019,7 +1042,7 @@ export default function Home() {
                   marginBottom: '1rem',
                   lineHeight: 1.15,
                 }}>
-                  رعاية طبية بمعايير عالمية من منزلك
+                  {t('why_title')}
                 </h2>
                 <p style={{
                   fontSize: '0.95rem',
@@ -1027,7 +1050,7 @@ export default function Home() {
                   lineHeight: 1.9,
                   marginBottom: '2.5rem',
                 }}>
-                  نضعك في قلب الرعاية الصحية. منصة متكاملة تجمع بين الخبرة الطبية والتقنية الحديثة لتوفير تجربة استشارية سلسة وآمنة.
+                  {t('why_desc')}
                 </p>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                   <Link href="/consultation/new" className="btn-primary" style={{ fontSize: '0.95rem', padding: '0.9rem 2rem' }}>
@@ -1149,7 +1172,7 @@ export default function Home() {
         }} />
         <div className="container" style={{ textAlign: 'center', position: 'relative' }}>
           <ScrollReveal>
-            <SectionLabel>آراء المرضى</SectionLabel>
+            <SectionLabel>{t('test_label')}</SectionLabel>
             <h2 style={{
               fontSize: 'clamp(2rem, 4vw, 3.2rem)',
               fontWeight: 'normal',
@@ -1158,7 +1181,7 @@ export default function Home() {
               color: 'var(--fg)',
               marginBottom: '3rem',
             }}>
-              ماذا يقول مرضانا؟
+              {t('test_title')}
             </h2>
           </ScrollReveal>
 
@@ -1172,7 +1195,7 @@ export default function Home() {
                   borderRadius: 'var(--radius-xl)',
                   border: '1px solid var(--border)',
                   boxShadow: 'var(--shadow-md)',
-                  textAlign: 'right',
+                  textAlign: isRtl ? 'right' : 'left',
                   position: 'relative',
                   transition: 'all 450ms var(--ease-out)',
                 }}
@@ -1198,7 +1221,10 @@ export default function Home() {
                     pointerEvents: 'none',
                   }} />
                   <div style={{
-                    position: 'absolute', top: '1rem', left: '1.5rem',
+                    position: 'absolute',
+                    top: '1rem',
+                    left: isRtl ? '1.5rem' : 'auto',
+                    right: !isRtl ? '1.5rem' : 'auto',
                     fontSize: '4rem', lineHeight: 0.8,
                     color: 'var(--primary-soft)',
                     fontWeight: 900,
@@ -1235,7 +1261,7 @@ export default function Home() {
                     }}>
                       {t.name.charAt(0)}
                     </div>
-                    <div style={{ textAlign: 'right' }}>
+                    <div style={{ textAlign: isRtl ? 'right' : 'left' }}>
                       <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--fg)' }}>{t.name}</div>
                       <div style={{ fontSize: '0.72rem', color: 'var(--fg-dim)' }}>{t.title}</div>
                     </div>
@@ -1254,7 +1280,7 @@ export default function Home() {
         <div className="container">
           <ScrollReveal>
             <div style={{ textAlign: 'center' }}>
-              <SectionLabel>المكتبة الطبية</SectionLabel>
+              <SectionLabel>{t('lib_label')}</SectionLabel>
               <h2 style={{
                 fontSize: 'clamp(2rem, 4vw, 3rem)',
                 fontWeight: 900,
@@ -1262,7 +1288,7 @@ export default function Home() {
                 color: 'var(--fg)',
                 marginBottom: '0.75rem',
               }}>
-                موارد صحية لك
+                {t('lib_title')}
               </h2>
               <p style={{
                 fontSize: '1.05rem',
@@ -1271,76 +1297,79 @@ export default function Home() {
                 margin: '0 auto 4rem',
                 lineHeight: 1.8,
               }}>
-                مقالات وإرشادات طبية من إعداد د. خالد بترجي لمساعدتك في رحلة علاجك
+                {t('lib_desc')}
               </p>
             </div>
           </ScrollReveal>
 
           <div className="articles-grid">
-            {ARTICLES.map((r, i) => (
-              <ScrollReveal key={r.title} delay={i * 100}>
-                <Link href={`/articles/${r.slug}`} style={{
-                  display: 'block',
-                  textDecoration: 'none',
-                  padding: '2rem',
-                  background: 'var(--surface)',
-                  borderRadius: 'var(--r-xl)',
-                  border: '1px solid var(--border-faint)',
-                  boxShadow: 'var(--shadow-sm)',
-                  textAlign: 'right',
-                  transition: 'transform 350ms var(--ease-spring), box-shadow 350ms, border-color 350ms',
-                  cursor: 'pointer',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-                  onMouseOver={e => {
-                    const el = e.currentTarget as HTMLElement
-                    el.style.transform = 'translateY(-6px)'
-                    el.style.boxShadow = 'var(--shadow-md)'
-                    el.style.borderColor = 'var(--border-accent)'
+            {ARTICLES.map((r, i) => {
+              const art = lang === 'ar' ? r.ar : r.en
+              return (
+                <ScrollReveal key={r.slug} delay={i * 100}>
+                  <Link href={`/articles/${r.slug}`} style={{
+                    display: 'block',
+                    textDecoration: 'none',
+                    padding: '2rem',
+                    background: 'var(--surface)',
+                    borderRadius: 'var(--r-xl)',
+                    border: '1px solid var(--border-faint)',
+                    boxShadow: 'var(--shadow-sm)',
+                    textAlign: isRtl ? 'right' : 'left',
+                    transition: 'transform 350ms var(--ease-spring), box-shadow 350ms, border-color 350ms',
+                    cursor: 'pointer',
+                    position: 'relative',
+                    overflow: 'hidden',
                   }}
-                  onMouseOut={e => {
-                    const el = e.currentTarget as HTMLElement
-                    el.style.transform = 'translateY(0)'
-                    el.style.boxShadow = 'var(--shadow-sm)'
-                    el.style.borderColor = 'var(--border-faint)'
-                  }}
-                >
-                  <div style={{
-                    fontSize: '0.72rem', fontWeight: 700, color: 'var(--primary)',
-                    padding: '0.2rem 0.75rem',
-                    borderRadius: '9999px',
-                    border: '1px solid var(--border-accent)',
-                    background: 'var(--primary-subtle)',
-                    display: 'inline-block',
-                    marginBottom: '1rem',
-                  }}>
-                    {r.tag}
-                  </div>
-                  <div style={{
-                    fontSize: '1rem', fontWeight: 800, color: 'var(--fg)',
-                    marginBottom: '0.5rem', lineHeight: 1.4,
-                  }}>
-                    {r.title}
-                  </div>
-                  <p style={{
-                    fontSize: '0.82rem', color: 'var(--fg-muted)',
-                    lineHeight: 1.7, marginBottom: '1.25rem',
-                  }}>
-                    {r.summary}
-                  </p>
-                  <div style={{
-                    fontSize: '0.72rem', color: 'var(--fg-dim)',
-                    display: 'flex', alignItems: 'center', gap: '0.35rem',
-                  }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-                    </svg>
-                    <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 700 }}>{r.readTime}</span> دقائق قراءة
-                  </div>
-                </Link>
-              </ScrollReveal>
-            ))}
+                    onMouseOver={e => {
+                      const el = e.currentTarget as HTMLElement
+                      el.style.transform = 'translateY(-6px)'
+                      el.style.boxShadow = 'var(--shadow-md)'
+                      el.style.borderColor = 'var(--border-accent)'
+                    }}
+                    onMouseOut={e => {
+                      const el = e.currentTarget as HTMLElement
+                      el.style.transform = 'translateY(0)'
+                      el.style.boxShadow = 'var(--shadow-sm)'
+                      el.style.borderColor = 'var(--border-faint)'
+                    }}
+                  >
+                    <div style={{
+                      fontSize: '0.72rem', fontWeight: 700, color: 'var(--primary)',
+                      padding: '0.2rem 0.75rem',
+                      borderRadius: '9999px',
+                      border: '1px solid var(--border-accent)',
+                      background: 'var(--primary-subtle)',
+                      display: 'inline-block',
+                      marginBottom: '1rem',
+                    }}>
+                      {art.tag}
+                    </div>
+                    <div style={{
+                      fontSize: '1rem', fontWeight: 800, color: 'var(--fg)',
+                      marginBottom: '0.5rem', lineHeight: 1.4,
+                    }}>
+                      {art.title}
+                    </div>
+                    <p style={{
+                      fontSize: '0.82rem', color: 'var(--fg-muted)',
+                      lineHeight: 1.7, marginBottom: '1.25rem',
+                    }}>
+                      {art.summary}
+                    </p>
+                    <div style={{
+                      fontSize: '0.72rem', color: 'var(--fg-dim)',
+                      display: 'flex', alignItems: 'center', gap: '0.35rem',
+                    }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                      </svg>
+                      <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 700 }}>{art.readTime}</span> {t('read_time_suffix')}
+                    </div>
+                  </Link>
+                </ScrollReveal>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -1357,7 +1386,7 @@ export default function Home() {
           <div className="faq-grid">
             <ScrollReveal>
               <div className="faq-copy">
-                <SectionLabel>الأسئلة الشائعة</SectionLabel>
+                <SectionLabel>{t('faq_label')}</SectionLabel>
                 <h2 style={{
                   fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
                   fontWeight: 'normal',
@@ -1367,14 +1396,14 @@ export default function Home() {
                   marginBottom: '1rem',
                   lineHeight: 1.15,
                 }}>
-                  كل ما تريد معرفته عن الاستشارة
+                  {t('faq_title')}
                 </h2>
                 <p style={{
                   fontSize: '0.95rem',
                   color: 'var(--fg-muted)',
                   lineHeight: 1.8,
                 }}>
-                  إجابات سريعة عن أكثر الأسئلة شيوعاً. إن كان لديك سؤال آخر، لا تتردد في التواصل معنا.
+                  {t('faq_desc')}
                 </p>
               </div>
             </ScrollReveal>
@@ -1475,7 +1504,7 @@ export default function Home() {
                   marginBottom: '1.5rem',
                 }}>
                   <span style={{ fontSize: '0.6rem', animation: 'pulse-soft 2s ease-in-out infinite' }}>◇</span>
-                  ابدأ رحلة علاجك اليوم
+                  {t('cta_badge')}
                 </div>
                 <h2 style={{
                   fontSize: 'clamp(2rem, 4vw, 3rem)',
@@ -1484,7 +1513,7 @@ export default function Home() {
                   lineHeight: 1.15,
                   marginBottom: '1rem',
                 }}>
-                  استشر طبيبك الاستشاري من منزلك اليوم
+                  {t('cta_title')}
                 </h2>
                 <p style={{
                   fontSize: '1.05rem',
@@ -1493,7 +1522,7 @@ export default function Home() {
                   maxWidth: '520px',
                   margin: '0 auto 2rem',
                 }}>
-                  احجز استشارتك الآن خلال دقائق وابدأ رحلة علاجك مع طبيبك الاستشاري. رعاية طبية تخصصية بمعايير عالمية في متناول يدك.
+                  {t('cta_desc')}
                 </p>
                 <Link
                   href="/consultation/new"
@@ -1523,11 +1552,11 @@ export default function Home() {
                     (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 14px oklch(0% 0 0 / 0.15)';
                   }}
                 >
-                  ابدأ الاستشارة
+                  {t('cta_btn')}
                   <span style={{ fontSize: '1.2rem', lineHeight: 1, display: 'inline-block', transition: 'transform 200ms' }}
-                    onMouseOver={e => (e.currentTarget as HTMLElement).style.transform = 'translateX(-4px)'}
+                    onMouseOver={e => (e.currentTarget as HTMLElement).style.transform = isRtl ? 'translateX(-4px)' : 'translateX(4px)'}
                     onMouseOut={e => (e.currentTarget as HTMLElement).style.transform = 'translateX(0)'}
-                  >←</span>
+                  >{isRtl ? '←' : '→'}</span>
                 </Link>
               </div>
             </div>

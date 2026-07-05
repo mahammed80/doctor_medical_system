@@ -114,7 +114,6 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-body), 'Noto Sans Arabic', system-ui, sans-serif;
-  direction: rtl;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;

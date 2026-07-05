@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { Amiri, Noto_Sans_Arabic, Cormorant, Oswald } from 'next/font/google'
-import Link from 'next/link'
-import Image from 'next/image'
 import { ToastProvider } from '@/components/Toaster'
+import { LanguageProvider } from '@/context/LanguageContext'
+import { Header } from '@/components/Header'
+import { Footer } from '@/components/Footer'
 import './globals.css'
 
 const amiri = Amiri({
@@ -39,176 +40,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ar" dir="rtl" className={`${amiri.variable} ${notoSansArabic.variable} ${cormorant.variable} ${oswald.variable}`}>
       <body>
         <ToastProvider>
-          <div className="grain" />
-
-          <header style={{
-            position: 'sticky',
-            top: 5,
-            zIndex: 50,
-            background: 'var(--surface)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            borderBottom: '1px solid var(--border)',
-          }}>
-            <div className="container" style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              height: '64px',
-            }}>
-              <Link href="/" style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                textDecoration: 'none',
-                color: 'var(--fg)',
-              }}>
-                <div style={{
-                  width: '36px',
-                  height: '36px',
-                  position: 'relative',
-                  borderRadius: '10px',
-                  overflow: 'hidden',
-                  boxShadow: '0 2px 8px var(--primary-glow)',
-                }}>
-                  <Image
-                    src="/logo.png"
-                    alt="شعار مركز بترجي للاستشارات"
-                    fill
-                    sizes="36px"
-                    style={{ objectFit: 'cover' }}
-                  />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.95rem', fontWeight: 800, lineHeight: 1.2 }}>استشارات د. خالد بترجي</span>
-                  <span style={{ fontSize: '0.68rem', color: 'var(--fg-dim)', fontWeight: 500 }}>استشاري جراحة العظام والمفاصل أونلاين</span>
-                </div>
-              </Link>
-
-              <nav className="hidden lg:flex items-center gap-7" style={{ direction: 'rtl' }}>
-                <Link href="/" className="nav-link">الرئيسية</Link>
-                <Link href="/#about-section" className="nav-link">عن الدكتور</Link>
-                <Link href="/#steps-section" className="nav-link">خطوات الحجز</Link>
-                <Link href="/#services-section" className="nav-link">الباقات</Link>
-                <Link href="/#testimonials-section" className="nav-link">آراء المرضى</Link>
-                <Link href="/#faq-section" className="nav-link">الأسئلة الشائعة</Link>
-              </nav>
-
-              <nav style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <Link href="/consultation/new" className="btn-primary btn-sm btn-primary-shimmer" style={{ borderRadius: 'var(--r-sm)' }}>
-                  ابدأ الاستشارة
-                </Link>
-              </nav>
-            </div>
-          </header>
-
-          {children}
-
-          <footer style={{
-            borderTop: '1px solid var(--border-faint)',
-            background: 'linear-gradient(180deg, var(--bg) 0%, var(--surface) 100%)',
-            padding: '5rem 0 2rem',
-            marginTop: '6rem',
-            position: 'relative',
-            overflow: 'hidden',
-          }}>
-            <div style={{
-              position: 'absolute', top: '-1.5rem', left: 0, right: 0,
-              display: 'flex', justifyContent: 'center', gap: '0.75rem',
-            }}>
-              {[1,2,3,4,5].map(i => (
-                <div key={i} style={{
-                  width: '8px', height: '8px',
-                  background: i === 3 ? 'var(--gold)' : 'var(--border)',
-                  clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-                  opacity: i === 3 ? 0.5 : 0.15,
-                  animation: i === 3 ? 'diamondPulse 3s ease-in-out infinite' : 'none',
-                }} />
-              ))}
-            </div>
-
-            <div className="container" style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              flexWrap: 'wrap',
-              gap: '2rem',
-              position: 'relative',
-              zIndex: 1,
-            }}>
-              <div style={{ maxWidth: '320px' }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  marginBottom: '0.75rem',
-                }}>
-                  <div style={{
-                    width: '32px',
-                    height: '32px',
-                    position: 'relative',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    boxShadow: '0 2px 8px var(--primary-glow)',
-                  }}>
-                    <Image
-                      src="/logo.png"
-                      alt="شعار مركز بترجي للاستشارات"
-                      fill
-                      sizes="32px"
-                      style={{ objectFit: 'cover' }}
-                    />
-                  </div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 800 }}>استشارات د. خالد بترجي</div>
-                </div>
-                <div style={{
-                  fontSize: '0.78rem', color: 'var(--fg-dim)', lineHeight: 1.8,
-                }}>
-                  منصة استشارات طبية متكاملة مع د. خالد بترجي، لتقديم رعاية صحية ممتازة وتجربة استشارية آمنة وموثوقة من منزلك.
-                </div>
-              </div>
-
-              <div style={{
-                display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'flex-end',
-              }}>
-                <div style={{
-                  fontSize: '0.72rem', fontWeight: 700, color: 'var(--fg-muted)',
-                  letterSpacing: '0.04em',
-                }}>
-                  روابط سريعة
-                </div>
-                <Link href="/" style={{
-                  color: 'var(--fg-dim)', textDecoration: 'none', fontSize: '0.82rem',
-                  transition: 'color 200ms',
-                }}>الرئيسية</Link>
-                <Link href="/consultation/new" style={{
-                  color: 'var(--fg-dim)', textDecoration: 'none', fontSize: '0.82rem',
-                  transition: 'color 200ms',
-                }}>حجز استشارة</Link>
-              </div>
-
-              <div style={{
-                textAlign: 'left', direction: 'ltr',
-                fontSize: '0.72rem', color: 'var(--fg-dim)',
-              }}>
-                <div style={{ marginBottom: '0.35rem' }}>
-                  جميع الحقوق محفوظة
-                </div>
-                <div>
-                  © {new Date().getFullYear()}
-                </div>
-              </div>
-            </div>
-
-            <div style={{
-              marginTop: '3rem',
-              height: '1px',
-              background: 'linear-gradient(90deg, transparent, var(--border), transparent)',
-              opacity: 0.5,
-            }} />
-          </footer>
+          <LanguageProvider>
+            <div className="grain" />
+            <Header />
+            {children}
+            <Footer />
+          </LanguageProvider>
         </ToastProvider>
       </body>
     </html>
   )
 }
+

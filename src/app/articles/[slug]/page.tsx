@@ -5,24 +5,27 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Search } from 'lucide-react'
 import { ARTICLES } from '@/lib/articles'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function ArticleDetail() {
+  const { t, isRtl, lang } = useLanguage()
   const params = useParams()
   const slug = params?.slug as string
 
-  const article = ARTICLES.find(a => a.slug === slug)
+  const rawArticle = ARTICLES.find(a => a.slug === slug)
+  const article = rawArticle ? (lang === 'ar' ? rawArticle.ar : rawArticle.en) : null
 
   if (!article) {
     return (
       <main className="geo-bg" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
         <div className="card-warm" style={{ maxWidth: '480px', width: '100%', textAlign: 'center', padding: '3rem 2rem' }}>
           <div style={{ marginBottom: '1rem' }}><Search size={48} /></div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--fg)', marginBottom: '0.75rem' }}>المقال غير موجود</h2>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--fg)', marginBottom: '0.75rem' }}>{t('art_not_found')}</h2>
           <p style={{ fontSize: '0.9rem', color: 'var(--fg-dim)', lineHeight: 1.6, marginBottom: '2rem' }}>
-            عذراً، المقال الذي تبحث عنه غير متوفر حالياً أو قد تم نقله.
+            {t('art_not_found_desc')}
           </p>
           <Link href="/" className="btn-primary" style={{ display: 'inline-flex', justifyContent: 'center', width: '100%' }}>
-            العودة للرئيسية
+            {t('art_back')}
           </Link>
         </div>
       </main>
@@ -36,7 +39,7 @@ export default function ArticleDetail() {
         {/* Back Button */}
         <div style={{ marginBottom: '2rem' }}>
           <Link href="/" className="article-back">
-            → العودة للرئيسية
+            {isRtl ? '→ العودة للرئيسية' : '← Back to Home'}
           </Link>
         </div>
 
@@ -67,7 +70,7 @@ export default function ArticleDetail() {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
                 </svg>
-                {article.readTime} دقائق قراءة
+                {article.readTime} {t('read_time_suffix')}
               </span>
             </div>
 
@@ -94,9 +97,9 @@ export default function ArticleDetail() {
               marginBottom: '2rem',
               borderBottom: '1px solid var(--border-faint)',
             }}>
-              <div>كتب بواسطة: <strong>{article.author}</strong></div>
+              <div>{t('art_written_by')} <strong>{article.author}</strong></div>
               <div style={{ color: 'var(--border)' }}>|</div>
-              <div>نُشر في: {article.date}</div>
+              <div>{t('art_published_in')} {article.date}</div>
             </div>
 
             {/* Article Content */}
@@ -143,13 +146,13 @@ export default function ArticleDetail() {
                 />
               </div>
               
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--fg)', marginBottom: '0.5rem' }}>هل تعاني من آلام المفاصل؟</h3>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--fg)', marginBottom: '0.5rem' }}>{t('art_sidebar_q')}</h3>
               <p style={{ fontSize: '0.8rem', color: 'var(--fg-muted)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                احجز استشارتك الآن مع الدكتور خالد بترجي من منزلك لتلقي التشخيص الدقيق والخطة العلاجية المناسبة عبر محادثة آمنة.
+                {t('art_sidebar_desc')}
               </p>
               
               <Link href="/consultation/new" className="btn-primary" style={{ width: '100%', justifyContent: 'center', fontSize: '0.9rem', padding: '0.8rem 1.25rem' }}>
-                ابدأ الاستشارة الآن
+                {t('art_sidebar_btn')}
               </Link>
             </div>
 
@@ -161,19 +164,22 @@ export default function ArticleDetail() {
               boxShadow: 'var(--shadow-sm)',
             }}>
               <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--fg)', marginBottom: '1rem', borderBottom: '1.5px solid var(--primary-soft)', paddingBottom: '0.5rem' }}>
-                مقالات ذات صلة
+                {t('art_related')}
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {ARTICLES.filter(a => a.slug !== slug).map(a => (
-                  <Link key={a.slug} href={`/articles/${a.slug}`} className="article-related-link">
-                    <div className="article-related-title">
-                      {a.title}
-                    </div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--fg-dim)', marginTop: '0.2rem' }}>
-                      {a.tag} • {a.readTime} دقائق قراءة
-                    </div>
-                  </Link>
-                ))}
+                {ARTICLES.filter(a => a.slug !== slug).map(a => {
+                  const relatedArt = lang === 'ar' ? a.ar : a.en
+                  return (
+                    <Link key={a.slug} href={`/articles/${a.slug}`} className="article-related-link" style={{ textAlign: isRtl ? 'right' : 'left' }}>
+                      <div className="article-related-title">
+                        {relatedArt.title}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--fg-dim)', marginTop: '0.2rem' }}>
+                        {relatedArt.tag} • {relatedArt.readTime} {t('read_time_suffix')}
+                      </div>
+                    </Link>
+                  )
+                })}
               </div>
             </div>
 
