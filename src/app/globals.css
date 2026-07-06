@@ -698,6 +698,9 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
 .reveal.visible div {
   padding: 25px;
 }
+.about-grid .reveal.visible div {
+  padding: 5px;
+}
 
 /* ── Landing page: editorial layout ── */
 .section-padded { padding: 5rem 0; position: relative; }
@@ -1076,6 +1079,9 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+}
+.features-cards div {
+  padding: 5px;
 }
 .feature-card {
   background: var(--surface);
