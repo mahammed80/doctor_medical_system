@@ -611,6 +611,7 @@ export default function Home() {
                   fontSize: '0.85rem', fontWeight: 600,
                   color: 'var(--fg-muted)',
                   transition: 'color 200ms',
+                  padding: '25px',
                 }}>
                   <span style={{
                     width: '6px', height: '6px', borderRadius: '50%',
