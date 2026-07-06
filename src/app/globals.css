@@ -1157,7 +1157,9 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem;
+  align-items: stretch;
 }
+.testimonials-grid > * { min-height: 0; }
 .testimonial-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1166,6 +1168,9 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   box-shadow: var(--shadow-sm);
   position: relative;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 .testimonial-quote-mark {
   position: absolute;
@@ -1183,6 +1188,7 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   line-height: 1.9;
   margin-bottom: 1.5rem;
   position: relative;
+  flex: 1 1 auto;
 }
 .testimonial-author {
   display: flex;
@@ -1190,6 +1196,7 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   gap: 0.75rem;
   border-top: 1px solid var(--border-faint);
   padding-top: 1rem;
+  margin-top: auto;
 }
 .testimonial-avatar {
   width: 42px;
@@ -1202,6 +1209,7 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   justify-content: center;
   font-weight: 700;
   font-size: 0.95rem;
+  flex-shrink: 0;
 }
 .testimonial-name { font-size: 0.88rem; font-weight: 700; color: var(--fg); }
 .testimonial-title { font-size: 0.72rem; color: var(--fg-dim); }

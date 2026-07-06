@@ -1176,7 +1176,7 @@ export default function Home() {
           <div className="testimonials-grid">
             {testimonials.map((t, i) => (
               <ScrollReveal key={t.name} delay={i * 120}>
-                <div className="p-6 sm:p-8 lg:p-10" style={{
+                <div className="testimonial-card p-6 sm:p-8 lg:p-10" style={{
                   background: 'var(--surface)',
                   backdropFilter: 'blur(20px)',
                   borderRadius: 'var(--radius-xl)',
@@ -1185,6 +1185,9 @@ export default function Home() {
                   textAlign: isRtl ? 'right' : 'left',
                   position: 'relative',
                   transition: 'all 450ms var(--ease-out)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
                 }}
                   onMouseOver={e => {
                     const el = e.currentTarget as HTMLElement
@@ -1220,24 +1223,26 @@ export default function Home() {
                   }}>
                     &quot;
                   </div>
-                  <p style={{
+                  <p className="testimonial-text" style={{
                     fontSize: '0.9rem',
                     color: 'var(--fg-muted)',
                     lineHeight: 1.9,
                     marginBottom: '1.5rem',
                     position: 'relative',
                     zIndex: 1,
+                    flex: '1 1 auto',
                   }}>
                     {t.text}
                   </p>
-                  <div style={{
+                  <div className="testimonial-author" style={{
                     borderTop: '1px solid var(--border-faint)',
                     paddingTop: '1rem',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.75rem',
+                    marginTop: 'auto',
                   }}>
-                    <div style={{
+                    <div className="testimonial-avatar" style={{
                       width: '2.75rem', height: '2.75rem',
                       borderRadius: '50%',
                       background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-down) 100%)',
@@ -1245,12 +1250,13 @@ export default function Home() {
                       color: 'white',
                       fontWeight: 800,
                       fontSize: '0.9rem',
+                      flexShrink: 0,
                     }}>
                       {t.name.charAt(0)}
                     </div>
                     <div style={{ textAlign: isRtl ? 'right' : 'left' }}>
-                      <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--fg)' }}>{t.name}</div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--fg-dim)' }}>{t.title}</div>
+                      <div className="testimonial-name" style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--fg)' }}>{t.name}</div>
+                      <div className="testimonial-title" style={{ fontSize: '0.72rem', color: 'var(--fg-dim)' }}>{t.title}</div>
                     </div>
                   </div>
                 </div>
