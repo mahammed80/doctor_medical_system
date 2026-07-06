@@ -552,7 +552,8 @@ export default function Home() {
       <section className="section-py-stats" style={{ position: 'relative', zIndex: 3 }}>
         <div className="container">
           <ScrollReveal>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 p-6 sm:p-8 md:p-12" style={{
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10" style={{
+              padding: '10px',
               background: 'var(--surface)',
               backdropFilter: 'blur(24px)',
               WebkitBackdropFilter: 'blur(24px)',
