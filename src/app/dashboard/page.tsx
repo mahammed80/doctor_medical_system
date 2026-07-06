@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Check,
   X,
@@ -86,6 +86,7 @@ function severityColor(n: number | null | undefined): string {
 
 export default function Dashboard() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const toasts = useToasts()
 
   const [session, setSession] = useState<AuthSession | null>(null)
@@ -147,6 +148,22 @@ export default function Dashboard() {
       .then((data) => setCalendarStatus(data))
       .catch(() => setCalendarStatus({ connected: false, email: null, configured: false }))
   }, [selectedDoctorFilter])
+
+  useEffect(() => {
+    if (searchParams.get('calendar_connected') === 'true') {
+      toasts.push('تم ربط Google Calendar بنجاح! الحجوزات المستقبلية ستتم مزامنتها تلقائياً.', 'success')
+      const url = new URL(window.location.href)
+      url.searchParams.delete('calendar_connected')
+      window.history.replaceState({}, '', url.toString())
+    }
+    const error = searchParams.get('calendar_error')
+    if (error) {
+      toasts.push(`فشل ربط Google Calendar: ${error}`, 'error')
+      const url = new URL(window.location.href)
+      url.searchParams.delete('calendar_error')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [])
 
   const statusCounts = OVERVIEW_STATUSES.map((status) => {
     const count = consultations.filter(
