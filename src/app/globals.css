@@ -695,6 +695,9 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   opacity: 1;
   transform: translateY(0);
 }
+.reveal.visible div {
+  padding: 25px;
+}
 
 /* ── Landing page: editorial layout ── */
 .section-padded { padding: 5rem 0; position: relative; }
