@@ -357,7 +357,7 @@ export default function Home() {
       <MouseGlow />
 
       {/* ── HERO ── */}
-      <section id="hero-section" className="py-12 md:py-32" style={{ position: 'relative', zIndex: 2 }}>
+      <section id="hero-section" className="section-py-hero" style={{ position: 'relative', zIndex: 2 }}>
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0,
           height: '85%',
@@ -549,17 +549,16 @@ export default function Home() {
       </section>
 
       {/* ── HERO STATS SECTION ── */}
-      <section className="py-6 md:py-12" style={{ position: 'relative', zIndex: 3 }}>
+      <section className="section-py-stats" style={{ position: 'relative', zIndex: 3 }}>
         <div className="container">
           <ScrollReveal>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10" style={{
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 p-6 sm:p-8 md:p-12" style={{
               background: 'var(--surface)',
               backdropFilter: 'blur(24px)',
               WebkitBackdropFilter: 'blur(24px)',
               border: '1px solid var(--border-accent)',
               borderRadius: 'var(--radius-xl)',
               boxShadow: 'var(--shadow-xl)',
-              padding: '3rem 2.5rem',
             }}>
               {stats.map(({ num, label, desc }, idx) => (
                 <div key={label}
@@ -590,16 +589,15 @@ export default function Home() {
       </section>
 
       {/* ── EXPERTISE BAR ── */}
-      <section className="pb-10 md:pb-20" style={{ position: 'relative', zIndex: 2 }}>
+      <section className="section-pb-expertise" style={{ position: 'relative', zIndex: 2 }}>
         <div className="container">
           <ScrollReveal>
-            <div style={{
+            <div className="p-4 sm:p-6 md:p-8 md:px-10" style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexWrap: 'wrap',
-              gap: '2.5rem 4rem',
-              padding: '2rem 2.5rem',
+              gap: '1.5rem 3rem',
               background: 'var(--surface)',
               backdropFilter: 'blur(20px)',
               borderRadius: 'var(--radius-xl)',
@@ -630,18 +628,14 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── ACHIEVEMENT COUNTERS ── */}
-      <section className="py-10 md:py-20" style={{ position: 'relative', zIndex: 2 }}>
+      <section className="section-py-counters" style={{ position: 'relative', zIndex: 2 }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
           background: 'linear-gradient(180deg, transparent 0%, oklch(97% 0.008 85) 50%, transparent 100%)',
         }} />
         <div className="container" style={{ position: 'relative' }}>
           <ScrollReveal>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '2.5rem',
-              padding: '3rem',
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 p-6 sm:p-8 md:p-12" style={{
               background: 'var(--surface)',
               backdropFilter: 'blur(24px)',
               borderRadius: 'var(--radius-xl)',
@@ -683,7 +677,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── DOCTOR QUALIFICATIONS ── */}
-      <section id="about-section" className="py-10 md:py-20" style={{ position: 'relative', zIndex: 2 }}>
+      <section id="about-section" className="section-py-about" style={{ position: 'relative', zIndex: 2 }}>
         <div className="container">
           <div className="about-grid" style={{
             alignItems: 'center',
@@ -772,7 +766,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── HOW IT WORKS ── */}
-      <section id="steps-section" className="py-16 md:py-36" style={{ position: 'relative', zIndex: 2 }}>
+      <section id="steps-section" className="section-py-steps" style={{ position: 'relative', zIndex: 2 }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
           background: 'linear-gradient(180deg, transparent 0%, oklch(97% 0.008 85) 50%, transparent 100%)',
@@ -864,7 +858,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── SERVICES ── */}
-      <section id="services-section" className="py-16 md:py-36" style={{ position: 'relative', zIndex: 2 }}>
+      <section id="services-section" className="section-py-services" style={{ position: 'relative', zIndex: 2 }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
           background: 'linear-gradient(180deg, var(--bg) 0%, oklch(97% 0.008 85) 50%, var(--bg) 100%)',
@@ -896,12 +890,11 @@ export default function Home() {
           <div className="services-grid">
             {dynamicServices.map((svc, i) => (
               <ScrollReveal key={svc.title} delay={i * 100}>
-                <div style={{
+                <div className="p-6 sm:p-8 md:p-10 xl:p-12" style={{
                   background: 'var(--surface)',
                   backdropFilter: 'blur(16px)',
                   border: svc.popular ? '1px solid var(--primary)' : '1px solid var(--border)',
                   borderRadius: 'var(--radius-xl)',
-                  padding: '3rem 2rem 2.5rem',
                   boxShadow: svc.popular ? '0 20px 50px oklch(38% 0.11 150 / 0.08), 0 2px 12px oklch(38% 0.11 150 / 0.03), inset 0 1px 0 oklch(100% 0 0 / 0.7)' : 'var(--shadow-lg)',
                   textAlign: isRtl ? 'right' : 'left',
                   position: 'relative',
@@ -1025,7 +1018,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── WHY CHOOSE US ── */}
-      <section className="py-16 md:py-36" style={{ position: 'relative', zIndex: 2 }}>
+      <section className="section-py-why" style={{ position: 'relative', zIndex: 2 }}>
         <div className="container">
           <div className="features-grid" style={{
             alignItems: 'center',
@@ -1058,11 +1051,8 @@ export default function Home() {
                   </Link>
                 </div>
 
-                <div className="mini-stats" style={{
+                <div className="mini-stats grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6" style={{
                   marginTop: '3rem',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(3, 1fr)',
-                  gap: '1rem',
                 }}>
                   {[
                     { num: '1,500+', label: 'مريض' },
@@ -1165,7 +1155,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── TESTIMONIALS ── */}
-      <section id="testimonials-section" className="py-16 md:py-36" style={{ position: 'relative', zIndex: 2 }}>
+      <section id="testimonials-section" className="section-py-testimonials" style={{ position: 'relative', zIndex: 2 }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
           background: 'linear-gradient(180deg, var(--bg) 0%, oklch(97% 0.008 85) 50%, var(--bg) 100%)',
@@ -1188,8 +1178,7 @@ export default function Home() {
           <div className="testimonials-grid">
             {testimonials.map((t, i) => (
               <ScrollReveal key={t.name} delay={i * 120}>
-                <div style={{
-                  padding: '2.5rem 2rem',
+                <div className="p-6 sm:p-8 lg:p-10" style={{
                   background: 'var(--surface)',
                   backdropFilter: 'blur(20px)',
                   borderRadius: 'var(--radius-xl)',
@@ -1276,7 +1265,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── HEALTH RESOURCES ── */}
-      <section className="py-12 md:py-24" style={{ position: 'relative', zIndex: 2 }}>
+      <section className="section-py-lib" style={{ position: 'relative', zIndex: 2 }}>
         <div className="container">
           <ScrollReveal>
             <div style={{ textAlign: 'center' }}>
@@ -1307,10 +1296,9 @@ export default function Home() {
               const art = lang === 'ar' ? r.ar : r.en
               return (
                 <ScrollReveal key={r.slug} delay={i * 100}>
-                  <Link href={`/articles/${r.slug}`} style={{
+                  <Link href={`/articles/${r.slug}`} className="p-6 sm:p-8" style={{
                     display: 'block',
                     textDecoration: 'none',
-                    padding: '2rem',
                     background: 'var(--surface)',
                     borderRadius: 'var(--r-xl)',
                     border: '1px solid var(--border-faint)',
@@ -1377,7 +1365,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── FAQ ── */}
-      <section id="faq-section" className="py-16 md:py-36" style={{ position: 'relative', zIndex: 2 }}>
+      <section id="faq-section" className="section-py-faq" style={{ position: 'relative', zIndex: 2 }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
           background: 'linear-gradient(180deg, transparent 0%, oklch(97% 0.008 85) 50%, transparent 100%)',
@@ -1420,8 +1408,7 @@ export default function Home() {
                     transition: 'all 300ms var(--ease-out)',
                     boxShadow: 'var(--shadow-sm)',
                   }}>
-                    <summary style={{
-                      padding: '1.35rem 1.5rem',
+                    <summary className="p-4 sm:p-5 md:p-6" style={{
                       fontSize: '0.92rem',
                       fontWeight: 700,
                       color: 'var(--fg)',
@@ -1443,13 +1430,11 @@ export default function Home() {
                         +
                       </span>
                     </summary>
-                    <div style={{
-                      padding: '0 1.5rem 1.35rem',
+                    <div className="px-4 pb-4 sm:px-5 sm:pb-5 md:px-6 md:pb-6 pt-4" style={{
                       fontSize: '0.87rem',
                       color: 'var(--fg-muted)',
                       lineHeight: 1.9,
                       borderTop: '1px solid var(--border-faint)',
-                      paddingTop: '1rem',
                       marginTop: '0',
                     }}>
                       {item.a}
@@ -1465,10 +1450,10 @@ export default function Home() {
       <SectionDivider />
 
       {/* ── FINAL CTA ── */}
-      <section className="py-16 md:py-36" style={{ position: 'relative', zIndex: 2 }}>
+      <section className="section-py-cta" style={{ position: 'relative', zIndex: 2 }}>
         <div className="container" style={{ position: 'relative' }}>
           <ScrollReveal>
-            <div className="p-8 md:p-24" style={{
+            <div className="card-p-cta" style={{
               borderRadius: 'var(--radius-xl)',
               background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-up) 50%, oklch(32% 0.10 150) 100%)',
               textAlign: 'center',

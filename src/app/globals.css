@@ -180,13 +180,13 @@ h1, h2, h3, h4, .display {
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 2.5rem;
 }
 .container-narrow {
   width: 100%;
   max-width: 640px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 2.5rem;
 }
 
 /* ── Header ── */
@@ -1359,7 +1359,7 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   .service-card-popular { margin-top: 0; }
 }
 @media (max-width: 900px) {
-  .container { padding: 0 1.25rem; }
+  .container { padding: 0 1.75rem; }
   .hero-grid { grid-template-columns: 1fr; gap: 3rem; text-align: center; }
   .hero-lead { margin: 0 auto 2rem; }
   .hero-actions { justify-content: center; }
@@ -1386,7 +1386,7 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   .cta-visual { display: none; }
 }
 @media (max-width: 600px) {
-  .container { padding: 0 1rem; }
+  .container { padding: 0 1.25rem; }
   .section-padded { padding: 3.5rem 0; }
   .hero-section { padding: 2.5rem 0 3.5rem; }
   .hero-title { font-size: 2.4rem; }
@@ -2258,5 +2258,128 @@ html {
   box-shadow: 0 1px 2px rgba(27, 40, 35, 0.02), 0 12px 48px rgba(27, 40, 35, 0.05);
   border-radius: var(--radius-xl);
 }
+
+/* ── Section Divider ── */
+.section-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 2.5rem 0;
+  opacity: 0.6;
+}
+.section-divider .diamond {
+  width: 6px;
+  height: 6px;
+  background: var(--primary);
+  transform: rotate(45deg);
+  display: inline-block;
+}
+
+/* ── Custom Section Spacing Classes ── */
+.section-py-hero {
+  padding-top: 5rem;
+  padding-bottom: 6rem;
+}
+.section-py-stats {
+  padding-top: 2.5rem;
+  padding-bottom: 4rem;
+}
+.section-pb-expertise {
+  padding-bottom: 4rem;
+}
+.section-py-counters {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+.section-py-about {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+.section-py-steps {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+.section-py-services {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+.section-py-why {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+.section-py-testimonials {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+.section-py-lib {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+.section-py-faq {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+.section-py-cta {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+.card-p-cta {
+  padding: 3rem 1.5rem !important;
+}
+
+@media (min-width: 768px) {
+  .section-py-hero {
+    padding-top: 8rem;
+    padding-bottom: 10rem;
+  }
+  .section-py-stats {
+    padding-top: 4rem;
+    padding-bottom: 6rem;
+  }
+  .section-pb-expertise {
+    padding-bottom: 7rem;
+  }
+  .section-py-counters {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+  }
+  .section-py-about {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+  }
+  .section-py-steps {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+  .section-py-services {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+  .section-py-why {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+  .section-py-testimonials {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+  .section-py-lib {
+    padding-top: 6rem;
+    padding-bottom: 8rem;
+  }
+  .section-py-faq {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+  .section-py-cta {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+  .card-p-cta {
+    padding: 6rem 5rem !important;
+  }
+}
+
 
 
