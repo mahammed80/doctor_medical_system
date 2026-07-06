@@ -23,7 +23,10 @@ export async function GET(request: Request) {
   const error = searchParams.get('error')
 
   let doctorId = 'khalid'
-  let baseUrl = 'http://localhost:3000'
+  let baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    request.headers.get('origin') ||
+    'http://localhost:3000'
   if (stateParam) {
     try {
       const decoded = JSON.parse(Buffer.from(stateParam, 'base64url').toString('utf-8'))
