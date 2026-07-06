@@ -860,7 +860,7 @@ export default function Home() {
       {/* ── SERVICES ── */}
       <section id="services-section" className="section-py-services" style={{ position: 'relative', zIndex: 2 }}>
         <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
+          position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden',
           background: 'linear-gradient(180deg, var(--bg) 0%, oklch(97% 0.008 85) 50%, var(--bg) 100%)',
         }} />
         <div className="container" style={{ textAlign: 'center', position: 'relative' }}>
@@ -1020,11 +1020,9 @@ export default function Home() {
       {/* ── WHY CHOOSE US ── */}
       <section className="section-py-why" style={{ position: 'relative', zIndex: 2 }}>
         <div className="container">
-          <div className="features-grid" style={{
-            alignItems: 'center',
-          }}>
-            <ScrollReveal>
-              <div className="features-copy">
+          <div className="features-grid">
+            <div className="features-copy">
+              <ScrollReveal>
                 <SectionLabel>{t('why_label')}</SectionLabel>
                 <h2 style={{
                   fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
@@ -1089,8 +1087,8 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-              </div>
-            </ScrollReveal>
+              </ScrollReveal>
+            </div>
 
             <div className="features-cards">
               {features.map((f, i) => (

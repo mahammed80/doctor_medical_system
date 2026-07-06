@@ -955,8 +955,11 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   display: grid;
   grid-template-columns: 1fr 1.15fr 1fr;
   gap: 1.25rem;
-  align-items: start;
+  align-items: stretch;
+  min-height: 0;
+  overflow: visible;
 }
+.services-grid > * { min-height: 0; }
 .service-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1050,8 +1053,10 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   grid-template-columns: 1fr 1.6fr;
   gap: 4rem;
   align-items: start;
+  min-height: 0;
 }
-.features-copy { position: sticky; top: 120px; }
+.features-grid > * { min-height: 0; }
+.features-copy { position: sticky; top: 120px; align-self: start; }
 .features-lead {
   font-size: 1rem;
   color: var(--fg-muted);
@@ -2265,8 +2270,11 @@ html {
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  margin: 2.5rem 0;
+  padding: 1.5rem 0;
+  margin: 0;
   opacity: 0.6;
+  position: relative;
+  z-index: 1;
 }
 .section-divider .diamond {
   width: 6px;
@@ -2302,11 +2310,15 @@ html {
 }
 .section-py-services {
   padding-top: 5rem;
-  padding-bottom: 5rem;
+  padding-bottom: 6rem;
+  position: relative;
+  isolation: isolate;
 }
 .section-py-why {
   padding-top: 5rem;
   padding-bottom: 5rem;
+  position: relative;
+  isolation: isolate;
 }
 .section-py-testimonials {
   padding-top: 5rem;
@@ -2354,7 +2366,7 @@ html {
   }
   .section-py-services {
     padding-top: 8rem;
-    padding-bottom: 8rem;
+    padding-bottom: 9rem;
   }
   .section-py-why {
     padding-top: 8rem;
