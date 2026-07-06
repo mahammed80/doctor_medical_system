@@ -890,7 +890,7 @@ export default function Home() {
           <div className="services-grid">
             {dynamicServices.map((svc, i) => (
               <ScrollReveal key={svc.title} delay={i * 100}>
-                <div className="p-6 sm:p-8 md:p-10 xl:p-12" style={{
+                <div className="p-7 sm:p-9 md:p-11 xl:p-14" style={{
                   background: 'var(--surface)',
                   backdropFilter: 'blur(16px)',
                   border: svc.popular ? '1px solid var(--primary)' : '1px solid var(--border)',
