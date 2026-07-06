@@ -1287,7 +1287,7 @@ export default function Home() {
                 fontSize: '1.05rem',
                 color: 'var(--fg-muted)',
                 maxWidth: '520px',
-                margin: '0 auto 4rem',
+                margin: '0 auto 2.5rem',
                 lineHeight: 1.8,
               }}>
                 {t('lib_desc')}
