@@ -25,6 +25,7 @@ import { getCachedSession, signOut, AuthSession } from '@/lib/auth'
 import { getMessages, sendMessage, subscribeToMessages, markRead, QUICK_REPLY_TEMPLATES } from '@/lib/chatService'
 import { DOCTORS } from '@/lib/doctors'
 import { useToasts } from '@/components/Toaster'
+import { ConsultationBodyMap } from '@/components/ConsultationBodyMap'
 import {
   ConsultationFile,
   ConsultationMessage,
@@ -534,6 +535,11 @@ export default function ConsultationDetail() {
                   </div>
                 </div>
               )}
+              <ConsultationBodyMap
+                painLocations={consultation.pain_locations || []}
+                spinalAreas={consultation.spinal_areas || []}
+                widespread={false}
+              />
               {painNatures.length > 0 && (
                 <div>
                   <div className="dash-complaint-kicker" style={{ marginBottom: '0.4rem' }}>طبيعة الألم</div>
@@ -583,11 +589,12 @@ export default function ConsultationDetail() {
               ) : (
                 Object.entries(filesByCategory).map(([cat, list]) => {
                   const style = catStyle(cat)
+                  const isIdCard = cat === 'id_card'
                   return (
                     <div key={cat}>
                       <div className="dash-file-cat-head" style={{ color: style.color }}>
                         <span>{style.icon}</span>
-                        {FILE_CATEGORY_LABELS_AR[cat as never] || cat} ({list.length})
+                        {isIdCard ? 'بطاقة الهوية' : FILE_CATEGORY_LABELS_AR[cat as never] || cat} ({list.length})
                       </div>
                       <div className="dash-file-list">
                         {list.map((f) => (
@@ -598,6 +605,20 @@ export default function ConsultationDetail() {
                             rel="noopener noreferrer"
                             className="dash-file-item"
                           >
+                            {isIdCard && (
+                              <img
+                                src={f.file_url}
+                                alt="بطاقة الهوية"
+                                style={{
+                                  width: '100%',
+                                  maxHeight: '180px',
+                                  objectFit: 'contain',
+                                  borderRadius: 'var(--r)',
+                                  marginBottom: '0.4rem',
+                                  border: '1px solid var(--border)',
+                                }}
+                              />
+                            )}
                             <span className="dash-file-name">{f.file_name}</span>
                             <span className="dash-file-open" style={{ color: style.color }}>فتح ↗</span>
                           </a>
