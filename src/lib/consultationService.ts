@@ -455,13 +455,14 @@ export async function saveDoctorSettings(doctorId: string, settings: DoctorSched
     return settings
   }
   try {
-    const { error } = await supabase
-      .from('doctor_settings')
-      .upsert({ doctor_id: doctorId, settings, updated_at: new Date().toISOString() })
+    const { error } = await supabase.rpc('upsert_doctor_settings', {
+      p_doctor_id: doctorId,
+      p_settings: settings,
+    })
     if (error) throw error
     return settings
   } catch (err) {
-    console.warn('Failed to save to Supabase doctor_settings, saving to localStorage:', err)
+    console.warn('Failed to save doctor settings to Supabase, saving to localStorage:', err)
     if (isBrowser) {
       localStorage.setItem(`doctor_settings_${doctorId}`, JSON.stringify(settings))
     }
