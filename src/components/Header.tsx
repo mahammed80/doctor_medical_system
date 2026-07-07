@@ -13,15 +13,7 @@ export function Header() {
   }
 
   return (
-    <header style={{
-      position: 'sticky',
-      top: 5,
-      zIndex: 50,
-      background: 'var(--surface)',
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-      borderBottom: '1px solid var(--border)',
-    }}>
+    <header className="premium-header">
       <div className="container" style={{
         display: 'flex',
         alignItems: 'center',
@@ -53,7 +45,7 @@ export function Header() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{ fontSize: '0.95rem', fontWeight: 800, lineHeight: 1.2 }}>{t('hero_title_dr')}</span>
-            <span style={{ fontSize: '0.68rem', color: 'var(--fg-dim)', fontWeight: 500 }}>{t('logo_sub')}</span>
+            <span className="hidden sm:inline-block" style={{ fontSize: '0.68rem', color: 'var(--fg-dim)', fontWeight: 500 }}>{t('logo_sub')}</span>
           </div>
         </Link>
 
@@ -66,7 +58,7 @@ export function Header() {
           <Link href="/#faq-section" className="nav-link">{t('nav_faq')}</Link>
         </nav>
 
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <button
             onClick={toggleLanguage}
             className="btn-ghost btn-sm"
@@ -83,12 +75,12 @@ export function Header() {
             aria-label={lang === 'ar' ? 'Switch to English' : 'تغيير إلى العربية'}
           >
             <Globe size={15} />
-            <span style={{ fontFamily: 'var(--font-body), sans-serif' }}>
+            <span className="hidden md:inline" style={{ fontFamily: 'var(--font-body), sans-serif' }}>
               {lang === 'ar' ? 'English' : 'العربية'}
             </span>
           </button>
 
-          <Link href="/consultation/new" className="btn-primary btn-sm btn-primary-shimmer" style={{ borderRadius: 'var(--r-sm)' }}>
+          <Link href="/consultation/new" className="btn-primary btn-sm btn-primary-shimmer-gold" style={{ borderRadius: 'var(--r-sm)' }}>
             {t('nav_start')}
           </Link>
         </nav>

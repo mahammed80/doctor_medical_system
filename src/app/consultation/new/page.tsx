@@ -127,7 +127,9 @@ export default function NewConsultation() {
   }, [selectedDoctorId])
 
   useEffect(() => {
-    setCheckoutUrl(null)
+    setTimeout(() => {
+      setCheckoutUrl(null)
+    }, 0)
   }, [form.selected_package])
 
   useEffect(() => {

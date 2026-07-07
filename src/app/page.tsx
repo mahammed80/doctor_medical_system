@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { ARTICLES } from '@/lib/articles'
 import { getDoctorSettings, type DoctorScheduleSettings } from '@/lib/consultationService'
 import { useLanguage } from '@/context/LanguageContext'
+import { Award, ShieldCheck, Calendar, FileText, Truck, CreditCard, BookOpen, HeartPulse, Activity } from 'lucide-react'
 
 /* ── DATA ── */
 
@@ -190,6 +191,7 @@ function DiamondShower() {
 export default function Home() {
   const { t, isRtl, lang } = useLanguage()
   const [docSettings, setDocSettings] = useState<DoctorScheduleSettings | null>(null)
+  const [activeFaq, setActiveFaq] = useState<number | null>(null)
 
   useEffect(() => {
     getDoctorSettings('khalid').then(setDocSettings)
@@ -255,34 +257,40 @@ export default function Home() {
 
   const features = [
     {
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>,
+      icon: <Award size={24} />,
       title: t('why_f1_title'),
       desc: t('why_f1_desc'),
+      bg: 'linear-gradient(135deg, var(--gold) 0%, oklch(68% 0.17 70 / 0.85) 100%)',
     },
     {
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+      icon: <ShieldCheck size={24} />,
       title: t('why_f2_title'),
       desc: t('why_f2_desc'),
+      bg: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-up) 100%)',
     },
     {
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>,
+      icon: <Calendar size={24} />,
       title: t('why_f3_title'),
       desc: t('why_f3_desc'),
+      bg: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-up) 100%)',
     },
     {
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><line x1="8" y1="7" x2="16" y2="7" /><line x1="8" y1="11" x2="14" y2="11" /></svg>,
+      icon: <FileText size={24} />,
       title: t('why_f4_title'),
       desc: t('why_f4_desc'),
+      bg: 'linear-gradient(135deg, var(--gold) 0%, oklch(68% 0.17 70 / 0.85) 100%)',
     },
     {
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6" /><path d="M10 22h4" /><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" /></svg>,
+      icon: <Truck size={24} />,
       title: t('why_f5_title'),
       desc: t('why_f5_desc'),
+      bg: 'linear-gradient(135deg, var(--gold) 0%, oklch(68% 0.17 70 / 0.85) 100%)',
     },
     {
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>,
+      icon: <CreditCard size={24} />,
       title: t('why_f6_title'),
       desc: t('why_f6_desc'),
+      bg: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-up) 100%)',
     },
   ]
 
@@ -439,8 +447,8 @@ export default function Home() {
                 {t('hero_para')}
               </p>
 
-              <div className="anim-fade-2" style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                <Link href="/consultation/new" className="btn-primary btn-primary-shimmer" style={{
+              <div className="anim-fade-2 hero-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <Link href="/consultation/new" className="btn-primary btn-primary-shimmer-gold" style={{
                   fontSize: '1.1rem',
                   padding: '1.1rem 2.8rem',
                   gap: '0.75rem',
@@ -466,17 +474,13 @@ export default function Home() {
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <div className="photo-frame" style={{
+              <div className="photo-frame hover-tilt-3d photo-frame-glow" style={{
                 width: '100%',
                 maxWidth: '480px',
                 aspectRatio: '1024/876',
                 position: 'relative',
-                boxShadow: 'var(--shadow-xl)',
-                transform: 'perspective(1000px) rotateY(-2deg)',
-                transition: 'transform 500ms var(--ease-out)',
+                borderRadius: 'var(--radius-xl)',
               }}
-                onMouseOver={e => (e.currentTarget as HTMLElement).style.transform = 'perspective(1000px) rotateY(0deg)'}
-                onMouseOut={e => (e.currentTarget as HTMLElement).style.transform = 'perspective(1000px) rotateY(-2deg)'}
               >
                 <div style={{
                   position: 'absolute', inset: 2,
@@ -629,55 +633,6 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* ── ACHIEVEMENT COUNTERS ── */}
-      <section className="section-py-counters" style={{ position: 'relative', zIndex: 2 }}>
-        <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'linear-gradient(180deg, transparent 0%, oklch(97% 0.008 85) 50%, transparent 100%)',
-        }} />
-        <div className="container" style={{ position: 'relative' }}>
-          <ScrollReveal>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 p-6 sm:p-8 md:p-12" style={{
-              background: 'var(--surface)',
-              backdropFilter: 'blur(24px)',
-              borderRadius: 'var(--radius-xl)',
-              border: '1px solid var(--border)',
-              boxShadow: 'var(--shadow-md)',
-            }}>
-              {[
-                { end: 1500, label: t('counter_patients_label'), suffix: '+', sub: t('counter_patients_sub') },
-                { end: 35, label: t('counter_experience_label'), suffix: '+', sub: t('counter_experience_sub') },
-                { end: 98, label: t('counter_satisfaction_label'), suffix: isRtl ? '٪' : '%', sub: t('counter_satisfaction_sub') },
-                { end: 24, label: t('counter_response_label'), suffix: '', sub: t('counter_response_sub') },
-              ].map((c, i) => (
-                <div key={c.label} style={{
-                  textAlign: 'center',
-                  padding: '1rem',
-                  animation: `counterPop 0.5s var(--ease-out) ${0.15 * i}s both`,
-                }}>
-                  <div className="num" style={{
-                    fontSize: 'clamp(2.2rem, 4vw, 3.2rem)',
-                    fontWeight: 900,
-                    background: 'linear-gradient(135deg, var(--primary) 0%, var(--gold) 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    marginBottom: '0.4rem',
-                    lineHeight: 1.1,
-                  }}>
-                    <AnimatedCounter end={c.end} suffix={c.suffix} />
-                  </div>
-                  <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--fg)', marginBottom: '0.15rem' }}>{c.label}</div>
-                  <div style={{ fontSize: '0.9rem', color: 'var(--fg-muted)', lineHeight: 1.4 }}>{c.sub}</div>
-                </div>
-              ))}
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      <SectionDivider />
-
       {/* ── DOCTOR QUALIFICATIONS ── */}
       <section id="about-section" className="section-py-about" style={{ position: 'relative', zIndex: 2 }}>
         <div className="container">
@@ -731,12 +686,12 @@ export default function Home() {
                     cursor: 'default',
                   }}
                     onMouseOver={e => {
-                      (e.currentTarget as HTMLElement).style.transform = 'translateX(-6px)';
+                      (e.currentTarget as HTMLElement).style.transform = isRtl ? 'translateX(-6px)' : 'translateX(6px)';
                       (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-md)';
                       (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-accent)';
                     }}
                     onMouseOut={e => {
-                      (e.currentTarget as HTMLElement).style.transform = 'translateX(0)';
+                      (e.currentTarget as HTMLElement).style.transform = 'none';
                       (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-sm)';
                       (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-faint)';
                     }}
@@ -891,8 +846,8 @@ export default function Home() {
 
           <div className="services-grid">
             {dynamicServices.map((svc, i) => (
-              <ScrollReveal key={svc.title} delay={i * 100}>
-                <div className="p-7 sm:p-9 md:p-11 xl:p-14" style={{
+              <ScrollReveal key={svc.title} delay={i * 100} className="h-full flex flex-col">
+                <div className="p-7 sm:p-9 md:p-11 xl:p-14 hover-tilt-3d" style={{
                   background: 'var(--surface)',
                   backdropFilter: 'blur(16px)',
                   border: svc.popular ? '1px solid var(--primary)' : '1px solid var(--border)',
@@ -901,25 +856,10 @@ export default function Home() {
                   textAlign: isRtl ? 'right' : 'left',
                   position: 'relative',
                   overflow: 'hidden',
-                  transition: 'all 400ms var(--ease-out)',
-                }}
-                  onMouseOver={e => {
-                    const el = e.currentTarget as HTMLElement
-                    el.style.transform = 'translateY(-6px)'
-                    el.style.boxShadow = svc.popular 
-                      ? '0 30px 60px oklch(38% 0.11 150 / 0.12), 0 2px 16px oklch(38% 0.11 150 / 0.04)' 
-                      : 'var(--shadow-xl)'
-                    if (!svc.popular) el.style.borderColor = 'var(--border-accent)'
-                  }}
-                  onMouseOut={e => {
-                    const el = e.currentTarget as HTMLElement
-                    el.style.transform = 'none'
-                    el.style.boxShadow = svc.popular 
-                      ? '0 20px 50px oklch(38% 0.11 150 / 0.08), 0 2px 12px oklch(38% 0.11 150 / 0.03), inset 0 1px 0 oklch(100% 0 0 / 0.7)' 
-                      : 'var(--shadow-lg)'
-                    if (!svc.popular) el.style.borderColor = 'var(--border)'
-                  }}
-                >
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}>
                   {/* Gold decorative corner */}
                   <div style={{
                     position: 'absolute',
@@ -1006,7 +946,7 @@ export default function Home() {
                   <Link
                     href="/consultation/new"
                     className={svc.popular ? 'btn-primary' : 'btn-ghost'}
-                    style={{ width: '100%', justifyContent: 'center', fontSize: '0.95rem', padding: '0.9rem' }}
+                    style={{ width: '100%', justifyContent: 'center', fontSize: '0.95rem', padding: '0.9rem', marginTop: 'auto' }}
                   >
                     {svc.popular ? t('pkg_btn_book') : t('pkg_btn_choose')}
                   </Link>
@@ -1055,12 +995,12 @@ export default function Home() {
                   marginTop: '3rem',
                 }}>
                   {[
-                    { num: '1,500+', label: 'مريض' },
-                    { num: '98%', label: 'رضا المرضى' },
-                    { num: '24', label: 'ساعة للرد' },
+                    { num: t('why_trust_p1_num'), label: t('why_trust_p1_label') },
+                    { num: t('why_trust_p2_num'), label: t('why_trust_p2_label') },
+                    { num: t('why_trust_p3_num'), label: t('why_trust_p3_label') },
                   ].map((s) => (
                     <div key={s.label} style={{
-                      padding: '1.25rem', textAlign: 'center',
+                      padding: '1.25rem 1rem', textAlign: 'center',
                       background: 'var(--surface)',
                       borderRadius: 'var(--radius-lg)',
                       border: '1px solid var(--border)',
@@ -1080,12 +1020,13 @@ export default function Home() {
                         el.style.boxShadow = 'var(--shadow-sm)'
                       }}
                     >
-                      <div className="num" style={{
-                        fontSize: '1.6rem', fontWeight: 900, color: 'var(--primary)',
-                        marginBottom: '0.15rem',
-                        fontFamily: 'var(--font-inter), sans-serif',
+                      <div style={{
+                        fontSize: '1.18rem', fontWeight: 900, color: 'var(--primary)',
+                        marginBottom: '0.35rem',
+                        fontFamily: 'var(--font-body), sans-serif',
+                        lineHeight: 1.2,
                       }}>{s.num}</div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--fg-dim)' }}>{s.label}</div>
+                      <div style={{ fontSize: '0.74rem', color: 'var(--fg-dim)', lineHeight: 1.4, fontWeight: 600 }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -1095,30 +1036,16 @@ export default function Home() {
             <div className="features-cards">
               {features.map((f, i) => (
                 <ScrollReveal key={f.title} delay={(i % 4) * 80}>
-                  <div style={{
+                  <div className="hover-tilt-3d" style={{
                     padding: '1.5rem',
                     background: 'var(--surface)',
                     borderRadius: 'var(--radius-lg)',
                     border: '1px solid var(--border)',
                     boxShadow: 'var(--shadow-md)',
-                    transition: 'all 400ms var(--ease-out)',
                     cursor: 'default',
                     position: 'relative',
                     overflow: 'hidden',
-                  }}
-                    onMouseOver={e => {
-                      const el = e.currentTarget as HTMLElement
-                      el.style.transform = 'translateY(-4px)'
-                      el.style.boxShadow = 'var(--shadow-xl)'
-                      el.style.borderColor = 'var(--border-accent)'
-                    }}
-                    onMouseOut={e => {
-                      const el = e.currentTarget as HTMLElement
-                      el.style.transform = 'none'
-                      el.style.boxShadow = 'var(--shadow-md)'
-                      el.style.borderColor = 'var(--border)'
-                    }}
-                  >
+                  }}>
                     {/* Hover shimmer overlay */}
                     <div style={{
                       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
@@ -1132,13 +1059,14 @@ export default function Home() {
                       onMouseOut={e => (e.currentTarget.style.opacity = '0')}
                     />
                     <div style={{
-                      width: '2.75rem', height: '2.75rem',
-                      borderRadius: 'var(--r)',
-                      background: 'linear-gradient(135deg, var(--primary-subtle) 0%, oklch(38% 0.11 150 / 0.08) 100%)',
+                      width: '3.25rem', height: '3.25rem',
+                      borderRadius: '12px',
+                      background: f.bg,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'var(--primary)',
-                      marginBottom: '0.75rem',
+                      color: '#fff',
+                      marginBottom: '1rem',
                       position: 'relative',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
                     }}>
                       {f.icon}
                     </div>
@@ -1301,19 +1229,22 @@ export default function Home() {
             {ARTICLES.map((r, i) => {
               const art = lang === 'ar' ? r.ar : r.en
               return (
-                <ScrollReveal key={r.slug} delay={i * 100}>
-                  <Link href={`/articles/${r.slug}`} className="p-6 sm:p-8" style={{
-                    display: 'block',
+                <ScrollReveal key={r.slug} delay={i * 100} className="h-full flex flex-col">
+                  <Link href={`/articles/${r.slug}`} style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%',
                     textDecoration: 'none',
                     background: 'var(--surface)',
-                    borderRadius: 'var(--r-xl)',
+                    borderRadius: 'var(--radius-xl)',
                     border: '1px solid var(--border-faint)',
                     boxShadow: 'var(--shadow-sm)',
                     textAlign: isRtl ? 'right' : 'left',
-                    transition: 'transform 350ms var(--ease-spring), box-shadow 350ms, border-color 350ms',
+                    transition: 'all 350ms var(--ease-out)',
                     cursor: 'pointer',
                     position: 'relative',
                     overflow: 'hidden',
+                    padding: '2rem',
                   }}
                     onMouseOver={e => {
                       const el = e.currentTarget as HTMLElement
@@ -1323,40 +1254,93 @@ export default function Home() {
                     }}
                     onMouseOut={e => {
                       const el = e.currentTarget as HTMLElement
-                      el.style.transform = 'translateY(0)'
+                      el.style.transform = 'none'
                       el.style.boxShadow = 'var(--shadow-sm)'
                       el.style.borderColor = 'var(--border-faint)'
                     }}
                   >
+                    {/* Header Row: Icon on one side, Tag on the other */}
                     <div style={{
-                      fontSize: '0.72rem', fontWeight: 700, color: 'var(--primary)',
-                      padding: '0.2rem 0.75rem',
-                      borderRadius: '9999px',
-                      border: '1px solid var(--border-accent)',
-                      background: 'var(--primary-subtle)',
-                      display: 'inline-block',
-                      marginBottom: '1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '1.5rem',
+                      width: '100%',
                     }}>
-                      {art.tag}
+                      {/* Icon Circle */}
+                      <div style={{
+                        width: '46px',
+                        height: '46px',
+                        borderRadius: '12px',
+                        background: r.slug === 'lower-back-exercises' 
+                          ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-up) 100%)' 
+                          : r.slug === 'muscle-pain-vs-rheumatism'
+                          ? 'linear-gradient(135deg, var(--gold) 0%, oklch(68% 0.17 70 / 0.85) 100%)'
+                          : 'linear-gradient(135deg, var(--primary) 0%, var(--primary-up) 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#fff',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                      }}>
+                        {r.slug === 'lower-back-exercises' ? (
+                          <Activity size={20} />
+                        ) : r.slug === 'muscle-pain-vs-rheumatism' ? (
+                          <BookOpen size={20} />
+                        ) : (
+                          <HeartPulse size={20} />
+                        )}
+                      </div>
+
+                      {/* Tag Badge */}
+                      <div style={{
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                        color: 'var(--primary)',
+                        padding: '0.3rem 0.85rem',
+                        borderRadius: '9999px',
+                        background: 'var(--primary-subtle)',
+                        border: '1px solid var(--border-accent)',
+                      }}>
+                        {art.tag}
+                      </div>
                     </div>
+
+                    {/* Title */}
                     <div style={{
-                      fontSize: '1rem', fontWeight: 800, color: 'var(--fg)',
-                      marginBottom: '0.5rem', lineHeight: 1.4,
+                      fontSize: '1.08rem',
+                      fontWeight: 800,
+                      color: 'var(--fg)',
+                      marginBottom: '0.75rem',
+                      lineHeight: 1.45,
                     }}>
                       {art.title}
                     </div>
+
+                    {/* Excerpt */}
                     <p style={{
-                      fontSize: '0.82rem', color: 'var(--fg-muted)',
-                      lineHeight: 1.7, marginBottom: '1.25rem',
+                      fontSize: '0.85rem',
+                      color: 'var(--fg-muted)',
+                      lineHeight: 1.8,
+                      marginBottom: '1.5rem',
                     }}>
                       {art.summary}
                     </p>
+
+                    {/* Footer with clock icon and read time */}
                     <div style={{
-                      fontSize: '0.72rem', color: 'var(--fg-dim)',
-                      display: 'flex', alignItems: 'center', gap: '0.35rem',
+                      fontSize: '0.72rem',
+                      color: 'var(--fg-dim)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      marginTop: 'auto',
+                      borderTop: '1px solid var(--border-faint)',
+                      paddingTop: '1rem',
                     }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
                       </svg>
                       <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 700 }}>{art.readTime}</span> {t('read_time_suffix')}
                     </div>
@@ -1404,49 +1388,106 @@ export default function Home() {
 
             <ScrollReveal delay={100}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                {dynamicFaqs.map(item => (
-                  <details key={item.q} style={{
-                    background: 'var(--surface)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 'var(--radius-lg)',
-                    padding: '0',
-                    overflow: 'hidden',
-                    transition: 'all 300ms var(--ease-out)',
-                    boxShadow: 'var(--shadow-sm)',
-                  }}>
-                    <summary className="p-4 sm:p-5 md:p-6" style={{
-                      fontSize: '0.92rem',
-                      fontWeight: 700,
-                      color: 'var(--fg)',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '1rem',
-                      listStyle: 'none',
-                    }}>
-                      {item.q}
-                      <span style={{
-                        fontSize: '0.85rem',
-                        color: 'var(--primary)',
-                        transition: 'transform 300ms var(--ease-spring)',
-                        flexShrink: 0,
-                        fontWeight: 700,
+                {dynamicFaqs.map((item, idx) => {
+                  const isOpen = activeFaq === idx
+                  return (
+                    <div
+                      key={item.q}
+                      onClick={() => setActiveFaq(isOpen ? null : idx)}
+                      style={{
+                        background: isOpen ? 'linear-gradient(180deg, var(--surface) 0%, var(--primary-soft) 100%)' : 'var(--surface)',
+                        border: isOpen ? '1px solid var(--primary)' : '1px solid var(--border)',
+                        borderRadius: 'var(--radius-lg)',
+                        overflow: 'hidden',
+                        transition: 'all 350ms var(--ease-out)',
+                        boxShadow: isOpen ? '0 12px 30px oklch(38% 0.11 150 / 0.08)' : 'var(--shadow-sm)',
+                        cursor: 'pointer',
+                      }}
+                      onMouseOver={e => {
+                        if (!isOpen) {
+                          const el = e.currentTarget as HTMLElement
+                          el.style.borderColor = 'var(--border-accent)'
+                          el.style.boxShadow = 'var(--shadow-md)'
+                          el.style.transform = 'translateY(-2px)'
+                        }
+                      }}
+                      onMouseOut={e => {
+                        if (!isOpen) {
+                          const el = e.currentTarget as HTMLElement
+                          el.style.borderColor = 'var(--border)'
+                          el.style.boxShadow = 'var(--shadow-sm)'
+                          el.style.transform = 'none'
+                        }
+                      }}
+                    >
+                      {/* Header/Question Row */}
+                      <div className="p-5 md:p-6" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '1.25rem',
+                        userSelect: 'none',
                       }}>
-                        +
-                      </span>
-                    </summary>
-                    <div className="px-4 pb-4 sm:px-5 sm:pb-5 md:px-6 md:pb-6 pt-4" style={{
-                      fontSize: '0.87rem',
-                      color: 'var(--fg-muted)',
-                      lineHeight: 1.9,
-                      borderTop: '1px solid var(--border-faint)',
-                      marginTop: '0',
-                    }}>
-                      {item.a}
+                        <span style={{
+                          fontSize: '0.94rem',
+                          fontWeight: 700,
+                          color: isOpen ? 'var(--primary)' : 'var(--fg)',
+                          transition: 'color 250ms ease',
+                          lineHeight: 1.5,
+                          textAlign: isRtl ? 'right' : 'left',
+                        }}>
+                          {item.q}
+                        </span>
+
+                        {/* Animated circular plus button */}
+                        <div style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          background: isOpen ? 'var(--primary)' : 'var(--primary-soft)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 300ms var(--ease-out)',
+                          flexShrink: 0,
+                        }}>
+                          <span style={{
+                            fontSize: '1.25rem',
+                            color: isOpen ? '#fff' : 'var(--primary)',
+                            transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
+                            transition: 'transform 300ms var(--ease-spring), color 300ms',
+                            lineHeight: 0,
+                            display: 'inline-block',
+                            marginTop: '-1px',
+                            fontWeight: 300,
+                          }}>
+                            +
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Smooth collapsing container */}
+                      <div className={`faq-collapse ${isOpen ? 'open' : ''}`} style={{
+                        display: 'grid',
+                        gridTemplateRows: isOpen ? '1fr' : '0fr',
+                        transition: 'grid-template-rows 300ms var(--ease-out)',
+                      }}>
+                        <div style={{ minHeight: 0, overflow: 'hidden' }}>
+                          <div className="px-5 pb-5 md:px-6 md:pb-6" style={{
+                            fontSize: '0.87rem',
+                            color: 'var(--fg-muted)',
+                            lineHeight: 1.95,
+                            borderTop: '1px solid var(--border-faint)',
+                            paddingTop: '1.25rem',
+                            textAlign: isRtl ? 'right' : 'left',
+                          }}>
+                            {item.a}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </details>
-                ))}
+                  )
+                })}
               </div>
             </ScrollReveal>
           </div>

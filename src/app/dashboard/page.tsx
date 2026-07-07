@@ -159,7 +159,9 @@ function Dashboard() {
 
   useEffect(() => {
     const docId = selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter
-    setCalendarStatus(null)
+    setTimeout(() => {
+      setCalendarStatus(null)
+    }, 0)
     fetch(`/api/calendar/status?doctorId=${encodeURIComponent(docId)}`)
       .then((res) => res.json())
       .then((data) => setCalendarStatus(data))

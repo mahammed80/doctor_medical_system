@@ -55,11 +55,15 @@ export default function PainSeveritySlider({ value, onChange }: Props) {
         step="1"
         value={current}
         onChange={e => onChange(parseInt(e.target.value))}
+        className="pain-slider"
         style={{
-          width: '100%',
-          accentColor: color,
           cursor: 'pointer',
-        }}
+          '--slider-color': color,
+          '--slider-color-soft': color === 'var(--ok)' ? 'var(--ok-soft)' :
+                                 color === 'var(--gold)' ? 'var(--gold-glow)' :
+                                 color === 'var(--err)' ? 'var(--err-soft)' :
+                                 'rgba(196,106,79,0.15)',
+        } as React.CSSProperties}
       />
       <div className="num" style={{
         display: 'flex',

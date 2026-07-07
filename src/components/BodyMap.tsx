@@ -220,15 +220,7 @@ export default function BodyMap({
 
   // ── render ─────────────────────────────────────────────────────────────
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(220px, 280px) 1fr',
-        gap: '1.25rem',
-        alignItems: 'start',
-      }}
-      className="body-map-grid"
-    >
+    <div className="body-map-grid">
       {/* ── Body silhouette (left) ───────────────────────── */}
       <div
         style={{
@@ -422,6 +414,7 @@ export default function BodyMap({
                   fill={isSel ? '#9B2C2C' : '#0C5A42'}
                   opacity={isSel ? 0.95 : 0.85}
                   stroke="white" strokeWidth="2.5"
+                  className={isSel ? 'pain-spot-pulse' : ''}
                   style={{ transition: 'all 200ms' }}
                 />
                 <circle

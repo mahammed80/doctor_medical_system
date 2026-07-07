@@ -136,6 +136,12 @@ const translations = {
     why_stat_patients: 'مريض',
     why_stat_satisfaction: 'رضا المرضى',
     why_stat_response: 'ساعة للرد',
+    why_trust_p1_num: 'بورد معتمد',
+    why_trust_p1_label: 'بورد كندي وزمالة بريطانية',
+    why_trust_p2_num: 'أمان تام',
+    why_trust_p2_label: 'تشفير وحماية سرية الملفات',
+    why_trust_p3_num: 'وصفة ذكية',
+    why_trust_p3_label: 'وصفتك الطبية معتمدة رقمياً',
     
     why_f1_title: 'خبرة طبية عريقة',
     why_f1_desc: 'يحمل د. خالد بترجي درجات البورد والزمالات الكندية والبريطانية مع خبرة طبية تفوق 35 عاماً.',
@@ -321,6 +327,12 @@ const translations = {
     why_stat_patients: 'Patients',
     why_stat_satisfaction: 'Satisfaction',
     why_stat_response: 'Hours Response',
+    why_trust_p1_num: 'Certified Board',
+    why_trust_p1_label: 'Canadian Board & British Fellowship',
+    why_trust_p2_num: 'Secure Data',
+    why_trust_p2_label: 'Full privacy & file encryption',
+    why_trust_p3_num: 'Digital Rx',
+    why_trust_p3_label: 'Digitally approved prescriptions',
     
     why_f1_title: 'Vast Medical Experience',
     why_f1_desc: 'Dr. Khalid Batterjee holds Canadian and British board certifications and fellowships with over 35 years of experience.',
@@ -393,7 +405,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       const savedLang = localStorage.getItem('lang') as Language
       if (savedLang === 'ar' || savedLang === 'en') {
-        setLang(savedLang)
+        setTimeout(() => {
+          setLang(savedLang)
+        }, 0)
       }
     }
   }, [])
@@ -411,8 +425,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, [lang])
 
   const t = (key: string): string => {
-    const dict = translations[lang]
-    return (dict as any)[key] || key
+    const dict = translations[lang] as Record<string, string>
+    return dict[key] || key
   }
 
   const isRtl = lang === 'ar'
