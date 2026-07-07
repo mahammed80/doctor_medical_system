@@ -528,19 +528,19 @@ export async function getDoctorSlots(doctorId: string, dateStr: string): Promise
         `/api/calendar/freebusy?doctorId=${encodeURIComponent(doctorId)}&date=${encodeURIComponent(dateStr)}`,
       )
       if (res.ok) {
-        const data = await res.json() as { busy?: { start: string; end: string }[] }
+        const data = await res.json() as { busy?: { start: string; end: string }[]; error?: string }
         const busyRanges = data.busy || []
         for (const range of busyRanges) {
           const busyStart = new Date(range.start)
           const busyEnd = new Date(range.end)
-          const busyStartMin = busyStart.getHours() * 60 + busyStart.getMinutes()
-          const busyEndMin = busyEnd.getHours() * 60 + busyEnd.getMinutes()
+          const busyStartMin = busyStart.getUTCHours() * 60 + busyStart.getUTCMinutes()
+          const busyEndMin = busyEnd.getUTCHours() * 60 + busyEnd.getUTCMinutes()
+          const SAUDI_OFFSET_MIN = 180
 
           slots.forEach(slot => {
-            const slotStartMin = timeToMinutes(slot.time)
-            const slotEndMin = slotStartMin + duration
-            // If the slot overlaps with a busy range, mark it unavailable
-            if (slotStartMin < busyEndMin && slotEndMin > busyStartMin) {
+            const slotStartMinUTC = timeToMinutes(slot.time) - SAUDI_OFFSET_MIN
+            const slotEndMinUTC = slotStartMinUTC + duration
+            if (slotStartMinUTC < busyEndMin && slotEndMinUTC > busyStartMin) {
               slot.available = false
               if (slot.status === 'available') {
                 slot.status = 'booked'

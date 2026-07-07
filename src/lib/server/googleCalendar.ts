@@ -1,6 +1,7 @@
 import 'server-only'
 import { google } from 'googleapis'
 import type { oauth2_v2 } from 'googleapis'
+import crypto from 'crypto'
 import { getServiceSupabase, isSupabaseConfigured } from './supabaseServer'
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -51,11 +52,40 @@ function getOAuth2Client() {
   return new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
 }
 
+const STATE_SECRET = process.env.OAUTH_STATE_SECRET || 'kbaterjee-clinic-default-state-secret'
+
+function signState(payload: Record<string, string>): string {
+  const json = JSON.stringify(payload)
+  const encoded = Buffer.from(json).toString('base64url')
+  const signature = crypto
+    .createHmac('sha256', STATE_SECRET)
+    .update(encoded)
+    .digest('base64url')
+  return `${encoded}.${signature}`
+}
+
+export function verifyState(state: string): Record<string, string> | null {
+  const lastDot = state.lastIndexOf('.')
+  if (lastDot === -1) return null
+  const encoded = state.slice(0, lastDot)
+  const signature = state.slice(lastDot + 1)
+  const expected = crypto
+    .createHmac('sha256', STATE_SECRET)
+    .update(encoded)
+    .digest('base64url')
+  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) return null
+  try {
+    return JSON.parse(Buffer.from(encoded, 'base64url').toString('utf-8'))
+  } catch {
+    return null
+  }
+}
+
 // ── OAuth URL ───────────────────────────────────────────────────────────────
 
 export function getOAuthUrl(doctorId: string, baseUrl: string): string {
   const client = getOAuth2Client()
-  const state = Buffer.from(JSON.stringify({ doctorId, baseUrl })).toString('base64url')
+  const state = signState({ doctorId, baseUrl })
   return client.generateAuthUrl({
     access_type: 'offline',
     prompt: 'consent',

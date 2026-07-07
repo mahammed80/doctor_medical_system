@@ -5,6 +5,7 @@ import {
   getCalendarEmail,
   setConnectionStatus,
   isGoogleCalendarConfigured,
+  verifyState,
 } from '@/lib/server/googleCalendar'
 
 export const runtime = 'nodejs'
@@ -28,12 +29,10 @@ export async function GET(request: Request) {
     request.headers.get('origin') ||
     'http://localhost:3000'
   if (stateParam) {
-    try {
-      const decoded = JSON.parse(Buffer.from(stateParam, 'base64url').toString('utf-8'))
+    const decoded = verifyState(stateParam)
+    if (decoded) {
       doctorId = decoded.doctorId || doctorId
       baseUrl = decoded.baseUrl || baseUrl
-    } catch {
-      // ignore decode errors
     }
   }
 

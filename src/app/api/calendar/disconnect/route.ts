@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server'
 import { disconnectCalendar, isGoogleCalendarConfigured } from '@/lib/server/googleCalendar'
 import { isSupabaseConfigured } from '@/lib/server/supabaseServer'
 import { getDoctorSettings, saveDoctorSettings } from '@/lib/consultationService'
+import { requireAuth } from '@/lib/server/apiAuth'
 
 export const runtime = 'nodejs'
 
 export async function POST(request: Request) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
+
   try {
     const body = await request.json()
     const doctorId = body.doctorId || 'khalid'

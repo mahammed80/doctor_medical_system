@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server'
 import { getFreeBusy, isGoogleCalendarConfigured } from '@/lib/server/googleCalendar'
 import { isSupabaseConfigured } from '@/lib/server/supabaseServer'
+import { requireAuth } from '@/lib/server/apiAuth'
 
 export const runtime = 'nodejs'
 
 export async function GET(request: Request) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
+
   const { searchParams } = new URL(request.url)
   const doctorId = searchParams.get('doctorId') || 'khalid'
   const date = searchParams.get('date')
@@ -23,7 +27,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ busy })
   } catch (err) {
     console.error('[google-calendar] freebusy query failed:', err)
-    // Fail gracefully — return empty busy list so slots still show
-    return NextResponse.json({ busy: [] })
+    const msg = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ busy: [], error: msg }, { status: 200 })
   }
 }

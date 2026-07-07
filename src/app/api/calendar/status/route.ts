@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server'
 import { getStoredTokens, isGoogleCalendarConfigured } from '@/lib/server/googleCalendar'
 import { isSupabaseConfigured } from '@/lib/server/supabaseServer'
 import { getDoctorSettings } from '@/lib/consultationService'
+import { requireAuth } from '@/lib/server/apiAuth'
 
 export const runtime = 'nodejs'
 
 export async function GET(request: Request) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
+
   const { searchParams } = new URL(request.url)
   const doctorId = searchParams.get('doctorId') || 'khalid'
 

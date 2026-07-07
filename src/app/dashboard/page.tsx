@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useState, type ReactNode } from 'react'
-import Image from 'next/image'
+import { useEffect, useState, Suspense, type ReactNode, Component } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Check,
@@ -84,7 +83,25 @@ function severityColor(n: number | null | undefined): string {
   return 'var(--dash-err)'
 }
 
-export default function Dashboard() {
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <DashboardGate message="حدث خطأ غير متوقع. يرجى تحديث الصفحة." />
+      )
+    }
+    return this.props.children
+  }
+}
+
+function Dashboard() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const toasts = useToasts()
@@ -163,6 +180,7 @@ export default function Dashboard() {
       url.searchParams.delete('calendar_error')
       window.history.replaceState({}, '', url.toString())
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const statusCounts = OVERVIEW_STATUSES.map((status) => {
@@ -422,7 +440,19 @@ export default function Dashboard() {
                       const doctorId = c.doctor_id || 'khalid'
                       const assignedDoc = DOCTORS.find((d) => d.id === doctorId) || DOCTORS[0]
                       return (
-                        <tr key={c.id} onClick={() => router.push(`/dashboard/${c.id}`)}>
+                        <tr
+                          key={c.id}
+                          tabIndex={0}
+                          role="button"
+                          aria-label={`استشارة ${c.patient_name}`}
+                          onClick={() => router.push(`/dashboard/${c.id}`)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              router.push(`/dashboard/${c.id}`)
+                            }
+                          }}
+                        >
                           <td>
                             <div className="dash-patient">
                               <span className="dash-patient-name">{c.patient_name}</span>
@@ -686,5 +716,15 @@ export default function Dashboard() {
         </div>
       )}
     </DashboardShell>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<DashboardGate message="جاري تحميل لوحة التحكم..." />}>
+        <Dashboard />
+      </Suspense>
+    </ErrorBoundary>
   )
 }

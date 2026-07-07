@@ -90,6 +90,8 @@ export default function ConsultationDetail() {
   const [reschedDate, setReschedDate] = useState('')
   const [reschedTime, setReschedTime] = useState('')
 
+  const [showApprove, setShowApprove] = useState(false)
+
   const [showCancel, setShowCancel] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
 
@@ -145,6 +147,8 @@ export default function ConsultationDetail() {
       setConsultation(updated)
       const list = await getMessages(updated.id)
       setMessages(list)
+    } else {
+      toasts.push('فشل تحديث حالة الاستشارة. حاول مرة أخرى.', 'error')
     }
   }
 
@@ -165,6 +169,23 @@ export default function ConsultationDetail() {
     setSendingMessage(true)
     try {
       await sendMessage(consultation.id, chatInput, 'doctor')
+      await transitionStatus(consultation.id, 'needs_info', {}, 'طلب الطبيب من المريض معلومات إضافية.')
+      setChatInput('')
+      const list = await getMessages(consultation.id)
+      setMessages(list)
+      const refreshed = await getConsultationById(consultation.id)
+      if (refreshed) setConsultation(refreshed)
+    } finally {
+      setSendingMessage(false)
+    }
+  }
+
+  async function askForInfoWithTemplate(template: string) {
+    if (!consultation) return
+    setChatInput(template)
+    setSendingMessage(true)
+    try {
+      await sendMessage(consultation.id, template, 'doctor')
       await transitionStatus(consultation.id, 'needs_info', {}, 'طلب الطبيب من المريض معلومات إضافية.')
       setChatInput('')
       const list = await getMessages(consultation.id)
@@ -229,7 +250,7 @@ export default function ConsultationDetail() {
     })
     await transitionStatus(
       consultation.id,
-      'submitted',
+      consultation.status,
       {},
       `تم إعادة جدولة الموعد إلى ${reschedDate} الساعة ${reschedTime}.`,
     )
@@ -381,8 +402,8 @@ export default function ConsultationDetail() {
         {canActOnReview && (
           <>
             <button onClick={startReview} className="dash-action"><Search size={15} /> بدء المراجعة</button>
-            <button onClick={approve} className="dash-action dash-action-ok"><Check size={15} /> قبول وتأكيد</button>
-            <button onClick={() => { setChatInput(QUICK_REPLY_TEMPLATES[0]); askForInfo() }} className="dash-action"><Send size={15} /> طلب معلومات</button>
+            <button onClick={() => setShowApprove(true)} className="dash-action dash-action-ok"><Check size={15} /> قبول وتأكيد</button>
+            <button onClick={() => askForInfoWithTemplate(QUICK_REPLY_TEMPLATES[0])} className="dash-action"><Send size={15} /> طلب معلومات</button>
             <button onClick={() => setShowReject(true)} className="dash-action dash-action-err"><X size={15} /> رفض</button>
           </>
         )}
@@ -423,6 +444,17 @@ export default function ConsultationDetail() {
           <div className="dash-confirm-row">
             <button onClick={reschedule} className="dash-action dash-action-primary">تأكيد</button>
             <button onClick={() => setShowReschedule(false)} className="dash-action">إلغاء</button>
+          </div>
+        </div>
+      )}
+
+      {showApprove && (
+        <div className="dash-confirm dash-confirm-ok">
+          <div className="dash-confirm-title"><Check size={16} /> تأكيد قبول الاستشارة</div>
+          <p className="dash-confirm-desc">سيتم قبول الاستشارة وتأكيد الموعد للمريض.</p>
+          <div className="dash-confirm-row">
+            <button onClick={() => { setShowApprove(false); approve() }} className="dash-action dash-action-ok">تأكيد القبول</button>
+            <button onClick={() => setShowApprove(false)} className="dash-action">تراجع</button>
           </div>
         </div>
       )}
