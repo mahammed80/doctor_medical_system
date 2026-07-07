@@ -23,6 +23,7 @@ export type FormData = {
   relieving_factors: string
   pain_duration: string
   joint_swelling_stiffness: string
+  selected_package: 'basic' | 'comprehensive' | 'followup' | ''
 }
 
 export type StepDef = { label: string; sub: string; description: string }
@@ -50,4 +51,5 @@ export const FORM_INITIAL: FormData = {
   relieving_factors: '',
   pain_duration: 'أقل من أسبوع',
   joint_swelling_stiffness: 'لا',
+  selected_package: '',
 }

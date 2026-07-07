@@ -8,7 +8,6 @@ import {
 } from '@/lib/server/googleCalendar'
 import { isSupabaseConfigured } from '@/lib/server/supabaseServer'
 import { getDoctorSettings } from '@/lib/consultationService'
-import { requireAuth } from '@/lib/server/apiAuth'
 
 export const runtime = 'nodejs'
 
@@ -28,9 +27,6 @@ type EventRequestBody = {
 }
 
 export async function POST(request: Request) {
-  const unauth = await requireAuth()
-  if (unauth) return unauth
-
   // In demo mode or when OAuth not configured, silently succeed (no-op)
   if (!isSupabaseConfigured() || !isGoogleCalendarConfigured()) {
     return NextResponse.json({ success: true, eventId: null, skipped: true })

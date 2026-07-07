@@ -12,10 +12,10 @@ type Props = {
   set: <K extends keyof FormData>(k: K, v: FormData[K]) => void
   loading: boolean
   onUpload: () => void
-  onSkipToPayment: () => void
+  onNext: () => void
 }
 
-export function Step2Files({ form, set, loading, onUpload, onSkipToPayment }: Props) {
+export function Step2Files({ form, set, loading, onUpload, onNext }: Props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
@@ -74,7 +74,7 @@ export function Step2Files({ form, set, loading, onUpload, onSkipToPayment }: Pr
         <button
           type="button"
           className="btn-primary"
-          onClick={onSkipToPayment}
+          onClick={onNext}
           style={{ width: '100%', justifyContent: 'center', marginTop: '0.5rem' }}
         >
           التالي
@@ -86,7 +86,7 @@ export function Step2Files({ form, set, loading, onUpload, onSkipToPayment }: Pr
           <button
             type="button"
             className="btn-ghost"
-            onClick={onSkipToPayment}
+            onClick={onNext}
             style={{ justifyContent: 'center' }}
           >
             تخطى

@@ -1,28 +1,22 @@
 import 'server-only'
 
-import { getServiceSupabase, isSupabaseConfigured } from './supabaseServer'
+import { createClient } from '@supabase/supabase-js'
+import { isSupabaseConfigured } from './supabaseServer'
 import type { Consultation } from '../supabase'
 
-/**
- * Server-only consultation mutations. Uses the Supabase service-role key
- * so that trusted server contexts (Paymob webhook, admin scripts) can
- * update rows regardless of RLS.
- *
- * NEVER import this from a client component. NEVER expose the service
- * role key to the browser.
- */
 export async function updateConsultationAsService(
   id: string,
   updates: Partial<Consultation>
 ): Promise<Consultation | null> {
   if (!isSupabaseConfigured()) return null
-  const supabase = getServiceSupabase()
-  const { data, error } = await supabase
-    .from('consultations')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single()
-  if (error) throw error
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+  )
+  const { data, error } = await supabase.rpc('admin_update_consultation', {
+    p_id: id,
+    p_updates: updates,
+  })
+  if (error || !data) return null
   return data as Consultation
 }

@@ -2,7 +2,8 @@ import 'server-only'
 import { google } from 'googleapis'
 import type { oauth2_v2 } from 'googleapis'
 import crypto from 'crypto'
-import { getServiceSupabase, isSupabaseConfigured } from './supabaseServer'
+import { createClient } from '@supabase/supabase-js'
+import { isSupabaseConfigured } from './supabaseServer'
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -43,6 +44,15 @@ const SCOPES = [
 
 export function isGoogleCalendarConfigured(): boolean {
   return Boolean(CLIENT_ID && CLIENT_SECRET && REDIRECT_URI)
+}
+
+function getServerClient() {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase not configured')
+  }
+  const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 }
 
 function getOAuth2Client() {
@@ -126,14 +136,10 @@ export async function getCalendarEmail(tokens: CalendarTokens): Promise<string |
 export async function getStoredTokens(doctorId: string): Promise<CalendarTokens | null> {
   if (!isSupabaseConfigured()) return null
   try {
-    const supabase = getServiceSupabase()
-    const { data, error } = await supabase
-      .from('doctor_settings')
-      .select('calendar_tokens')
-      .eq('doctor_id', doctorId)
-      .single()
+    const supabase = getServerClient()
+    const { data, error } = await supabase.rpc('get_calendar_tokens', { p_doctor_id: doctorId })
     if (error || !data) return null
-    return (data as { calendar_tokens?: CalendarTokens }).calendar_tokens || null
+    return data as CalendarTokens
   } catch {
     return null
   }
@@ -141,24 +147,18 @@ export async function getStoredTokens(doctorId: string): Promise<CalendarTokens 
 
 export async function saveTokens(doctorId: string, tokens: CalendarTokens): Promise<void> {
   if (!isSupabaseConfigured()) return
-  const supabase = getServiceSupabase()
-  const { error } = await supabase
-    .from('doctor_settings')
-    .upsert({
-      doctor_id: doctorId,
-      calendar_tokens: tokens,
-      updated_at: new Date().toISOString(),
-    })
+  const supabase = getServerClient()
+  const { error } = await supabase.rpc('save_calendar_tokens', {
+    p_doctor_id: doctorId,
+    p_tokens: tokens,
+  })
   if (error) throw error
 }
 
 export async function clearTokens(doctorId: string): Promise<void> {
   if (!isSupabaseConfigured()) return
-  const supabase = getServiceSupabase()
-  await supabase
-    .from('doctor_settings')
-    .update({ calendar_tokens: null })
-    .eq('doctor_id', doctorId)
+  const supabase = getServerClient()
+  await supabase.rpc('clear_calendar_tokens', { p_doctor_id: doctorId })
 }
 
 // Also update the client-visible connection status in the settings JSONB
@@ -168,28 +168,13 @@ export async function setConnectionStatus(
   email?: string,
 ): Promise<void> {
   if (!isSupabaseConfigured()) return
-  const supabase = getServiceSupabase()
-
-  // Fetch current settings so we don't overwrite them
-  const { data } = await supabase
-    .from('doctor_settings')
-    .select('settings')
-    .eq('doctor_id', doctorId)
-    .single()
-
-  const current = (data as { settings?: Record<string, unknown> })?.settings || {}
-  const updated = {
-    ...current,
-    googleCalendar: { connected, email: email || null },
-  }
-
-  await supabase
-    .from('doctor_settings')
-    .upsert({
-      doctor_id: doctorId,
-      settings: updated,
-      updated_at: new Date().toISOString(),
-    })
+  const supabase = getServerClient()
+  const { error } = await supabase.rpc('set_calendar_connection_status', {
+    p_doctor_id: doctorId,
+    p_connected: connected,
+    p_email: email || null,
+  })
+  if (error) throw error
 }
 
 // ── Refresh tokens if expired ───────────────────────────────────────────────

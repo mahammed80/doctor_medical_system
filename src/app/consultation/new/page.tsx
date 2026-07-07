@@ -20,6 +20,7 @@ import { StepIndicator } from './_components/StepIndicator'
 import { Step0PatientInfo } from './_steps/Step0PatientInfo'
 import { Step1Complaint } from './_steps/Step1Complaint'
 import { Step2Files } from './_steps/Step2Files'
+import { Step3Package } from './_steps/Step3Package'
 import { Step3Payment } from './_steps/Step3Payment'
 import { Step4Schedule } from './_steps/Step4Schedule'
 import { STEPS } from './constants'
@@ -27,6 +28,8 @@ import type { FormData } from './types'
 import { FORM_INITIAL } from './types'
 
 const PRICE = process.env.NEXT_PUBLIC_CONSULTATION_PRICE || '799'
+const COMPREHENSIVE_PRICE = process.env.NEXT_PUBLIC_COMPREHENSIVE_PRICE || '1700'
+const FOLLOWUP_PRICE = process.env.NEXT_PUBLIC_FOLLOWUP_PRICE || '2000'
 const IS_DEMO = isDemoMode()
 
 export default function NewConsultation() {
@@ -59,8 +62,8 @@ export default function NewConsultation() {
     if (doc) setSelectedDoctorId(doc)
     const urlStep = params.get('step')
     const urlConsultationId = params.get('consultation')
-    if (urlStep === '4' && urlConsultationId) {
-      setStep(4)
+    if (urlStep === '5' && urlConsultationId) {
+      setStep(5)
       setConsultationId(urlConsultationId)
       const success = params.get('success')
       const transactionId = params.get('id')
@@ -73,10 +76,19 @@ export default function NewConsultation() {
     }
   }, [])
 
-  const currentPrice = String(docSettings?.consultationPrice ?? PRICE)
+  const packagePrices = {
+    basic: docSettings?.consultationPrice ?? Number(PRICE),
+    comprehensive: docSettings?.comprehensivePrice ?? Number(COMPREHENSIVE_PRICE),
+    followup: docSettings?.packagePrice3 ?? Number(FOLLOWUP_PRICE),
+  }
+  const currentPrice = String(
+    form.selected_package === 'comprehensive' ? packagePrices.comprehensive
+    : form.selected_package === 'followup' ? packagePrices.followup
+    : packagePrices.basic
+  )
 
   useEffect(() => {
-    if (step === 3 && consultationId && !checkoutUrl) {
+    if (step === 4 && consultationId && !checkoutUrl) {
       // Trigger network request; loading flag is set before the request fires.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setPaymentLoading(true)
@@ -108,6 +120,10 @@ export default function NewConsultation() {
   useEffect(() => {
     getDoctorSettings(selectedDoctorId).then(setDocSettings)
   }, [selectedDoctorId])
+
+  useEffect(() => {
+    setCheckoutUrl(null)
+  }, [form.selected_package])
 
   useEffect(() => {
     if (!selectedDate) {
@@ -350,10 +366,19 @@ export default function NewConsultation() {
               set={set}
               loading={loading}
               onUpload={uploadTestsAndFiles}
-              onSkipToPayment={() => setStep(3)}
+              onNext={() => setStep(3)}
             />
           )}
           {step === 3 && (
+            <Step3Package
+              form={form}
+              set={set}
+              prices={packagePrices}
+              loading={loading}
+              onNext={() => setStep(4)}
+            />
+          )}
+          {step === 4 && (
             <Step3Payment
               price={currentPrice}
               doctorName={DOCTORS.find((d) => d.id === selectedDoctorId)?.name || DOCTORS[0].name}
@@ -362,7 +387,7 @@ export default function NewConsultation() {
               consultationId={consultationId}
             />
           )}
-          {step === 4 && (
+          {step === 5 && (
             <Step4Schedule
               selectedDate={selectedDate}
               selectedTime={selectedTime}
