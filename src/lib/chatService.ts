@@ -40,10 +40,7 @@ export async function getMessages(consultationId: string): Promise<ConsultationM
     .eq('consultation_id', consultationId)
     .order('created_at', { ascending: true })
 
-  if (error) {
-    console.error('Failed to load messages:', error)
-    return getDemoMessages(consultationId)
-  }
+  if (error) throw error
   return (data || []) as ConsultationMessage[]
 }
 
@@ -89,14 +86,7 @@ export async function sendMessage(
     .select()
     .single()
 
-  if (error || !data) {
-    // Fall back to demo store on error
-    console.warn('sendMessage failed, stored locally:', error)
-    const list = getDemoMessages(consultationId)
-    list.push(message)
-    setDemoMessages(consultationId, list)
-    return message
-  }
+  if (error || !data) throw error || new Error('Failed to send message')
   return data as ConsultationMessage
 }
 

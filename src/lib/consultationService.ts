@@ -135,35 +135,25 @@ export async function getConsultations(): Promise<EnhancedConsultation[]> {
       .slice()
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
   }
-  try {
-    const { data, error } = await supabase
-      .from('consultations')
-      .select('*')
-      .order('created_at', { ascending: false })
-    if (error) throw error
-    return (data || []) as EnhancedConsultation[]
-  } catch (err) {
-    console.error('Supabase fetch failed, falling back to local mock data:', err)
-    return getLocalConsultations()
-  }
+  const { data, error } = await supabase
+    .from('consultations')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return (data || []) as EnhancedConsultation[]
 }
 
 export async function getConsultationById(id: string): Promise<EnhancedConsultation | null> {
   if (isDemo || id.startsWith('demo-') || id.startsWith('mock-')) {
     return getLocalConsultations().find(c => c.id === id) || null
   }
-  try {
-    const { data, error } = await supabase
-      .from('consultations')
-      .select('*')
-      .eq('id', id)
-      .single()
-    if (error) throw error
-    return data as EnhancedConsultation
-  } catch (err) {
-    console.error(`Supabase fetch detail failed for ID ${id}, searching locally:`, err)
-    return getLocalConsultations().find(c => c.id === id) || null
-  }
+  const { data, error } = await supabase
+    .from('consultations')
+    .select('*')
+    .eq('id', id)
+    .single()
+  if (error) throw error
+  return data as EnhancedConsultation
 }
 
 // ── Create ──────────────────────────────────────────────────────────────────
@@ -243,24 +233,14 @@ export async function updateConsultation(
     return list[index]
   }
 
-  try {
-    const { data, error } = await supabase
-      .from('consultations')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single()
-    if (error) throw error
-    return data as EnhancedConsultation
-  } catch (err) {
-    console.error(`Supabase update failed for ID ${id}, updating locally:`, err)
-    const list = getLocalConsultations()
-    const index = list.findIndex(c => c.id === id)
-    if (index === -1) return null
-    list[index] = { ...list[index], ...updates }
-    saveLocalConsultations(list)
-    return list[index]
-  }
+  const { data, error } = await supabase
+    .from('consultations')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data as EnhancedConsultation
 }
 
 /**
@@ -310,18 +290,13 @@ export async function getConsultationFiles(consultationId: string): Promise<Cons
     return []
   }
 
-  try {
-    const { data, error } = await supabase
-      .from('consultation_files')
-      .select('*')
-      .eq('consultation_id', consultationId)
-      .order('created_at', { ascending: true })
-    if (error) throw error
-    return (data || []) as ConsultationFile[]
-  } catch (err) {
-    console.error(`Supabase files fetch failed for consultation ${consultationId}:`, err)
-    return []
-  }
+  const { data, error } = await supabase
+    .from('consultation_files')
+    .select('*')
+    .eq('consultation_id', consultationId)
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return (data || []) as ConsultationFile[]
 }
 
 export async function addConsultationFile(
@@ -354,32 +329,20 @@ export async function addConsultationFile(
     return record
   }
 
-  try {
-    const { data, error } = await supabase
-      .from('consultation_files')
-      .insert({
-        consultation_id: consultationId,
-        file_name: fileName,
-        file_url: fileUrl,
-        file_type: fileType,
-        category,
-        size_bytes: sizeBytes ?? null,
-      })
-      .select()
-      .single()
-    if (error) throw error
-    return data as ConsultationFile
-  } catch (err) {
-    console.error('File insert failed, saving locally:', err)
-    if (isBrowser) {
-      const key = `files_${consultationId}`
-      const existing = localStorage.getItem(key)
-      const list: ConsultationFile[] = existing ? JSON.parse(existing) : []
-      list.push(record)
-      localStorage.setItem(key, JSON.stringify(list))
-    }
-    return record
-  }
+  const { data, error } = await supabase
+    .from('consultation_files')
+    .insert({
+      consultation_id: consultationId,
+      file_name: fileName,
+      file_url: fileUrl,
+      file_type: fileType,
+      category,
+      size_bytes: sizeBytes ?? null,
+    })
+    .select()
+    .single()
+  if (error) throw error
+  return data as ConsultationFile
 }
 
 // Backwards-compatible wrapper — preserves the old call signature.
@@ -439,10 +402,6 @@ export async function getDoctorSettings(doctorId: string): Promise<DoctorSchedul
     if (error) throw error
     return (data?.settings as DoctorScheduleSettings) || DEFAULT_SETTINGS
   } catch {
-    if (isBrowser) {
-      const saved = localStorage.getItem(`doctor_settings_${doctorId}`)
-      if (saved) return JSON.parse(saved) as DoctorScheduleSettings
-    }
     return DEFAULT_SETTINGS
   }
 }
@@ -454,20 +413,12 @@ export async function saveDoctorSettings(doctorId: string, settings: DoctorSched
     }
     return settings
   }
-  try {
-    const { error } = await supabase.rpc('upsert_doctor_settings', {
-      p_doctor_id: doctorId,
-      p_settings: settings,
-    })
-    if (error) throw error
-    return settings
-  } catch (err) {
-    console.warn('Failed to save doctor settings to Supabase, saving to localStorage:', err)
-    if (isBrowser) {
-      localStorage.setItem(`doctor_settings_${doctorId}`, JSON.stringify(settings))
-    }
-    return settings
-  }
+  const { error } = await supabase.rpc('upsert_doctor_settings', {
+    p_doctor_id: doctorId,
+    p_settings: settings,
+  })
+  if (error) throw error
+  return settings
 }
 
 export type TimeSlot = {
