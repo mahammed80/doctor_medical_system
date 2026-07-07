@@ -52,21 +52,25 @@ export default function NewConsultation() {
 
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
   const [paymentLoading, setPaymentLoading] = useState(false)
+  const [redirectResolving, setRedirectResolving] = useState(true)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
     const doc = params.get('doctor')
-    // Reading from URL is an external source — sync into state on mount.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (doc) setSelectedDoctorId(doc)
+
+    // Detect Paymob redirect back — check for ?success=true or ?step=5
+    const success = params.get('success')
+    const transactionId = params.get('id')
+    const orderId = params.get('order')
     const urlStep = params.get('step')
-    const urlConsultationId = params.get('consultation')
-    if (urlStep === '5' && urlConsultationId) {
+    const urlConsultationId = params.get('consultation') || orderId
+
+    if ((urlStep === '5' || success === 'true') && urlConsultationId) {
       setStep(5)
       setConsultationId(urlConsultationId)
-      const success = params.get('success')
-      const transactionId = params.get('id')
       if (success === 'true' && transactionId) {
         updateConsultation(urlConsultationId, {
           status: 'pending_booking',
@@ -74,6 +78,7 @@ export default function NewConsultation() {
         }).catch((e) => console.error('Failed to mark consultation as paid:', e))
       }
     }
+    setRedirectResolving(false)
   }, [])
 
   const packagePrices = {
@@ -343,6 +348,15 @@ export default function NewConsultation() {
         </div>
 
         <div className="booking-card">
+          {redirectResolving ? (
+            <div style={{ textAlign: 'center', padding: '3rem 0' }}>
+              <div className="spinner" />
+              <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--fg-dim)' }}>
+                جاري تحميل صفحة الحجز...
+              </p>
+            </div>
+          ) : (
+            <>
           {step === 0 && (
             <Step0PatientInfo
               form={form}
@@ -408,6 +422,8 @@ export default function NewConsultation() {
               loading={loading}
               onConfirm={confirmBooking}
             />
+          )}
+            </>
           )}
         </div>
 
