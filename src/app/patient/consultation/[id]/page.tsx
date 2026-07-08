@@ -7,6 +7,7 @@ import { AlertTriangle, Send } from 'lucide-react'
 import { getConsultationById, EnhancedConsultation } from '@/lib/consultationService'
 import { subscribeToMessages, sendMessage, markRead, getMessages } from '@/lib/chatService'
 import { ConsultationMessage, STATUS_CONFIG, ConsultationStatus } from '@/lib/supabase'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function PatientConsultationChat() {
   const params = useParams()
@@ -88,8 +89,10 @@ export default function PatientConsultationChat() {
     )
   }
 
+  const { lang, t } = useLanguage()
   const status = consultation.status as ConsultationStatus
   const statusInfo = STATUS_CONFIG[status] || { label: status, badge: 'badge-primary' }
+  const statusLabel = t('status_' + status)
   const isClosed = status === 'declined' || status === 'cancelled' || status === 'completed'
   const needsReply = status === 'needs_info'
 
@@ -98,9 +101,9 @@ export default function PatientConsultationChat() {
       <div style={{ maxWidth: '720px', margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
           <Link href="/" style={{ fontSize: '0.85rem', color: 'var(--fg-dim)', textDecoration: 'none', fontWeight: 600 }}>
-            الصفحة الرئيسية →
+            {lang === 'ar' ? 'الصفحة الرئيسية →' : 'Home Page →'}
           </Link>
-          <span className={statusInfo.badge}>{statusInfo.label}</span>
+          <span className={statusInfo.badge}>{statusLabel}</span>
         </div>
 
         <div className="card-warm" style={{ padding: '0', overflow: 'hidden' }}>

@@ -1,10 +1,12 @@
 import { STEPS } from '../constants'
+import { useLanguage } from '@/context/LanguageContext'
 
 export function StepIndicator({ step }: { step: number }) {
+  const { lang, t } = useLanguage()
   const fillWidth = step > 0 ? `${(step / (STEPS.length - 1)) * 84}%` : '0%'
 
   return (
-    <div className="step-indicator" aria-label="مؤشر خطوات الحجز">
+    <div className="step-indicator" aria-label={lang === 'ar' ? 'مؤشر خطوات الحجز' : 'Booking steps indicator'}>
       <div className="step-indicator-track" aria-hidden />
       <div className="step-indicator-fill" style={{ width: fillWidth }} aria-hidden />
       {STEPS.map((s, i) => {
@@ -49,7 +51,7 @@ export function StepIndicator({ step }: { step: number }) {
                 .filter(Boolean)
                 .join(' ')}
             >
-              {s.sub}
+              {t(`booking_step_${i}_sub`)}
             </span>
           </div>
         )
@@ -57,3 +59,4 @@ export function StepIndicator({ step }: { step: number }) {
     </div>
   )
 }
+

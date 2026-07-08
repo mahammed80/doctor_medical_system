@@ -14,10 +14,13 @@ import {
 import {
   PAIN_LOCATIONS,
   PAIN_LOCATION_LABELS_AR,
+  PAIN_LOCATION_LABELS_EN,
   SPINAL_AREA_LABELS_AR,
+  SPINAL_AREA_LABELS_EN,
   type PainLocation,
   type SpinalArea,
 } from '@/lib/supabase'
+import { useLanguage } from '@/context/LanguageContext'
 
 type Side = 'left' | 'right'
 type View = 'front' | 'back'
@@ -113,6 +116,11 @@ export default function BodyMap({
   const [view, setView] = useState<View>('front')
   const [hovered, setHovered] = useState<Spot | null>(null)
 
+  const { lang } = useLanguage()
+  const painLocationLabels = lang === 'ar' ? PAIN_LOCATION_LABELS_AR : PAIN_LOCATION_LABELS_EN
+  const spinalAreaLabels = lang === 'ar' ? SPINAL_AREA_LABELS_AR : SPINAL_AREA_LABELS_EN
+  const sideLabels = lang === 'ar' ? { right: 'أيمن', left: 'أيسر' } : { right: 'Right', left: 'Left' }
+
   const spots = view === 'front' ? FRONT_SPOTS : BACK_SPOTS
   const showSpinal = selected.includes('neck') || selected.includes('upper_back') || selected.includes('lower_back')
 
@@ -171,31 +179,35 @@ export default function BodyMap({
   }
 
   function getDisplayLabel(spot: Spot): string {
-    if (!spot.side) return PAIN_LOCATION_LABELS_AR[spot.id]
-    if (isSpotSelected(spot)) {
-      if (selected.includes(`${spot.id}_both`)) return `${PAIN_LOCATION_LABELS_AR[spot.id]} (كلا الجانبين)`
-      return `${PAIN_LOCATION_LABELS_AR[spot.id]} (${SIDE_LABELS[spot.side]})`
+    if (!spot.side) return painLocationLabels[spot.id]
+    if (spot.id !== 'neck' && spot.id !== 'upper_back' && spot.id !== 'lower_back') {
+      if (selected.includes(`${spot.id}_both`)) return `${painLocationLabels[spot.id]} ${lang === 'ar' ? '(كلا الجانبين)' : '(Both sides)'}`
+      return `${painLocationLabels[spot.id]} (${sideLabels[spot.side]})`
     }
-    return spot.label
+    return lang === 'ar' ? spot.label : {
+      'الرقبة': 'Neck',
+      'أعلى الظهر': 'Upper Back',
+      'أسفل الظهر': 'Lower Back',
+    }[spot.label] || spot.label
   }
 
   // ── derived list of selected regions for the side panel ────────────────
   const selectedItems: Array<{ key: string; label: string; side?: Side }> = []
   for (const loc of selected) {
     if (loc === 'neck' || loc === 'upper_back' || loc === 'lower_back') {
-      selectedItems.push({ key: loc, label: PAIN_LOCATION_LABELS_AR[loc] })
+      selectedItems.push({ key: loc, label: painLocationLabels[loc] })
       continue
     }
     const tagRight = `${loc}_right`
     const tagLeft = `${loc}_left`
     const tagBoth = `${loc}_both`
     if (selected.includes(tagBoth)) {
-      selectedItems.push({ key: `${loc}-both`, label: `${PAIN_LOCATION_LABELS_AR[loc as PainLocation]} (كلا الجانبين)` })
+      selectedItems.push({ key: `${loc}-both`, label: `${painLocationLabels[loc as PainLocation]} ${lang === 'ar' ? '(كلا الجانبين)' : '(Both sides)'}` })
     } else {
-      if (selected.includes(tagRight)) selectedItems.push({ key: `${loc}-right`, label: `${PAIN_LOCATION_LABELS_AR[loc as PainLocation]} (أيمن)`, side: 'right' })
-      if (selected.includes(tagLeft))  selectedItems.push({ key: `${loc}-left`,  label: `${PAIN_LOCATION_LABELS_AR[loc as PainLocation]} (أيسر)`, side: 'left'  })
+      if (selected.includes(tagRight)) selectedItems.push({ key: `${loc}-right`, label: `${painLocationLabels[loc as PainLocation]} (${sideLabels.right})`, side: 'right' })
+      if (selected.includes(tagLeft))  selectedItems.push({ key: `${loc}-left`,  label: `${painLocationLabels[loc as PainLocation]} (${sideLabels.left})`, side: 'left'  })
       if (!selected.includes(tagRight) && !selected.includes(tagLeft) && !selected.includes(tagBoth)) {
-        selectedItems.push({ key: loc, label: PAIN_LOCATION_LABELS_AR[loc as PainLocation] })
+        selectedItems.push({ key: loc, label: painLocationLabels[loc as PainLocation] })
       }
     }
   }
@@ -236,7 +248,7 @@ export default function BodyMap({
         <svg
           viewBox="0 0 200 400"
           style={{ width: '100%', height: 'auto', display: 'block', maxHeight: 480 }}
-          aria-label={`رسم توضيحي للجسم - ${view === 'front' ? 'العرض الأمامي' : 'العرض الخلفي'}`}
+          aria-label={`${lang === 'ar' ? 'رسم توضيحي للجسم' : 'Body illustration'} - ${view === 'front' ? (lang === 'ar' ? 'العرض الأمامي' : 'Front View') : (lang === 'ar' ? 'العرض الخلفي' : 'Back View')}`}
         >
           <defs>
             <linearGradient id="bodyGradFront" x1="0" y1="0" x2="0" y2="1">
@@ -508,17 +520,17 @@ export default function BodyMap({
             >
               {widespread ? <Check size={14} /> : null}
             </span>
-            <span>ألم منتشر في كامل الجسم</span>
+            <span>{lang === 'ar' ? 'ألم منتشر في كامل الجسم' : 'Widespread pain throughout the body'}</span>
           </span>
           <span style={{ fontSize: '0.7rem', color: 'var(--fg-dim)', fontWeight: 500 }}>
-            للأعراض العامة
+            {lang === 'ar' ? 'للأعراض العامة' : 'For general symptoms'}
           </span>
         </button>
 
         {/* Front / back tabs */}
         <div
           role="tablist"
-          aria-label="جهة الجسم"
+          aria-label={lang === 'ar' ? 'جهة الجسم' : 'Body side'}
           style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
@@ -554,7 +566,7 @@ export default function BodyMap({
               }}
             >
               <span aria-hidden style={{ display: 'inline-flex' }}>{v === 'front' ? <PersonStanding size={16} /> : <Footprints size={16} />}</span>
-              {v === 'front' ? 'العرض الأمامي' : 'العرض الخلفي'}
+              {v === 'front' ? (lang === 'ar' ? 'العرض الأمامي' : 'Front View') : (lang === 'ar' ? 'العرض الخلفي' : 'Back View')}
             </button>
           ))}
         </div>
@@ -575,7 +587,7 @@ export default function BodyMap({
             marginBottom: selectedItems.length > 0 ? '0.5rem' : 0,
           }}>
             <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--fg-dim)', letterSpacing: '0.04em' }}>
-              المناطق المختارة
+              {lang === 'ar' ? 'المناطق المختارة' : 'Selected Areas'}
             </span>
             <span
               className="num"
@@ -586,7 +598,7 @@ export default function BodyMap({
                 padding: '0.1rem 0.55rem', borderRadius: 9999,
               }}
             >
-              {widespread ? 'الكل' : selectedItems.length}
+              {widespread ? (lang === 'ar' ? 'الكل' : 'All') : selectedItems.length}
             </span>
           </div>
           {widespread ? (
@@ -597,11 +609,11 @@ export default function BodyMap({
               border: '1px solid var(--border-accent)', borderRadius: 9999,
               fontSize: '0.82rem', fontWeight: 700,
             }}>
-              <span aria-hidden style={{ display: 'inline-flex' }}><Globe size={16} /></span> كامل الجسم
+              <span aria-hidden style={{ display: 'inline-flex' }}><Globe size={16} /></span> {lang === 'ar' ? 'كامل الجسم' : 'Entire Body'}
             </div>
           ) : selectedItems.length === 0 ? (
             <p style={{ fontSize: '0.78rem', color: 'var(--fg-dim)', margin: 0, lineHeight: 1.6 }}>
-              لم يتم اختيار أي منطقة بعد — انقر على نقاط الجسم أو اختر من القائمة السريعة بالأسفل.
+              {lang === 'ar' ? 'لم يتم اختيار أي منطقة بعد — انقر على نقاط الجسم أو اختر من القائمة السريعة بالأسفل.' : 'No areas selected yet — click on the body or pick from the quick-list below.'}
             </p>
           ) : (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
@@ -627,7 +639,7 @@ export default function BodyMap({
                     <button
                       type="button"
                       onClick={() => removeSelected(item.key)}
-                      aria-label={`إزالة ${item.label}`}
+                      aria-label={`${lang === 'ar' ? 'إزالة' : 'Remove'} ${item.label}`}
                       style={{
                         background: 'transparent',
                         border: 'none',
@@ -658,10 +670,10 @@ export default function BodyMap({
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
             <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--fg-muted)' }}>
-              اختيار سريع للمنطقة
+              {lang === 'ar' ? 'اختيار سريع للمنطقة' : 'Quick pick region'}
             </span>
             <span style={{ fontSize: '0.7rem', color: 'var(--fg-dim)' }}>
-              {view === 'front' ? 'الأمامي' : 'الخلفي'}
+              {view === 'front' ? (lang === 'ar' ? 'الأمامي' : 'Front') : (lang === 'ar' ? 'الخلفي' : 'Back')}
             </span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -673,7 +685,7 @@ export default function BodyMap({
                 return true
               })
               if (visible.length === 0) return null
-              const catLabel = cat === 'upper' ? 'الجزء العلوي' : cat === 'middle' ? 'الجزء الأوسط' : 'الجزء السفلي'
+              const catLabel = lang === 'ar' ? (cat === 'upper' ? 'الجزء العلوي' : cat === 'middle' ? 'الجزء الأوسط' : 'الجزء السفلي') : (cat === 'upper' ? 'Upper Part' : cat === 'middle' ? 'Middle Part' : 'Lower Part')
               return (
                 <div key={cat}>
                   <div style={{ fontSize: '0.66rem', fontWeight: 700, color: 'var(--fg-dim)', marginBottom: '0.3rem', letterSpacing: '0.04em' }}>
@@ -682,6 +694,17 @@ export default function BodyMap({
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
                     {visible.map((p) => {
                       const isSel = selected.includes(p.id)
+                      const pickLabel = lang === 'ar' ? p.label : {
+                        shoulder: 'Shoulder',
+                        elbow: 'Elbow',
+                        wrist: 'Wrist',
+                        neck: 'Neck',
+                        upper_back: 'Upper Back',
+                        lower_back: 'Lower Back',
+                        hip: 'Hip',
+                        knee: 'Knee',
+                        ankle: 'Ankle',
+                      }[p.id] || p.label
                       return (
                         <button
                           key={p.id}
@@ -713,7 +736,7 @@ export default function BodyMap({
                           }}
                         >
                           <span aria-hidden style={{ display: 'inline-flex' }}>{p.icon}</span>
-                          {p.label}
+                          {pickLabel}
                           {isSel && <span style={{ display: 'inline-flex' }} aria-hidden><Check size={16} /></span>}
                         </button>
                       )
@@ -739,10 +762,10 @@ export default function BodyMap({
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
               <span aria-hidden style={{ display: 'inline-flex' }}><Bone size={16} /></span>
               <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#936C40' }}>
-                حدد الفقرات المتأثرة (اختياري)
+                {lang === 'ar' ? 'حدد الفقرات المتأثرة (اختياري)' : 'Select affected vertebrae (optional)'}
               </span>
             </div>
-            <div role="group" aria-label="مناطق الفقرات" style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+            <div role="group" aria-label={lang === 'ar' ? 'مناطق الفقرات' : 'Spinal regions'} style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
               {(['cervical', 'thoracic', 'lumbar'] as SpinalArea[]).map((a) => {
                 const isSel = spinalSelected.includes(a)
                 return (
@@ -754,7 +777,7 @@ export default function BodyMap({
                     style={{
                       flex: '1 1 100px',
                       padding: '0.5rem 0.6rem',
-                      borderRadius: 'var(--r-sm)',
+                      borderRadius: 'var(--r)',
                       border: `1.5px solid ${isSel ? 'var(--gold)' : 'rgba(194,154,104,0.40)'}`,
                       background: isSel ? 'var(--gold)' : 'transparent',
                       color: isSel ? 'white' : '#936C40',
@@ -765,7 +788,7 @@ export default function BodyMap({
                       fontFamily: 'inherit',
                     }}
                   >
-                    {SPINAL_AREA_LABELS_AR[a]}
+                    {spinalAreaLabels[a]}
                   </button>
                 )
               })}

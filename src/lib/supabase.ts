@@ -67,6 +67,16 @@ export const PAIN_NATURE_LABELS_AR: Record<PainNature, string> = {
   radiating:    'منتشر',
 }
 
+export const PAIN_NATURE_LABELS_EN: Record<PainNature, string> = {
+  sharp:        'Sharp',
+  dull:         'Dull',
+  burning:      'Burning',
+  stabbing:     'Stabbing',
+  continuous:   'Continuous',
+  intermittent: 'Intermittent',
+  radiating:    'Radiating',
+}
+
 export const PAIN_LOCATION_LABELS_AR: Record<PainLocation, string> = {
   neck:        'الرقبة',
   upper_back:  'أعلى الظهر',
@@ -79,10 +89,28 @@ export const PAIN_LOCATION_LABELS_AR: Record<PainLocation, string> = {
   elbow:       'الكوع',
 }
 
+export const PAIN_LOCATION_LABELS_EN: Record<PainLocation, string> = {
+  neck:        'Neck',
+  upper_back:  'Upper Back',
+  lower_back:  'Lower Back',
+  shoulder:    'Shoulder',
+  knee:        'Knee',
+  hip:         'Hip',
+  wrist:       'Wrist',
+  ankle:       'Ankle',
+  elbow:       'Elbow',
+}
+
 export const SPINAL_AREA_LABELS_AR: Record<SpinalArea, string> = {
   cervical: 'الفقرات العنقية',
   thoracic: 'الفقرات الصدرية',
   lumbar:   'الفقرات القطنية',
+}
+
+export const SPINAL_AREA_LABELS_EN: Record<SpinalArea, string> = {
+  cervical: 'Cervical Spine',
+  thoracic: 'Thoracic Spine',
+  lumbar:   'Lumbar Spine',
 }
 
 // ── File categories ─────────────────────────────────────────────────────────
@@ -104,6 +132,16 @@ export const FILE_CATEGORY_LABELS_AR: Record<FileCategory, string> = {
   prescription: 'روشتة سابقة',
   other:        'أخرى',
 }
+
+export const FILE_CATEGORY_LABELS_EN: Record<FileCategory, string> = {
+  mri:          'MRI',
+  xray:         'X-Ray',
+  ct:           'CT Scan',
+  lab_report:   'Lab Report',
+  prescription: 'Previous Prescription',
+  other:        'Other',
+}
+
 
 // ── Consultation ────────────────────────────────────────────────────────────
 export type Consultation = {

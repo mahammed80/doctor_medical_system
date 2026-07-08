@@ -5,6 +5,7 @@ import { DOCTORS } from '@/lib/doctors'
 import { Field } from '../_components/Field'
 import { IdDropZone } from '../_components/IdDropZone'
 import type { FormData } from '../types'
+import { useLanguage } from '@/context/LanguageContext'
 
 type Props = {
   form: FormData
@@ -21,6 +22,7 @@ export function Step0PatientInfo({
   loading,
   onNext,
 }: Props) {
+  const { t } = useLanguage()
   const selectedDoctor = DOCTORS.find((d) => d.id === selectedDoctorId) || DOCTORS[0]
 
   return (
@@ -40,7 +42,7 @@ export function Step0PatientInfo({
         <div className="doctor-avatar" style={{ width: 48, height: 48 }}>
           <Image
             src={selectedDoctor.image === '/main_image.jpeg' ? '/doctor_centered_landscape.jpg' : selectedDoctor.image}
-            alt={selectedDoctor.name}
+            alt={t('hero_title_dr')}
             fill
             sizes="48px"
             style={{ objectFit: 'cover' }}
@@ -48,17 +50,17 @@ export function Step0PatientInfo({
         </div>
         <div style={{ overflow: 'hidden' }}>
           <div style={{ fontSize: '0.66rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            الطبيب الاستشاري
+            {t('booking_consulting_doctor')}
           </div>
-          <div className="doctor-name">{selectedDoctor.name}</div>
-          <div className="doctor-specialty">{selectedDoctor.specialty}</div>
+          <div className="doctor-name">{t('hero_title_dr')}</div>
+          <div className="doctor-specialty">{t('hero_title_title')}</div>
         </div>
       </div>
 
-      <Field label="الاسم الكامل للمريض" required>
+      <Field label={t('booking_full_name')} required>
         <input
           className="input"
-          placeholder="محمد عبدالله"
+          placeholder={t('booking_name_placeholder')}
           value={form.patient_name}
           onChange={(e) => set('patient_name', e.target.value)}
           style={{ fontWeight: 500 }}
@@ -66,20 +68,20 @@ export function Step0PatientInfo({
       </Field>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: '1rem' }}>
-        <Field label="رقم الجوال" required>
+        <Field label={t('booking_phone_label')} required>
           <input
             className="input"
-            placeholder="05xxxxxxxx"
+            placeholder={t('booking_phone_placeholder')}
             dir="ltr"
             value={form.patient_phone}
             onChange={(e) => set('patient_phone', e.target.value)}
           />
         </Field>
-        <Field label="العمر" required>
+        <Field label={t('booking_age_label')} required>
           <input
             className="input"
             type="number"
-            placeholder="35"
+            placeholder={t('booking_age_placeholder')}
             value={form.patient_age}
             onChange={(e) => set('patient_age', e.target.value)}
           />
@@ -87,7 +89,7 @@ export function Step0PatientInfo({
       </div>
 
       <Field
-        label="إثبات الهوية الشخصية (بطاقة الأحوال / الإقامة / جواز السفر)"
+        label={t('booking_id_label')}
         required
       >
         <IdDropZone file={form.id_file} onChange={(f) => set('id_file', f)} />
@@ -106,8 +108,9 @@ export function Step0PatientInfo({
         }
         onClick={onNext}
       >
-        التالي
+        {t('booking_next')}
       </button>
     </div>
   )
 }
+

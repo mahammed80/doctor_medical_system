@@ -26,6 +26,7 @@ import { Step4Schedule } from './_steps/Step4Schedule'
 import { STEPS } from './constants'
 import type { FormData } from './types'
 import { FORM_INITIAL } from './types'
+import { useLanguage } from '@/context/LanguageContext'
 
 const PRICE = process.env.NEXT_PUBLIC_CONSULTATION_PRICE || '799'
 const COMPREHENSIVE_PRICE = process.env.NEXT_PUBLIC_COMPREHENSIVE_PRICE || '1700'
@@ -35,6 +36,7 @@ const IS_DEMO = isDemoMode()
 export default function NewConsultation() {
   const router = useRouter()
   const toasts = useToasts()
+  const { lang, t } = useLanguage()
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
   const [consultationId, setConsultationId] = useState<string | null>(null)
@@ -58,7 +60,6 @@ export default function NewConsultation() {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
     const doc = params.get('doctor')
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (doc) setSelectedDoctorId(doc)
 
     // Detect Paymob redirect back — check for ?success=true or ?step=5
@@ -94,8 +95,6 @@ export default function NewConsultation() {
 
   useEffect(() => {
     if (step === 4 && consultationId && !checkoutUrl) {
-      // Trigger network request; loading flag is set before the request fires.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPaymentLoading(true)
       fetch('/api/payment', {
         method: 'POST',
@@ -116,11 +115,11 @@ export default function NewConsultation() {
         })
         .catch((err) => {
           console.error(err)
-          toasts.push('خطأ في الاتصال بالخادم لإعداد عملية الدفع.', 'error')
+          toasts.push(t('booking_payment_error'), 'error')
         })
         .finally(() => setPaymentLoading(false))
     }
-  }, [step, consultationId, checkoutUrl, form.patient_name, form.patient_phone, toasts, currentPrice])
+  }, [step, consultationId, checkoutUrl, form.patient_name, form.patient_phone, toasts, currentPrice, t])
 
   useEffect(() => {
     getDoctorSettings(selectedDoctorId).then(setDocSettings)
@@ -134,7 +133,6 @@ export default function NewConsultation() {
 
   useEffect(() => {
     if (!selectedDate) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSlots([])
       return
     }
@@ -146,7 +144,7 @@ export default function NewConsultation() {
 
   function nextFromStep0() {
     if (!form.patient_name || !form.patient_phone || !form.patient_age || !form.id_file) {
-      toasts.push('الرجاء إدخال الاسم، رقم الجوال، العمر، وإرفاق صورة الهوية الشخصية للمتابعة.', 'warn')
+      toasts.push(t('booking_required_fields_warn'), 'warn')
       return
     }
     setStep(1)
@@ -154,11 +152,11 @@ export default function NewConsultation() {
 
   async function submitComplaint() {
     if (!form.chief_complaint) {
-      toasts.push('الرجاء شرح الشكوى الرئيسية للمتابعة.', 'warn')
+      toasts.push(t('booking_complaint_warn'), 'warn')
       return
     }
     if (form.pain_locations.length === 0 && !form.pain_widespread) {
-      toasts.push('الرجاء تحديد مكان الألم على الخريطة أو اختيار "ألم منتشر".', 'warn')
+      toasts.push(t('booking_pain_warn'), 'warn')
       return
     }
     setLoading(true)
@@ -231,7 +229,7 @@ export default function NewConsultation() {
       setStep(2)
     } catch (err) {
       console.error(err)
-      toasts.push('حصل خطأ أثناء حفظ البيانات، يرجى المحاولة مجدداً.', 'error')
+      toasts.push(t('booking_save_error'), 'error')
     } finally {
       setLoading(false)
     }
@@ -266,7 +264,7 @@ export default function NewConsultation() {
       setStep(3)
     } catch (err) {
       console.error(err)
-      toasts.push('خطأ أثناء رفع الفحوصات والتحاليل الطبية.', 'error')
+      toasts.push(t('booking_upload_error'), 'error')
     } finally {
       setLoading(false)
     }
@@ -317,7 +315,7 @@ export default function NewConsultation() {
       router.push(`/consultation/success?doctor=${selectedDoctorId}&consultation=${consultationId}`)
     } catch (err) {
       console.error(err)
-      toasts.push('حدث خطأ أثناء حجز الموعد', 'error')
+      toasts.push(t('booking_slot_error'), 'error')
     } finally {
       setLoading(false)
     }
@@ -331,10 +329,10 @@ export default function NewConsultation() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
-            رجوع
+            {t('booking_back')}
           </Link>
           <span className="booking-step-count num">
-            الخطوة {step + 1} من {STEPS.length}
+            {t('booking_step_of').replace('{step}', String(step + 1)).replace('{total}', String(STEPS.length))}
           </span>
         </div>
 
@@ -345,8 +343,8 @@ export default function NewConsultation() {
             fontSize: '1.6rem',
             fontWeight: 900,
             letterSpacing: '-0.02em',
-          }}>{STEPS[step].label}</h1>
-          <p className="booking-step-desc">{STEPS[step].description}</p>
+          }}>{t(`booking_step_${step}_label`)}</h1>
+          <p className="booking-step-desc">{t(`booking_step_${step}_desc`)}</p>
         </div>
 
         <div className="booking-card">
@@ -354,7 +352,7 @@ export default function NewConsultation() {
             <div style={{ textAlign: 'center', padding: '3rem 0' }}>
               <div className="spinner" />
               <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--fg-dim)' }}>
-                جاري تحميل صفحة الحجز...
+                {t('booking_loading')}
               </p>
             </div>
           ) : (
@@ -437,7 +435,7 @@ export default function NewConsultation() {
               onClick={() => setStep((s) => s - 1)}
               style={{ fontSize: '0.88rem', padding: '0.7rem 1.5rem' }}
             >
-              السابق
+              {t('booking_prev')}
             </button>
           </div>
         )}

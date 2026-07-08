@@ -8,6 +8,7 @@ import { Field } from '../_components/Field'
 import { Spinner } from '../_components/Spinner'
 import { PAIN_DURATIONS } from '../constants'
 import type { FormData } from '../types'
+import { useLanguage } from '@/context/LanguageContext'
 
 type Props = {
   form: FormData
@@ -17,12 +18,14 @@ type Props = {
 }
 
 export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
+  const { lang, t } = useLanguage()
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      <Field label="ما هي الشكوى الرئيسية التي تعاني منها؟" required>
+      <Field label={t('booking_chief_complaint_q')} required>
         <textarea
           className="textarea"
-          placeholder="مثال: ألم حاد في الركبة اليسرى يزداد عند صعود الدرج..."
+          placeholder={t('booking_complaint_placeholder')}
           value={form.chief_complaint}
           onChange={(e) => set('chief_complaint', e.target.value)}
         />
@@ -32,7 +35,7 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
         className="booking-card"
         style={{ padding: '1.25rem', background: 'var(--bg)', boxShadow: 'none' }}
       >
-        <Field label="شدّة الألم" required>
+        <Field label={t('booking_pain_severity')} required>
           <PainSeveritySlider
             value={form.pain_severity}
             onChange={(v) => set('pain_severity', v)}
@@ -40,14 +43,14 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
         </Field>
       </div>
 
-      <Field label="طبيعة الألم (يمكن اختيار أكثر من وصف)" required>
+      <Field label={t('booking_pain_nature_label')} required>
         <PainNatureChips
           selected={form.pain_natures}
           onChange={(v) => set('pain_natures', v)}
         />
       </Field>
 
-      <Field label="مكان الألم على الجسم" required>
+      <Field label={t('booking_pain_location_label')} required>
         <div
           style={{
             background: 'linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%)',
@@ -75,7 +78,7 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
             }}
           >
             <span aria-hidden style={{ display: 'inline-flex' }}><Pointer size={16} /></span>
-            انقر على المنطقة في الجسم أو اختر من القائمة السريعة. للجانب الأيمن والأيسر، انقر على النقطة المناسبة.
+            {t('booking_body_map_instructions')}
           </div>
           <BodyMap
             selected={form.pain_locations as never}
@@ -91,10 +94,16 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
       </Field>
 
       <div className="option-grid">
-        <Field label="مدة الشكوى (سريعة)" optional>
+        <Field label={t('booking_pain_duration_q')} optional>
           <div className="option-grid" style={{ gap: '0.4rem' }}>
             {PAIN_DURATIONS.map((opt) => {
               const isSelected = form.pain_duration === opt
+              const displayLabel = lang === 'ar' ? opt : {
+                'أقل من أسبوع': 'Less than a week',
+                'من أسبوع إلى شهر': '1 week to 1 month',
+                'من شهر إلى 6 أشهر': '1 to 6 months',
+                'أكثر من 6 أشهر': 'More than 6 months',
+              }[opt] || opt
               return (
                 <button
                   key={opt}
@@ -104,17 +113,17 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
                     .filter(Boolean)
                     .join(' ')}
                 >
-                  {opt}
+                  {displayLabel}
                 </button>
               )
             })}
           </div>
         </Field>
 
-        <Field label="كيف بدأت الأعراض؟" optional>
+        <Field label={t('booking_symptom_start_q')} optional>
           <input
             className="input"
-            placeholder="مثال: بعد رفع ثقل، أو بدون سبب واضح"
+            placeholder={t('booking_symptom_start_placeholder')}
             value={form.symptom_start}
             onChange={(e) => set('symptom_start', e.target.value)}
           />
@@ -122,48 +131,49 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
       </div>
 
       <div className="option-grid">
-        <Field label="علاجات سابقة" optional>
+        <Field label={t('booking_previous_treatments_q')} optional>
           <textarea
             className="textarea"
             style={{ minHeight: 70 }}
-            placeholder="أدوية، علاج طبيعي، جبائر..."
+            placeholder={t('booking_previous_treatments_placeholder')}
             value={form.previous_treatments}
             onChange={(e) => set('previous_treatments', e.target.value)}
           />
         </Field>
-        <Field label="عمليات جراحية سابقة" optional>
+        <Field label={t('booking_previous_surgeries_q')} optional>
           <textarea
             className="textarea"
             style={{ minHeight: 70 }}
-            placeholder="نوع العملية وتاريخها..."
+            placeholder={t('booking_previous_surgeries_placeholder')}
             value={form.previous_surgeries}
             onChange={(e) => set('previous_surgeries', e.target.value)}
           />
         </Field>
-        <Field label="العوامل التي تزيد الألم" optional>
+        <Field label={t('booking_aggravating_factors_q')} optional>
           <textarea
             className="textarea"
             style={{ minHeight: 70 }}
-            placeholder="مثال: صعود الدرج، الجلوس طويلاً..."
+            placeholder={t('booking_aggravating_factors_placeholder')}
             value={form.aggravating_factors}
             onChange={(e) => set('aggravating_factors', e.target.value)}
           />
         </Field>
-        <Field label="العوامل التي تخفف الألم" optional>
+        <Field label={t('booking_relieving_factors_q')} optional>
           <textarea
             className="textarea"
             style={{ minHeight: 70 }}
-            placeholder="مثال: الراحة، الكمادات، مسكنات..."
+            placeholder={t('booking_relieving_factors_placeholder')}
             value={form.relieving_factors}
             onChange={(e) => set('relieving_factors', e.target.value)}
           />
         </Field>
       </div>
 
-      <Field label="هل تعاني من تورم أو تيبس في المفاصل؟" required>
+      <Field label={t('booking_joint_swelling_q')} required>
         <div className="option-grid">
           {['نعم', 'لا'].map((opt) => {
             const isSelected = form.joint_swelling_stiffness === opt
+            const displayLabel = opt === 'نعم' ? t('booking_yes') : t('booking_no')
             return (
               <button
                 key={opt}
@@ -173,7 +183,7 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
                   .filter(Boolean)
                   .join(' ')}
               >
-                {opt}
+                {displayLabel}
               </button>
             )
           })}
@@ -181,20 +191,20 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
       </Field>
 
       <div className="option-grid">
-        <Field label="التاريخ المرضي" optional>
+        <Field label={t('booking_medical_history_q')} optional>
           <textarea
             className="textarea"
             style={{ minHeight: 70 }}
-            placeholder="أمراض مزمنة، حساسية..."
+            placeholder={t('booking_medical_history_placeholder')}
             value={form.medical_history}
             onChange={(e) => set('medical_history', e.target.value)}
           />
         </Field>
-        <Field label="الأدوية الحالية" optional>
+        <Field label={t('booking_current_medications_q')} optional>
           <textarea
             className="textarea"
             style={{ minHeight: 70 }}
-            placeholder="اسم الدواء والجرعة..."
+            placeholder={t('booking_current_medications_placeholder')}
             value={form.current_medications}
             onChange={(e) => set('current_medications', e.target.value)}
           />
@@ -214,8 +224,9 @@ export function Step1Complaint({ form, set, loading, onSubmit }: Props) {
         }
         onClick={onSubmit}
       >
-        {loading ? <Spinner /> : 'التالي (حفظ البيانات)'}
+        {loading ? <Spinner /> : t('booking_next_save')}
       </button>
     </div>
   )
 }
+

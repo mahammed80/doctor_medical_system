@@ -6,6 +6,7 @@ import type { FileWithCategory } from '@/components/CategoryFileDropZone'
 import { Field } from '../_components/Field'
 import { Spinner } from '../_components/Spinner'
 import type { FormData } from '../types'
+import { useLanguage } from '@/context/LanguageContext'
 
 type Props = {
   form: FormData
@@ -16,14 +17,16 @@ type Props = {
 }
 
 export function Step2Files({ form, set, loading, onUpload, onNext }: Props) {
+  const { t } = useLanguage()
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
         <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--fg)' }}>
-          هل لديك أي ملفات طبية سابقة (أشعة، تحاليل، روشتات)؟
+          {t('booking_files_q')}
         </h3>
         <p style={{ fontSize: '0.84rem', color: 'var(--fg-dim)', marginTop: '0.35rem', lineHeight: 1.7 }}>
-          مشاركة الفحوصات السابقة تساعد الطبيب على تشخيص الحالة بشكل أدق.
+          {t('booking_files_desc')}
         </p>
       </div>
 
@@ -36,7 +39,7 @@ export function Step2Files({ form, set, loading, onUpload, onNext }: Props) {
             .join(' ')}
         >
           <div className="option-card-icon" style={{ display: 'inline-flex' }}><FolderOpen size={24} /></div>
-          نعم، لدي ملفات سابقة
+          {t('booking_has_files_yes')}
         </button>
         <button
           type="button"
@@ -46,7 +49,7 @@ export function Step2Files({ form, set, loading, onUpload, onNext }: Props) {
             .join(' ')}
         >
           <div className="option-card-icon" style={{ display: 'inline-flex' }}><X size={24} /></div>
-          لا، لا توجد لدي ملفات
+          {t('booking_has_files_no')}
         </button>
       </div>
 
@@ -59,7 +62,7 @@ export function Step2Files({ form, set, loading, onUpload, onNext }: Props) {
             animation: 'scaleIn 0.3s var(--ease-out)',
           }}
         >
-          <Field label="رفع الملفات الطبية" optional>
+          <Field label={t('booking_upload_files_label')} optional>
             <CategoryFileDropZone
               files={form.uploaded_files}
               onChange={(list: FileWithCategory[]) =>
@@ -77,7 +80,7 @@ export function Step2Files({ form, set, loading, onUpload, onNext }: Props) {
           onClick={onNext}
           style={{ width: '100%', justifyContent: 'center', marginTop: '0.5rem' }}
         >
-          التالي
+          {t('booking_next')}
         </button>
       )}
 
@@ -89,7 +92,7 @@ export function Step2Files({ form, set, loading, onUpload, onNext }: Props) {
             onClick={onNext}
             style={{ justifyContent: 'center' }}
           >
-            تخطى
+            {t('booking_skip')}
           </button>
           <button
             type="button"
@@ -98,10 +101,11 @@ export function Step2Files({ form, set, loading, onUpload, onNext }: Props) {
             disabled={loading}
             style={{ flex: 2, justifyContent: 'center' }}
           >
-            {loading ? <Spinner /> : 'التالي (رفع ومتابعة)'}
+            {loading ? <Spinner /> : t('booking_next_upload')}
           </button>
         </div>
       )}
     </div>
   )
 }
+

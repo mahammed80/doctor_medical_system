@@ -1,5 +1,7 @@
 'use client'
 
+import { useLanguage } from '@/context/LanguageContext'
+
 type Props = {
   value: number | null
   onChange: (v: number) => void
@@ -9,6 +11,7 @@ type Props = {
  * 0-10 pain scale with colour gradient. Includes verbal anchors at 0, 3, 7, 10.
  */
 export default function PainSeveritySlider({ value, onChange }: Props) {
+  const { lang } = useLanguage()
   const current = value ?? 0
   const color =
     current <= 2 ? 'var(--ok)' :
@@ -16,13 +19,21 @@ export default function PainSeveritySlider({ value, onChange }: Props) {
     current <= 7 ? 'oklch(60% 0.18 50)' :
     'var(--err)'
 
-  const label =
+  const label = lang === 'ar' ? (
     current === 0  ? 'لا يوجد ألم' :
     current <= 2   ? 'ألم خفيف جداً' :
     current <= 4   ? 'ألم خفيف' :
     current <= 6   ? 'ألم متوسط' :
     current <= 8   ? 'ألم شديد' :
     'ألم لا يُحتمل'
+  ) : (
+    current === 0  ? 'No pain' :
+    current <= 2   ? 'Very mild pain' :
+    current <= 4   ? 'Mild pain' :
+    current <= 6   ? 'Moderate pain' :
+    current <= 8   ? 'Severe pain' :
+    'Unbearable pain'
+  )
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -79,3 +90,4 @@ export default function PainSeveritySlider({ value, onChange }: Props) {
     </div>
   )
 }
+

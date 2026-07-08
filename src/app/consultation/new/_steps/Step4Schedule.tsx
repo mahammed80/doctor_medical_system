@@ -5,6 +5,7 @@ import { Calendar, Check, Inbox, MapPin } from 'lucide-react'
 import { Spinner } from '../_components/Spinner'
 import { ARABIC_MONTHS, ARABIC_WEEKDAYS } from '../constants'
 import type { DoctorScheduleSettings, TimeSlot } from '@/lib/consultationService'
+import { useLanguage } from '@/context/LanguageContext'
 
 type Props = {
   selectedDate: string | null
@@ -51,6 +52,7 @@ export function Step4Schedule({
   loading,
   onConfirm,
 }: Props) {
+  const { lang, t } = useLanguage()
   const days = useMemo(() => getDaysInMonth(currentMonth), [currentMonth])
   const today = useMemo(() => {
     const t = new Date()
@@ -59,14 +61,16 @@ export function Step4Schedule({
   }, [])
 
   const workingDays = docSettings?.workingDays ?? [0, 1, 2, 3, 4]
+  const weekdays = lang === 'ar' ? ARABIC_WEEKDAYS : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const monthName = lang === 'ar' ? ARABIC_MONTHS[currentMonth.getMonth()] : currentMonth.toLocaleDateString('en-US', { month: 'long' })
 
   return (
     <div>
       <div className="alert alert-success">
         <div className="alert-icon" style={{ display: 'inline-flex' }}><Check size={16} /></div>
         <div>
-          <div className="alert-title">تم استلام الدفع بنجاح</div>
-          <div className="alert-text">اختر الوقت المناسب لجلستك مع الدكتور</div>
+          <div className="alert-title">{t('booking_payment_success_title')}</div>
+          <div className="alert-text">{t('booking_payment_success_desc')}</div>
         </div>
       </div>
 
@@ -77,22 +81,22 @@ export function Step4Schedule({
             className="btn-ghost calendar-nav"
             onClick={() => onChangeMonth(-1)}
           >
-            السابق
+            {t('booking_prev')}
           </button>
           <span className="calendar-month num">
-            {ARABIC_MONTHS[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+            {monthName} {currentMonth.getFullYear()}
           </span>
           <button
             type="button"
             className="btn-ghost calendar-nav"
             onClick={() => onChangeMonth(1)}
           >
-            التالي
+            {t('booking_next')}
           </button>
         </div>
 
         <div className="calendar-grid" style={{ marginBottom: '0.5rem' }}>
-          {ARABIC_WEEKDAYS.map((w) => (
+          {weekdays.map((w) => (
             <div key={w} className="calendar-weekday">
               {w}
             </div>
@@ -123,7 +127,7 @@ export function Step4Schedule({
               >
                 {day.getDate()}
                 {!isWorking && !isPast && (
-                  <span className="calendar-day-closed">مغلق</span>
+                  <span className="calendar-day-closed">{t('booking_closed')}</span>
                 )}
               </button>
             )
@@ -134,10 +138,10 @@ export function Step4Schedule({
       <div className="time-card">
         <h3 className="time-card-title">
           <span className="time-card-accent" />
-          الأوقات المتاحة ليوم{' '}
+          {t('booking_available_times_for')}{' '}
           {selectedDate ? (
             <span className="num" style={{ color: 'var(--primary)' }}>
-              {new Date(selectedDate).toLocaleDateString('ar-SA-u-nu-latn', {
+              {new Date(selectedDate).toLocaleDateString(lang === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
@@ -153,18 +157,18 @@ export function Step4Schedule({
           <div style={{ textAlign: 'center', padding: '2rem 0' }}>
             <Spinner />
             <p style={{ fontSize: '0.8rem', color: 'var(--fg-dim)', marginTop: '0.5rem' }}>
-              جاري تحميل الأوقات...
+              {t('booking_loading_slots')}
             </p>
           </div>
         ) : !selectedDate ? (
           <div className="empty-box">
             <span style={{ display: 'inline-flex', marginInlineEnd: '0.35rem' }}><Calendar size={16} /></span>
-            الرجاء اختيار تاريخ من التقويم في الأعلى لعرض الأوقات المتاحة
+            {t('booking_choose_date_prompt')}
           </div>
         ) : slots.length === 0 ? (
           <div className="empty-box">
             <span style={{ display: 'inline-flex', marginInlineEnd: '0.35rem' }}><Inbox size={16} /></span>
-            عذراً، لا توجد فترات عمل متاحة في هذا اليوم
+            {t('booking_no_slots_warn')}
           </div>
         ) : (
           <div className="time-grid">
@@ -187,7 +191,7 @@ export function Step4Schedule({
                 >
                   {slot.time}
                   {slotDisabled && (
-                    <span className="time-slot-note">محجوز</span>
+                    <span className="time-slot-note">{t('booking_slot_reserved')}</span>
                   )}
                 </button>
               )
@@ -200,15 +204,15 @@ export function Step4Schedule({
         <div className="booking-summary">
           <span>
             <span style={{ display: 'inline-flex', marginInlineEnd: '0.35rem' }}><MapPin size={16} /></span>
-            الموعد المختار:{' '}
-            {new Date(selectedDate).toLocaleDateString('ar-SA-u-nu-latn', {
+            {t('booking_selected_appt')}{' '}
+            {new Date(selectedDate).toLocaleDateString(lang === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', {
               weekday: 'long',
               day: 'numeric',
               month: 'long',
             })}{' '}
-            في تمام الساعة <span className="num">{selectedTime}</span>
+            {t('booking_at_time')} <span className="num">{selectedTime}</span>
           </span>
-          <span className="booking-summary-meta">بانتظار موافقة الطبيب</span>
+          <span className="booking-summary-meta">{t('booking_awaiting_approval')}</span>
         </div>
       )}
 
@@ -219,8 +223,9 @@ export function Step4Schedule({
         style={{ width: '100%', justifyContent: 'center', marginTop: '1.25rem', padding: '1rem' }}
         onClick={onConfirm}
       >
-        {loading ? <Spinner /> : 'تأكيد وإرسال للطبيب للمراجعة'}
+        {loading ? <Spinner /> : t('booking_confirm_review')}
       </button>
     </div>
   )
 }
+

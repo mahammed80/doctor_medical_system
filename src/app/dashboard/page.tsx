@@ -27,6 +27,7 @@ import { DOCTORS } from '@/lib/doctors'
 import { STATUS_CONFIG, type ConsultationStatus } from '@/lib/supabase'
 import { useToasts } from '@/components/Toaster'
 import { DashboardShell, DashboardGate } from '@/components/DashboardShell'
+import { useLanguage } from '@/context/LanguageContext'
 import './dashboard.css'
 
 const OVERVIEW_STATUSES: ConsultationStatus[] = [
@@ -41,7 +42,7 @@ type StatMeta = { icon: ReactNode; color: string; soft: string; line: string }
 
 const STATUS_META: Record<ConsultationStatus, StatMeta> = {
   submitted:       { icon: <Inbox size={20} />,         color: 'var(--dash-terra)',  soft: 'var(--dash-terra-50)',  line: 'rgba(196,106,79,0.25)' },
-  under_review:    { icon: <FileSearch size={20} />,    color: 'var(--dash-green)',  soft: 'var(--dash-green-50)',  line: 'var(--dash-green-100)' },
+  under_review:    { icon: <Search size={20} />,        color: 'var(--dash-green)',  soft: 'var(--dash-green-50)',  line: 'var(--dash-green-100)' },
   needs_info:      { icon: <HelpCircle size={20} />,    color: 'var(--dash-gold)',   soft: 'var(--dash-amber-soft)', line: 'rgba(184,134,75,0.28)' },
   patient_replied: { icon: <MessageCircle size={20} />, color: '#235344',            soft: 'var(--dash-green-50)',  line: 'var(--dash-green-100)' },
   approved:        { icon: <Check size={20} />,         color: 'var(--dash-ok)',     soft: 'var(--dash-ok-soft)',   line: 'rgba(26,60,47,0.18)' },
@@ -63,17 +64,28 @@ const DAYS = [
   { val: 6, label: 'السبت', en: 'Saturday' },
 ]
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string, lang: 'ar' | 'en'): string {
   const diff = Date.now() - new Date(iso).getTime()
   const m = Math.floor(diff / 60000)
-  if (m < 1) return 'الآن'
-  if (m < 60) return `منذ ${m} دقيقة`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `منذ ${h} ساعة`
-  const d = Math.floor(h / 24)
-  if (d < 30) return `منذ ${d} يوم`
-  const mo = Math.floor(d / 30)
-  return `منذ ${mo} شهر`
+  if (lang === 'ar') {
+    if (m < 1) return 'الآن'
+    if (m < 60) return `منذ ${m} دقيقة`
+    const h = Math.floor(m / 60)
+    if (h < 24) return `منذ ${h} ساعة`
+    const d = Math.floor(h / 24)
+    if (d < 30) return `منذ ${d} يوم`
+    const mo = Math.floor(d / 30)
+    return `منذ ${mo} شهر`
+  } else {
+    if (m < 1) return 'now'
+    if (m < 60) return `${m}m ago`
+    const h = Math.floor(m / 60)
+    if (h < 24) return `${h}h ago`
+    const d = Math.floor(h / 24)
+    if (d < 30) return `${d}d ago`
+    const mo = Math.floor(d / 30)
+    return `${mo}mo ago`
+  }
 }
 
 function severityColor(n: number | null | undefined): string {
@@ -93,8 +105,9 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
   }
   render() {
     if (this.state.hasError) {
+      const isEn = typeof document !== 'undefined' && document.documentElement.lang === 'en'
       return (
-        <DashboardGate message="حدث خطأ غير متوقع. يرجى تحديث الصفحة." />
+        <DashboardGate message={isEn ? 'An unexpected error occurred. Please refresh the page.' : 'حدث خطأ غير متوقع. يرجى تحديث الصفحة.'} />
       )
     }
     return this.props.children
@@ -105,6 +118,7 @@ function Dashboard() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const toasts = useToasts()
+  const { lang, t } = useLanguage()
 
   const [session, setSession] = useState<AuthSession | null>(null)
   const [authChecked, setAuthChecked] = useState(false)
@@ -128,7 +142,6 @@ function Dashboard() {
       router.replace('/dashboard/login')
       return
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSession(cached)
     setAuthChecked(true)
   }, [router])
@@ -149,35 +162,42 @@ function Dashboard() {
   }, [authChecked])
 
   useEffect(() => {
+    if (!authChecked) return
     async function loadSettings() {
-      const docId = selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter
-      const settings = await getDoctorSettings(docId)
-      setScheduleSettings(settings)
+      try {
+        const settings = await getDoctorSettings('khalid')
+        setScheduleSettings(settings)
+      } catch (err) {
+        console.error('Error loading doctor settings:', err)
+      }
     }
     loadSettings()
-  }, [selectedDoctorFilter])
+  }, [authChecked])
 
   useEffect(() => {
-    const docId = selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter
-    setTimeout(() => {
-      setCalendarStatus(null)
-    }, 0)
-    fetch(`/api/calendar/status?doctorId=${encodeURIComponent(docId)}`)
-      .then((res) => res.json())
-      .then((data) => setCalendarStatus(data))
-      .catch(() => setCalendarStatus({ connected: false, email: null, configured: false }))
-  }, [selectedDoctorFilter])
+    if (!authChecked) return
+    async function checkCalendar() {
+      try {
+        const res = await fetch('/api/calendar/status?doctorId=khalid')
+        const data = await res.json()
+        setCalendarStatus(data)
+      } catch (err) {
+        console.error('Error checking calendar status:', err)
+      }
+    }
+    checkCalendar()
+  }, [authChecked])
 
   useEffect(() => {
     if (searchParams.get('calendar_connected') === 'true') {
-      toasts.push('تم ربط Google Calendar بنجاح! الحجوزات المستقبلية ستتم مزامنتها تلقائياً.', 'success')
+      toasts.push(lang === 'ar' ? 'تم ربط Google Calendar بنجاح! الحجوزات المستقبلية ستتم مزامنتها تلقائياً.' : 'Google Calendar connected successfully! Future bookings will be synchronized automatically.', 'success')
       const url = new URL(window.location.href)
       url.searchParams.delete('calendar_connected')
       window.history.replaceState({}, '', url.toString())
     }
     const error = searchParams.get('calendar_error')
     if (error) {
-      toasts.push(`فشل ربط Google Calendar: ${error}`, 'error')
+      toasts.push(lang === 'ar' ? `فشل ربط Google Calendar: ${error}` : `Failed to connect Google Calendar: ${error}`, 'error')
       const url = new URL(window.location.href)
       url.searchParams.delete('calendar_error')
       window.history.replaceState({}, '', url.toString())
@@ -189,7 +209,7 @@ function Dashboard() {
     const count = consultations.filter(
       (c) => c.status === status || (status === 'approved' && c.status === 'booked')
     ).length
-    return { status, count, label: STATUS_CONFIG[status].label, ...STATUS_META[status] }
+    return { status, count, label: t('status_' + status), ...STATUS_META[status] }
   })
   const maxCount = Math.max(1, ...statusCounts.map((s) => s.count))
   const pendingCount = consultations.filter((c) => c.status === 'submitted').length
@@ -217,36 +237,34 @@ function Dashboard() {
     if (!scheduleSettings) return
     setSavingSettings(true)
     setSaveSuccess(false)
-    const docId = selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter
+    const docId = 'khalid'
     try {
       await saveDoctorSettings(docId, scheduleSettings)
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 4000)
     } catch {
-      toasts.push('خطأ أثناء حفظ الإعدادات', 'error')
+      toasts.push(lang === 'ar' ? 'خطأ أثناء حفظ الإعدادات' : 'Error saving settings', 'error')
     } finally {
       setSavingSettings(false)
     }
   }
 
   async function handleConnectCalendar() {
-    const docId = selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter
-    window.location.href = `/api/calendar/oauth/connect?doctorId=${encodeURIComponent(docId)}`
+    window.location.href = `/api/calendar/oauth/connect?doctorId=khalid`
   }
 
   async function handleDisconnectCalendar() {
-    const docId = selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter
     setCalendarLoading(true)
     try {
       await fetch('/api/calendar/disconnect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ doctorId: docId }),
+        body: JSON.stringify({ doctorId: 'khalid' }),
       })
       setCalendarStatus({ connected: false, email: null, configured: calendarStatus?.configured ?? false })
-      toasts.push('تم قطع اتصال Google Calendar', 'success')
+      toasts.push(lang === 'ar' ? 'تم قطع اتصال Google Calendar' : 'Google Calendar disconnected successfully', 'success')
     } catch {
-      toasts.push('فشل قطع اتصال Google Calendar', 'error')
+      toasts.push(lang === 'ar' ? 'فشل قطع اتصال Google Calendar' : 'Failed to disconnect Google Calendar', 'error')
     } finally {
       setCalendarLoading(false)
     }
@@ -260,12 +278,12 @@ function Dashboard() {
   if (!authChecked || loading) {
     return (
       <DashboardGate
-        message={authChecked ? 'جاري تحميل الاستشارات...' : 'جاري التحقق من تسجيل الدخول...'}
+        message={authChecked ? t('dash_gate_loading_consults') : t('dash_gate_checking_login')}
       />
     )
   }
 
-  const todayLabel = new Date().toLocaleDateString('ar-SA-u-nu-latn', {
+  const todayLabel = new Date().toLocaleDateString(lang === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -282,20 +300,20 @@ function Dashboard() {
       {/* Topbar */}
       <div className="dash-topbar">
         <div className="dash-topbar-start">
-          <span className="dash-eyebrow">لوحة التحكم المشتركة</span>
+          <span className="dash-eyebrow">{t('dash_eyebrow')}</span>
           <h1 className="dash-title">
-            {activeTab === 'requests' ? 'مركز بترجي للاستشارات الطبية' : 'ضبط جدول العمل والعيادة'}
+            {activeTab === 'requests' ? t('dash_title_requests') : t('dash_title_settings')}
           </h1>
           <p className="dash-subtitle">
             {activeTab === 'requests'
-              ? 'متابعة طلبات وحجوزات الاستشارات بكفاءة ورؤية واضحة لكل حالة.'
-              : 'تحديد أيام وساعات العمل ومدة الاستشارة لكل طبيب.'}
+              ? t('dash_subtitle_requests')
+              : t('dash_subtitle_settings')}
           </p>
         </div>
         <div className="dash-topbar-end">
           <span className="dash-pill"><CalendarDays size={14} /> {todayLabel}</span>
           <span className="dash-pill">
-            إجمالي: <strong className="dash-pill-num">{consultations.length}</strong> استشارة
+            {t('dash_total')}: <strong className="dash-pill-num">{consultations.length}</strong> {t('dash_consultations')}
           </span>
         </div>
       </div>
@@ -311,7 +329,7 @@ function Dashboard() {
               role="button"
               tabIndex={0}
               aria-pressed={isActive}
-              aria-label={`تصفية حسب حالة: ${label}`}
+              aria-label={lang === 'ar' ? `تصفية حسب حالة: ${label}` : `Filter by status: ${label}`}
               style={{
                 '--stat-color': color,
                 '--stat-soft': soft,
@@ -340,7 +358,7 @@ function Dashboard() {
                 <span className="dash-stat-value">{count}</span>
                 <span className="dash-stat-label">{label}</span>
                 <span className="dash-stat-hint">
-                  {count === 0 ? 'لا توجد' : count === 1 ? 'استشارة واحدة' : `${count} استشارات`}
+                  {lang === 'ar' ? (count === 0 ? 'لا توجد' : count === 1 ? 'استشارة واحدة' : `${count} استشارات`) : (count === 0 ? 'No consultations' : count === 1 ? '1 consultation' : `${count} consultations`)}
                 </span>
               </div>
               <span className="dash-stat-bar" />
@@ -356,7 +374,7 @@ function Dashboard() {
             <div className="dash-search">
               <input
                 type="text"
-                placeholder="ابحث باسم المريض، الجوال، أو سبب الشكوى..."
+                placeholder={t('dash_search_placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -365,29 +383,29 @@ function Dashboard() {
 
 
             <div className="dash-filter-group">
-              <span className="dash-filter-label">الحالة:</span>
+              <span className="dash-filter-label">{t('dash_filter_status_label')}</span>
               <select
                 className="dash-select"
                 value={selectedStatusFilter}
                 onChange={(e) => setSelectedStatusFilter(e.target.value)}
               >
-                <option value="all">الكل</option>
-                <option value="submitted">بانتظار المراجعة</option>
-                <option value="under_review">قيد المراجعة</option>
-                <option value="needs_info">يحتاج معلومات</option>
-                <option value="patient_replied">رد المريض</option>
-                <option value="approved">مقبول ومؤكد</option>
-                <option value="completed">مكتمل</option>
-                <option value="declined">مرفوض</option>
-                <option value="cancelled">ملغي</option>
-                <option value="pending_payment">في انتظار الدفع</option>
-                <option value="pending_booking">في انتظار الحجز</option>
+                <option value="all">{t('dash_filter_status_all')}</option>
+                <option value="submitted">{t('status_submitted')}</option>
+                <option value="under_review">{t('status_under_review')}</option>
+                <option value="needs_info">{t('status_needs_info')}</option>
+                <option value="patient_replied">{t('status_patient_replied')}</option>
+                <option value="approved">{t('status_approved')}</option>
+                <option value="completed">{t('status_completed')}</option>
+                <option value="declined">{t('status_declined')}</option>
+                <option value="cancelled">{t('status_cancelled')}</option>
+                <option value="pending_payment">{t('status_pending_payment')}</option>
+                <option value="pending_booking">{t('status_pending_booking')}</option>
               </select>
             </div>
 
             {activeFilters && (
               <button className="dash-reset" onClick={() => { setSearchQuery(''); setSelectedDoctorFilter('all'); setSelectedStatusFilter('all') }}>
-                <RotateCcw size={14} /> إعادة ضبط
+                <RotateCcw size={14} /> {t('dash_reset_filters')}
               </button>
             )}
           </div>
@@ -397,15 +415,15 @@ function Dashboard() {
             <div className="dash-chips">
               {searchQuery && (
                 <span className="dash-chip">
-                  بحث: «{searchQuery}»
-                  <button aria-label="إزالة البحث" onClick={() => clearFilter('search')}>×</button>
+                  {lang === 'ar' ? `بحث: «${searchQuery}»` : `Search: "${searchQuery}"`}
+                  <button aria-label={lang === 'ar' ? 'إزالة البحث' : 'Remove search'} onClick={() => clearFilter('search')}>×</button>
                 </span>
               )}
 
               {selectedStatusFilter !== 'all' && (
                 <span className="dash-chip">
-                  {STATUS_CONFIG[selectedStatusFilter as ConsultationStatus]?.label}
-                  <button aria-label="إزالة تصفية الحالة" onClick={() => clearFilter('status')}>×</button>
+                  {t('status_' + selectedStatusFilter)}
+                  <button aria-label={lang === 'ar' ? 'إزالة تصفية الحالة' : 'Remove status filter'} onClick={() => clearFilter('status')}>×</button>
                 </span>
               )}
             </div>
@@ -413,7 +431,7 @@ function Dashboard() {
 
           {/* Result count */}
           <div className="dash-result-count">
-            عرض <strong>{filteredConsultations.length}</strong> من {consultations.length} استشارة
+            {t('dash_showing')} <strong>{filteredConsultations.length}</strong> {t('dash_of')} {consultations.length} {t('dash_consultations')}
           </div>
 
           {/* Table */}
@@ -421,32 +439,30 @@ function Dashboard() {
             {!filteredConsultations.length ? (
               <div className="dash-empty">
                 <div className="dash-empty-glyph"><Inbox size={30} /></div>
-                <p className="dash-empty-title">لا توجد استشارات مطابقة</p>
-                <p className="dash-empty-desc">جرب تعديل خيارات التصفية أو البحث في الأعلى.</p>
+                <p className="dash-empty-title">{t('dash_empty_title')}</p>
+                <p className="dash-empty-desc">{t('dash_empty_desc')}</p>
               </div>
             ) : (
               <div className="dash-table-scroll">
                 <table className="dash-table">
                   <thead>
                     <tr>
-                      <th>المريض</th>
-                      <th>سبب الاستشارة</th>
-                      <th>الحالة</th>
-                      <th>التاريخ</th>
+                      <th>{t('dash_table_patient')}</th>
+                      <th>{t('dash_table_complaint')}</th>
+                      <th>{t('dash_table_status')}</th>
+                      <th>{t('dash_table_date')}</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredConsultations.map((c) => {
-                      const config = STATUS_CONFIG[c.status]
-                      const doctorId = c.doctor_id || 'khalid'
-                      const assignedDoc = DOCTORS.find((d) => d.id === doctorId) || DOCTORS[0]
+                      const configLabel = t('status_' + c.status)
                       return (
                         <tr
                           key={c.id}
                           tabIndex={0}
                           role="button"
-                          aria-label={`استشارة ${c.patient_name}`}
+                          aria-label={lang === 'ar' ? `استشارة ${c.patient_name}` : `Consultation ${c.patient_name}`}
                           onClick={() => router.push(`/dashboard/${c.id}`)}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
@@ -458,7 +474,7 @@ function Dashboard() {
                           <td>
                             <div className="dash-patient">
                               <span className="dash-patient-name">{c.patient_name}</span>
-                              <span className="dash-patient-meta">{c.patient_phone} · {c.patient_age} سنة</span>
+                              <span className="dash-patient-meta">{c.patient_phone} · {c.patient_age} {t('dash_patient_years')}</span>
                             </div>
                           </td>
 
@@ -472,14 +488,14 @@ function Dashboard() {
                             )}
                           </td>
                           <td>
-                            <span className={`dash-badge dash-badge-${c.status}`}>{config?.label}</span>
+                            <span className={`dash-badge dash-badge-${c.status}`}>{configLabel}</span>
                           </td>
                           <td>
                             <div className="dash-date-cell">
                               <span className="dash-date">
-                                {new Date(c.created_at).toLocaleDateString('ar-SA-u-nu-latn')}
+                                {new Date(c.created_at).toLocaleDateString(lang === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US')}
                               </span>
-                              <span className="dash-timeago">{timeAgo(c.created_at)}</span>
+                              <span className="dash-timeago">{timeAgo(c.created_at, lang)}</span>
                             </div>
                           </td>
                           <td>
@@ -500,22 +516,22 @@ function Dashboard() {
         <div className="dash-settings">
           <div className="dash-settings-head">
             <CalendarDays size={22} />
-            <h2 className="dash-settings-title">ضبط جدول العمل والعيادة</h2>
+            <h2 className="dash-settings-title">{t('dash_title_settings')}</h2>
             <span className="dash-settings-doctor">
-              ({DOCTORS.find((d) => d.id === (selectedDoctorFilter === 'all' ? 'khalid' : selectedDoctorFilter))?.name})
+              ({DOCTORS.find((d) => d.id === 'khalid')?.name})
             </span>
           </div>
 
           {saveSuccess && (
             <div className="dash-success">
               <Check size={16} />
-              تم حفظ إعدادات المواعيد وجدول العمل بنجاح!
+              {t('dash_save_success')}
             </div>
           )}
 
           <div className="dash-settings-grid">
             <div>
-              <h3 className="dash-group-title">أيام العمل الأسبوعية</h3>
+              <h3 className="dash-group-title">{t('dash_working_days')}</h3>
               <div className="dash-day-list">
                 {DAYS.map((day) => {
                   const isOn = scheduleSettings.workingDays.includes(day.val)
@@ -541,7 +557,7 @@ function Dashboard() {
                         }
                       }}
                     >
-                      <span>{day.label} <span style={{ color: 'var(--dash-dim)', fontWeight: 500, fontSize: '0.72rem' }}>({day.en})</span></span>
+                      <span>{lang === 'ar' ? day.label : day.en} <span style={{ color: 'var(--dash-dim)', fontWeight: 500, fontSize: '0.72rem' }}>({lang === 'ar' ? day.en : day.label})</span></span>
                       <span className="dash-day-toggle" />
                     </div>
                   )
@@ -550,10 +566,10 @@ function Dashboard() {
             </div>
 
             <div>
-              <h3 className="dash-group-title">ساعات الدوام اليومي</h3>
+              <h3 className="dash-group-title">{t('dash_daily_hours')}</h3>
               <div className="dash-field-row">
                 <div className="dash-field">
-                  <label>بداية الدوام</label>
+                  <label>{t('dash_start_time')}</label>
                   <input
                     type="time"
                     value={scheduleSettings.startTime}
@@ -561,7 +577,7 @@ function Dashboard() {
                   />
                 </div>
                 <div className="dash-field">
-                  <label>نهاية الدوام</label>
+                  <label>{t('dash_end_time')}</label>
                   <input
                     type="time"
                     value={scheduleSettings.endTime}
@@ -570,10 +586,10 @@ function Dashboard() {
                 </div>
               </div>
 
-              <h3 className="dash-group-title" style={{ marginTop: '1rem' }}>فترة الاستراحة / الغداء</h3>
+              <h3 className="dash-group-title" style={{ marginTop: '1rem' }}>{t('dash_break_hours')}</h3>
               <div className="dash-field-row">
                 <div className="dash-field">
-                  <label>بداية الاستراحة</label>
+                  <label>{t('dash_break_start')}</label>
                   <input
                     type="time"
                     value={scheduleSettings.lunchStart}
@@ -581,7 +597,7 @@ function Dashboard() {
                   />
                 </div>
                 <div className="dash-field">
-                  <label>نهاية الاستراحة</label>
+                  <label>{t('dash_break_end')}</label>
                   <input
                     type="time"
                     value={scheduleSettings.lunchEnd}
@@ -591,23 +607,23 @@ function Dashboard() {
               </div>
 
               <div className="dash-field" style={{ marginTop: '1rem' }}>
-                <label>مدة الاستشارة (دقيقة)</label>
+                <label>{t('dash_slot_duration')}</label>
                 <select
                   value={scheduleSettings.slotDuration}
                   onChange={(e) => setScheduleSettings({ ...scheduleSettings, slotDuration: parseInt(e.target.value) })}
                 >
-                  <option value="15">15 دقيقة</option>
-                  <option value="30">30 دقيقة</option>
-                  <option value="45">45 دقيقة</option>
-                  <option value="60">60 دقيقة (ساعة كاملة)</option>
+                  <option value="15">{t('dash_slot_15')}</option>
+                  <option value="30">{t('dash_slot_30')}</option>
+                  <option value="45">{t('dash_slot_45')}</option>
+                  <option value="60">{t('dash_slot_60')}</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <h3 className="dash-group-title">أسعار الجلسات والاستشارات</h3>
+              <h3 className="dash-group-title">{t('dash_prices_title')}</h3>
               <div className="dash-field">
-                <label>سعر الكشف الأساسي (ريال)</label>
+                <label>{t('dash_price_basic')}</label>
                 <input
                   type="number"
                   value={scheduleSettings.consultationPrice ?? 799}
@@ -615,7 +631,7 @@ function Dashboard() {
                 />
               </div>
               <div className="dash-field" style={{ marginTop: '1rem' }}>
-                <label>سعر الكشف الشامل والخطة العلاجية (ريال)</label>
+                <label>{t('dash_price_comprehensive')}</label>
                 <input
                   type="number"
                   value={scheduleSettings.comprehensivePrice ?? 1700}
@@ -623,7 +639,7 @@ function Dashboard() {
                 />
               </div>
               <div className="dash-field" style={{ marginTop: '1rem' }}>
-                <label>سعر باقة 3 جلسات متابعة (ريال)</label>
+                <label>{t('dash_price_pkg3')}</label>
                 <input
                   type="number"
                   value={scheduleSettings.packagePrice3 ?? 2000}
@@ -631,7 +647,7 @@ function Dashboard() {
                 />
               </div>
               <div className="dash-field" style={{ marginTop: '1rem' }}>
-                <label>سعر باقة 4 جلسات متابعة (ريال)</label>
+                <label>{t('dash_price_pkg4')}</label>
                 <input
                   type="number"
                   value={scheduleSettings.packagePrice4 ?? 3400}
@@ -639,7 +655,7 @@ function Dashboard() {
                 />
               </div>
               <div className="dash-field" style={{ marginTop: '1rem' }}>
-                <label>سعر باقة المتابعة المتعددة والعرض الترويجي (ريال)</label>
+                <label>{t('dash_price_promo')}</label>
                 <input
                   type="number"
                   value={scheduleSettings.packagePricePromo ?? 2500}
@@ -653,18 +669,17 @@ function Dashboard() {
           <div className="dash-calendar-section">
             <div className="dash-calendar-head">
               <Link2 size={20} />
-              <h3 className="dash-group-title">تكامل Google Calendar</h3>
+              <h3 className="dash-group-title">{t('dash_gcal_title')}</h3>
             </div>
             <p className="dash-calendar-desc">
-              عند ربط حساب Google Calendar، يتم إخفاء المواعيد المشغولة تلقائياً من المرضى،
-              وإنشاء حدث في تقويمك عند حجز مريض لموعد جديد.
+              {t('dash_gcal_desc')}
             </p>
             {calendarStatus?.connected ? (
               <div className="dash-calendar-connected">
                 <div className="dash-calendar-status">
                   <span className="dash-calendar-dot" />
                   <div>
-                    <span className="dash-calendar-status-label">متصل</span>
+                    <span className="dash-calendar-status-label">{t('dash_gcal_connected')}</span>
                     {calendarStatus.email && (
                       <span className="dash-calendar-email">{calendarStatus.email}</span>
                     )}
@@ -676,7 +691,7 @@ function Dashboard() {
                   disabled={calendarLoading}
                 >
                   {calendarLoading ? <Loader2 size={15} className="spin" /> : <Unlink size={15} />}
-                  قطع الاتصال
+                  {t('dash_gcal_disconnect')}
                 </button>
               </div>
             ) : (
@@ -684,7 +699,7 @@ function Dashboard() {
                 {!calendarStatus?.configured ? (
                   <div className="dash-calendar-warning">
                     <p>
-                      لتفعيل التكامل، أضف بيانات اعتماد Google OAuth في متغيرات البيئة:
+                      {t('dash_gcal_warning')}
                     </p>
                     <code>GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI</code>
                     <a
@@ -701,7 +716,7 @@ function Dashboard() {
                     className="dash-action dash-action-primary"
                     onClick={handleConnectCalendar}
                   >
-                    <Link2 size={15} /> ربط Google Calendar
+                    <Link2 size={15} /> {t('dash_gcal_connect')}
                   </button>
                 )}
               </div>

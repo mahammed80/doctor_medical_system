@@ -2,7 +2,8 @@
 
 import { type ReactNode } from 'react'
 import { ArrowUpRight, Check, CircleDot, Flame, Sword, Timer, Waves, Zap } from 'lucide-react'
-import { PAIN_NATURES, PAIN_NATURE_LABELS_AR, type PainNature } from '@/lib/supabase'
+import { PAIN_NATURES, PAIN_NATURE_LABELS_AR, PAIN_NATURE_LABELS_EN, type PainNature } from '@/lib/supabase'
+import { useLanguage } from '@/context/LanguageContext'
 
 type Props = {
   selected: string[]
@@ -20,6 +21,8 @@ const ICON: Record<PainNature, ReactNode> = {
 }
 
 export default function PainNatureChips({ selected, onChange }: Props) {
+  const { lang } = useLanguage()
+
   function toggle(id: string) {
     if (selected.includes(id)) onChange(selected.filter(s => s !== id))
     else onChange([...selected, id])
@@ -29,6 +32,7 @@ export default function PainNatureChips({ selected, onChange }: Props) {
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
       {PAIN_NATURES.map(id => {
         const isSelected = selected.includes(id)
+        const displayLabel = lang === 'ar' ? PAIN_NATURE_LABELS_AR[id] : PAIN_NATURE_LABELS_EN[id]
         return (
           <button
             key={id}
@@ -50,7 +54,7 @@ export default function PainNatureChips({ selected, onChange }: Props) {
             }}
           >
             <span style={{ display: 'inline-flex' }}>{ICON[id]}</span>
-            {PAIN_NATURE_LABELS_AR[id]}
+            {displayLabel}
             {isSelected && <span style={{ display: 'inline-flex' }}><Check size={16} /></span>}
           </button>
         )
@@ -58,3 +62,4 @@ export default function PainNatureChips({ selected, onChange }: Props) {
     </div>
   )
 }
+

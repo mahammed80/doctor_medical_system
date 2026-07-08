@@ -2,7 +2,8 @@
 
 import { useRef, useState } from 'react'
 import { AlertTriangle, FileText, Paperclip } from 'lucide-react'
-import { FILE_CATEGORIES, FILE_CATEGORY_LABELS_AR, type FileCategory } from '@/lib/supabase'
+import { FILE_CATEGORIES, FILE_CATEGORY_LABELS_AR, FILE_CATEGORY_LABELS_EN, type FileCategory } from '@/lib/supabase'
+import { useLanguage } from '@/context/LanguageContext'
 
 const MAX_FILES = 10
 const MAX_SIZE_BYTES = 20 * 1024 * 1024 // 20 MB
@@ -19,6 +20,7 @@ type Props = {
 }
 
 export default function CategoryFileDropZone({ files, onChange }: Props) {
+  const { lang } = useLanguage()
   const [dragging, setDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState<FileCategory>('mri')
@@ -27,13 +29,13 @@ export default function CategoryFileDropZone({ files, onChange }: Props) {
   function validateAndAdd(incoming: File[]) {
     setError(null)
     if (files.length + incoming.length > MAX_FILES) {
-      setError(`الحد الأقصى ${MAX_FILES} ملفات في المرة الواحدة.`)
+      setError(lang === 'ar' ? `الحد الأقصى ${MAX_FILES} ملفات في المرة الواحدة.` : `Maximum of ${MAX_FILES} files at a time.`)
       return
     }
     const accepted: FileWithCategory[] = []
     for (const f of incoming) {
       if (f.size > MAX_SIZE_BYTES) {
-        setError(`الملف "${f.name}" يتجاوز الحد الأقصى (20MB).`)
+        setError(lang === 'ar' ? `الملف "${f.name}" يتجاوز الحد الأقصى (20MB).` : `File "${f.name}" exceeds the maximum limit of 20MB.`)
         continue
       }
       accepted.push({
@@ -76,7 +78,7 @@ export default function CategoryFileDropZone({ files, onChange }: Props) {
       {/* Category selector for the next batch of files */}
       <div>
         <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--fg-dim)', fontWeight: 600, marginBottom: '0.4rem' }}>
-          نوع الملفات المراد رفعها:
+          {lang === 'ar' ? 'نوع الملفات المراد رفعها:' : 'Type of files to upload:'}
         </label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
           {FILE_CATEGORIES.map(cat => (
@@ -96,7 +98,7 @@ export default function CategoryFileDropZone({ files, onChange }: Props) {
                 transition: 'all 150ms',
               }}
             >
-              {FILE_CATEGORY_LABELS_AR[cat]}
+              {lang === 'ar' ? FILE_CATEGORY_LABELS_AR[cat] : FILE_CATEGORY_LABELS_EN[cat]}
             </button>
           ))}
         </div>
@@ -128,10 +130,10 @@ export default function CategoryFileDropZone({ files, onChange }: Props) {
         />
         <div style={{ display: 'inline-flex', marginBottom: '0.4rem' }}><Paperclip size={32} /></div>
         <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--fg)' }}>
-          اسحب الملفات هنا أو انقر للاختيار
+          {lang === 'ar' ? 'اسحب الملفات هنا أو انقر للاختيار' : 'Drag files here or click to select'}
         </div>
         <div style={{ fontSize: '0.75rem', color: 'var(--fg-dim)', marginTop: '0.25rem' }}>
-          حتى {MAX_FILES} ملفات، 20 ميجا لكل ملف — صور أو PDF
+          {lang === 'ar' ? `حتى ${MAX_FILES} ملفات، 20 ميجا لكل ملف — صور أو PDF` : `Up to ${MAX_FILES} files, 20MB per file — Images or PDF`}
         </div>
       </div>
 
@@ -220,14 +222,14 @@ export default function CategoryFileDropZone({ files, onChange }: Props) {
                 onClick={e => e.stopPropagation()}
               >
                 {FILE_CATEGORIES.map(cat => (
-                  <option key={cat} value={cat}>{FILE_CATEGORY_LABELS_AR[cat]}</option>
+                  <option key={cat} value={cat}>{lang === 'ar' ? FILE_CATEGORY_LABELS_AR[cat] : FILE_CATEGORY_LABELS_EN[cat]}</option>
                 ))}
               </select>
 
               <button
                 type="button"
                 onClick={() => removeAt(i)}
-                aria-label="إزالة"
+                aria-label={lang === 'ar' ? 'إزالة' : 'Remove'}
                 style={{
                   width: '28px',
                   height: '28px',
