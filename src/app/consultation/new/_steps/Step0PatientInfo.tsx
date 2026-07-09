@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { DOCTORS } from '@/lib/doctors'
 import { Field } from '../_components/Field'
@@ -28,33 +28,47 @@ export function Step0PatientInfo({
   const { lang, t } = useLanguage()
   const selectedDoctor = DOCTORS.find((d) => d.id === selectedDoctorId) || DOCTORS[0]
 
-  const [searchId, setSearchId] = useState('')
+  const [searchId, setSearchId] = useState(form.patient_national_id)
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchStatus, setSearchStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
-  async function handleSearch() {
-    if (!searchId.trim()) return
-    setSearchLoading(true)
-    setSearchStatus('idle')
-    try {
-      const matched = await getLatestConsultationByNationalId(searchId.trim())
-      if (matched) {
-        set('patient_name', matched.patient_name)
-        set('patient_phone', matched.patient_phone)
-        set('patient_age', matched.patient_age?.toString() || '')
-        set('patient_national_id', searchId.trim())
-        set('patient_type', 'returning')
-        setSearchStatus('success')
-      } else {
-        setSearchStatus('error')
-      }
-    } catch (err) {
-      console.error(err)
-      setSearchStatus('error')
-    } finally {
-      setSearchLoading(false)
+  // Trigger search automatically when ID is 10 digits
+  useEffect(() => {
+    if (form.patient_type !== 'returning') return
+    
+    const trimmed = searchId.trim()
+    if (trimmed.length === 10) {
+      setSearchLoading(true)
+      setSearchStatus('idle')
+      getLatestConsultationByNationalId(trimmed)
+        .then((matched) => {
+          if (matched) {
+            set('patient_name', matched.patient_name)
+            set('patient_phone', matched.patient_phone)
+            set('patient_age', matched.patient_age?.toString() || '')
+            set('patient_national_id', trimmed)
+            setSearchStatus('success')
+          } else {
+            setSearchStatus('error')
+            set('patient_name', '')
+            set('patient_phone', '')
+            set('patient_age', '')
+          }
+        })
+        .catch((err) => {
+          console.error(err)
+          setSearchStatus('error')
+        })
+        .finally(() => {
+          setSearchLoading(false)
+        })
+    } else {
+      setSearchStatus('idle')
+      set('patient_name', '')
+      set('patient_phone', '')
+      set('patient_age', '')
     }
-  }
+  }, [searchId, form.patient_type])
 
   const isFormValid = () => {
     if (form.patient_type === 'returning') {
@@ -118,6 +132,7 @@ export function Step0PatientInfo({
               set('patient_phone', '')
               set('patient_age', '')
               set('patient_national_id', '')
+              setSearchId('')
               setSearchStatus('idle')
             }}
           >
@@ -132,6 +147,7 @@ export function Step0PatientInfo({
               set('patient_phone', '')
               set('patient_age', '')
               set('patient_national_id', '')
+              setSearchId('')
               setSearchStatus('idle')
             }}
           >
@@ -154,23 +170,23 @@ export function Step0PatientInfo({
             animation: 'fadeIn 0.3s ease-in-out',
           }}
         >
-          <Field label={lang === 'ar' ? 'أدخل رقم الهوية الوطنية أو الإقامة للبحث عن ملفك' : 'Enter National ID or Iqama to find your record'} required>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '0.5rem' }}>
+          <Field label={lang === 'ar' ? 'أدخل رقم الهوية الوطنية أو الإقامة المكون من 10 أرقام' : 'Enter 10-digit National ID or Iqama'} required>
+            <div style={{ position: 'relative' }}>
               <input
                 className="input"
                 placeholder={lang === 'ar' ? 'رقم الهوية أو الإقامة (10 أرقام)' : 'ID / Iqama Number (10 digits)'}
                 value={searchId}
-                onChange={(e) => setSearchId(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setSearchId(val)
+                  set('patient_national_id', val)
+                }}
               />
-              <button
-                type="button"
-                className="btn-primary"
-                onClick={handleSearch}
-                disabled={searchLoading || !searchId.trim()}
-                style={{ padding: '0 1.25rem' }}
-              >
-                {searchLoading ? <Spinner /> : (lang === 'ar' ? 'بحث' : 'Search')}
-              </button>
+              {searchLoading && (
+                <div style={{ position: 'absolute', left: lang === 'ar' ? '12px' : 'auto', right: lang === 'en' ? '12px' : 'auto', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                  <Spinner />
+                </div>
+              )}
             </div>
           </Field>
 
@@ -243,15 +259,16 @@ export function Step0PatientInfo({
             </Field>
           </div>
 
-          <Field label={lang === 'ar' ? 'رقم الهوية الوطنية أو الإقامة' : 'National ID or Iqama Number'} required>
-            <input
-              className="input"
-              placeholder={lang === 'ar' ? 'أدخل 10 أرقام' : 'Enter 10 digits'}
-              value={form.patient_national_id}
-              onChange={(e) => set('patient_national_id', e.target.value)}
-              disabled={form.patient_type === 'returning'}
-            />
-          </Field>
+          {form.patient_type === 'new' && (
+            <Field label={lang === 'ar' ? 'رقم الهوية الوطنية أو الإقامة' : 'National ID or Iqama Number'} required>
+              <input
+                className="input"
+                placeholder={lang === 'ar' ? 'أدخل 10 أرقام' : 'Enter 10 digits'}
+                value={form.patient_national_id}
+                onChange={(e) => set('patient_national_id', e.target.value)}
+              />
+            </Field>
+          )}
 
           <Field label={lang === 'ar' ? 'إرفاق صورة الهوية أو الإقامة' : 'Attach ID Card Image'} optional>
             <IdDropZone file={form.id_file} onChange={(f) => set('id_file', f)} />

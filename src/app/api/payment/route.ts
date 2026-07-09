@@ -31,9 +31,9 @@ export async function POST(request: Request) {
     }
 
     const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ||
       request.headers.get('origin') ||
-      'http://localhost:3000'
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      'https://www.kbaterjee.clinic'
 
     const redirectUrl = `${baseUrl}/consultation/new`
 

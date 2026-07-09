@@ -2277,13 +2277,8 @@ textarea.input { resize: vertical; min-height: 120px; height: auto; }
   font-family: var(--font-numbers), 'Oswald', var(--font-latin), 'Cormorant', sans-serif;
   font-size: 4.1rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--primary) 0%, oklch(44% 0.12 150) 50%, var(--primary-down) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--primary);
   line-height: 0.95;
-  background-size: 200% 200%;
-  animation: shimmer 4s ease-in-out infinite;
 }
 .price-currency { font-size: 1.2rem; color: var(--fg-muted); font-weight: 500; }
 .price-subtitle { font-size: 0.85rem; color: var(--fg-muted); margin-top: 0.75rem; }
