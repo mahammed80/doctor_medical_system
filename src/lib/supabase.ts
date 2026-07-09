@@ -149,6 +149,7 @@ export type Consultation = {
   patient_name: string
   patient_phone: string
   patient_age: number
+  patient_national_id?: string | null
   chief_complaint: string
   medical_history: string | null
   current_medications: string | null

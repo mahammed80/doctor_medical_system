@@ -529,36 +529,185 @@ function Dashboard() {
             </div>
           )}
 
-          <div className="dash-settings-grid">
-            <div>
-              <h3 className="dash-group-title">{t('dash_working_days')}</h3>
-              <div className="dash-day-list">
+          <div className="dash-settings-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
+            <div style={{ gridColumn: 'span 1' }}>
+              <h3 className="dash-group-title">{lang === 'ar' ? 'أوقات وفترات العمل اليومية' : 'Daily Working Hours & Periods'}</h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--dash-dim)', marginBottom: '1.25rem', lineHeight: 1.6 }}>
+                {lang === 'ar' 
+                  ? 'حدد أيام العمل والعديد من الفترات (صباحية ومسائية) لكل يوم بشكل مستقل. سيتم توليد المواعيد المتاحة للحجز بناءً عليها.' 
+                  : 'Set working days and multiple time periods (AM/PM) for each day individually. Available slots will be generated accordingly.'}
+              </p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {DAYS.map((day) => {
-                  const isOn = scheduleSettings.workingDays.includes(day.val)
+                  const daySched = scheduleSettings.dailySchedule?.[day.val] || {
+                    enabled: scheduleSettings.workingDays.includes(day.val),
+                    periods: [
+                      { startTime: scheduleSettings.startTime, endTime: scheduleSettings.endTime }
+                    ]
+                  }
+
                   return (
-                    <div
-                      key={day.val}
-                      className={`dash-day-chip ${isOn ? 'dash-day-chip-on' : ''}`}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => {
-                        const newList = isOn
-                          ? scheduleSettings.workingDays.filter((v) => v !== day.val)
-                          : [...scheduleSettings.workingDays, day.val].sort()
-                        setScheduleSettings({ ...scheduleSettings, workingDays: newList })
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          const newList = isOn
-                            ? scheduleSettings.workingDays.filter((v) => v !== day.val)
-                            : [...scheduleSettings.workingDays, day.val].sort()
-                          setScheduleSettings({ ...scheduleSettings, workingDays: newList })
-                        }
+                    <div 
+                      key={day.val} 
+                      style={{
+                        padding: '1.25rem',
+                        borderRadius: 'var(--r-lg)',
+                        border: '1.5px solid var(--border)',
+                        background: daySched.enabled ? 'var(--primary-50)' : 'var(--bg-card)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '1rem',
+                        boxShadow: 'var(--shadow-sm)'
                       }}
                     >
-                      <span>{lang === 'ar' ? day.label : day.en} <span style={{ color: 'var(--dash-dim)', fontWeight: 500, fontSize: '0.72rem' }}>({lang === 'ar' ? day.en : day.label})</span></span>
-                      <span className="dash-day-toggle" />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--dash-ink)' }}>
+                          {lang === 'ar' ? day.label : day.en}
+                        </span>
+                        <button
+                          type="button"
+                          className="dash-action"
+                          style={{
+                            padding: '0.3rem 0.75rem',
+                            fontSize: '0.75rem',
+                            background: daySched.enabled ? 'var(--primary)' : 'transparent',
+                            color: daySched.enabled ? '#fff' : 'var(--dash-dim)',
+                            border: daySched.enabled ? '1px solid var(--primary)' : '1px solid var(--border)',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => {
+                            const updated = { ...scheduleSettings }
+                            if (!updated.dailySchedule) updated.dailySchedule = {}
+                            
+                            DAYS.forEach(d => {
+                              if (!updated.dailySchedule![d.val]) {
+                                updated.dailySchedule![d.val] = {
+                                  enabled: updated.workingDays.includes(d.val),
+                                  periods: [
+                                    { startTime: updated.startTime, endTime: updated.endTime }
+                                  ]
+                                }
+                              }
+                            })
+                            
+                            updated.dailySchedule[day.val].enabled = !updated.dailySchedule[day.val].enabled
+                            
+                            if (updated.dailySchedule[day.val].enabled) {
+                              if (!updated.workingDays.includes(day.val)) {
+                                updated.workingDays = [...updated.workingDays, day.val].sort()
+                              }
+                            } else {
+                              updated.workingDays = updated.workingDays.filter(v => v !== day.val)
+                            }
+                            
+                            setScheduleSettings(updated)
+                          }}
+                        >
+                          {daySched.enabled 
+                            ? (lang === 'ar' ? 'مفعّل' : 'Enabled') 
+                            : (lang === 'ar' ? 'إجازة' : 'Off')}
+                        </button>
+                      </div>
+
+                      {daySched.enabled && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: lang === 'ar' ? '0.75rem' : '0', paddingLeft: lang === 'en' ? '0.75rem' : '0', borderRight: lang === 'ar' ? '2px solid var(--primary)' : 'none', borderLeft: lang === 'en' ? '2px solid var(--primary)' : 'none' }}>
+                          {daySched.periods.map((period, pIdx) => (
+                            <div key={pIdx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--dash-dim)' }}>{lang === 'ar' ? 'من' : 'From'}</span>
+                                <input
+                                  type="time"
+                                  value={period.startTime}
+                                  style={{ padding: '0.3rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.8rem' }}
+                                  onChange={(e) => {
+                                    const updated = { ...scheduleSettings }
+                                    if (!updated.dailySchedule) updated.dailySchedule = {}
+                                    DAYS.forEach(d => {
+                                      if (!updated.dailySchedule![d.val]) {
+                                        updated.dailySchedule![d.val] = {
+                                          enabled: updated.workingDays.includes(d.val),
+                                          periods: [{ startTime: updated.startTime, endTime: updated.endTime }]
+                                        }
+                                      }
+                                    })
+                                    updated.dailySchedule[day.val].periods[pIdx].startTime = e.target.value
+                                    setScheduleSettings(updated)
+                                  }}
+                                />
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--dash-dim)' }}>{lang === 'ar' ? 'إلى' : 'To'}</span>
+                                <input
+                                  type="time"
+                                  value={period.endTime}
+                                  style={{ padding: '0.3rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.8rem' }}
+                                  onChange={(e) => {
+                                    const updated = { ...scheduleSettings }
+                                    if (!updated.dailySchedule) updated.dailySchedule = {}
+                                    DAYS.forEach(d => {
+                                      if (!updated.dailySchedule![d.val]) {
+                                        updated.dailySchedule![d.val] = {
+                                          enabled: updated.workingDays.includes(d.val),
+                                          periods: [{ startTime: updated.startTime, endTime: updated.endTime }]
+                                        }
+                                      }
+                                    })
+                                    updated.dailySchedule[day.val].periods[pIdx].endTime = e.target.value
+                                    setScheduleSettings(updated)
+                                  }}
+                                />
+                              </div>
+
+                              {daySched.periods.length > 1 && (
+                                <button
+                                  type="button"
+                                  style={{ padding: '0.2rem 0.4rem', color: 'var(--dash-err)', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.75rem' }}
+                                  onClick={() => {
+                                    const updated = { ...scheduleSettings }
+                                    if (!updated.dailySchedule) updated.dailySchedule = {}
+                                    DAYS.forEach(d => {
+                                      if (!updated.dailySchedule![d.val]) {
+                                        updated.dailySchedule![d.val] = {
+                                          enabled: updated.workingDays.includes(d.val),
+                                          periods: [{ startTime: updated.startTime, endTime: updated.endTime }]
+                                        }
+                                      }
+                                    })
+                                    updated.dailySchedule[day.val].periods = updated.dailySchedule[day.val].periods.filter((_, i) => i !== pIdx)
+                                    setScheduleSettings(updated)
+                                  }}
+                                >
+                                  {lang === 'ar' ? 'حذف' : 'Delete'}
+                                </button>
+                              )}
+                            </div>
+                          ))}
+
+                          <button
+                            type="button"
+                            className="dash-action"
+                            style={{ width: 'fit-content', padding: '0.25rem 0.5rem', fontSize: '0.7rem', color: 'var(--primary)', border: '1px dashed var(--primary)', borderRadius: '4px', background: 'transparent', cursor: 'pointer' }}
+                            onClick={() => {
+                              const updated = { ...scheduleSettings }
+                              if (!updated.dailySchedule) updated.dailySchedule = {}
+                              DAYS.forEach(d => {
+                                if (!updated.dailySchedule![d.val]) {
+                                  updated.dailySchedule![d.val] = {
+                                    enabled: updated.workingDays.includes(d.val),
+                                    periods: [{ startTime: updated.startTime, endTime: updated.endTime }]
+                                  }
+                                }
+                              })
+                              updated.dailySchedule[day.val].periods.push({ startTime: '09:00', endTime: '12:00' })
+                              setScheduleSettings(updated)
+                            }}
+                          >
+                            + {lang === 'ar' ? 'إضافة فترة' : 'Add Period'}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )
                 })}
@@ -566,47 +715,9 @@ function Dashboard() {
             </div>
 
             <div>
-              <h3 className="dash-group-title">{t('dash_daily_hours')}</h3>
-              <div className="dash-field-row">
-                <div className="dash-field">
-                  <label>{t('dash_start_time')}</label>
-                  <input
-                    type="time"
-                    value={scheduleSettings.startTime}
-                    onChange={(e) => setScheduleSettings({ ...scheduleSettings, startTime: e.target.value })}
-                  />
-                </div>
-                <div className="dash-field">
-                  <label>{t('dash_end_time')}</label>
-                  <input
-                    type="time"
-                    value={scheduleSettings.endTime}
-                    onChange={(e) => setScheduleSettings({ ...scheduleSettings, endTime: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <h3 className="dash-group-title" style={{ marginTop: '1rem' }}>{t('dash_break_hours')}</h3>
-              <div className="dash-field-row">
-                <div className="dash-field">
-                  <label>{t('dash_break_start')}</label>
-                  <input
-                    type="time"
-                    value={scheduleSettings.lunchStart}
-                    onChange={(e) => setScheduleSettings({ ...scheduleSettings, lunchStart: e.target.value })}
-                  />
-                </div>
-                <div className="dash-field">
-                  <label>{t('dash_break_end')}</label>
-                  <input
-                    type="time"
-                    value={scheduleSettings.lunchEnd}
-                    onChange={(e) => setScheduleSettings({ ...scheduleSettings, lunchEnd: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="dash-field" style={{ marginTop: '1rem' }}>
+              <h3 className="dash-group-title">{lang === 'ar' ? 'مدة الجلسة والأسعار' : 'Session Duration & Pricing'}</h3>
+              
+              <div className="dash-field">
                 <label>{t('dash_slot_duration')}</label>
                 <select
                   value={scheduleSettings.slotDuration}
@@ -618,11 +729,8 @@ function Dashboard() {
                   <option value="60">{t('dash_slot_60')}</option>
                 </select>
               </div>
-            </div>
 
-            <div>
-              <h3 className="dash-group-title">{t('dash_prices_title')}</h3>
-              <div className="dash-field">
+              <div className="dash-field" style={{ marginTop: '1.25rem' }}>
                 <label>{t('dash_price_basic')}</label>
                 <input
                   type="number"

@@ -4,6 +4,8 @@ export type FormData = {
   patient_name: string
   patient_phone: string
   patient_age: string
+  patient_national_id: string
+  patient_type: 'new' | 'returning' | ''
   chief_complaint: string
   medical_history: string
   current_medications: string
@@ -32,6 +34,8 @@ export const FORM_INITIAL: FormData = {
   patient_name: '',
   patient_phone: '',
   patient_age: '',
+  patient_national_id: '',
+  patient_type: '',
   chief_complaint: '',
   medical_history: '',
   current_medications: '',

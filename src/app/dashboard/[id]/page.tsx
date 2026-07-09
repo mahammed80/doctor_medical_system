@@ -20,7 +20,7 @@ import {
   ArrowRight,
   ExternalLink,
 } from 'lucide-react'
-import { getConsultationById, getConsultationFiles, updateConsultation, transitionStatus, EnhancedConsultation } from '@/lib/consultationService'
+import { getConsultationById, getConsultationFiles, updateConsultation, transitionStatus, EnhancedConsultation, getConsultationsByNationalId } from '@/lib/consultationService'
 import { getCachedSession, signOut, AuthSession } from '@/lib/auth'
 import { getMessages, sendMessage, subscribeToMessages, markRead, QUICK_REPLY_TEMPLATES } from '@/lib/chatService'
 import { DOCTORS } from '@/lib/doctors'
@@ -85,6 +85,8 @@ export default function ConsultationDetail() {
   const [error, setError] = useState<string | null>(null)
 
   const [messages, setMessages] = useState<ConsultationMessage[]>([])
+  const [pastConsultations, setPastConsultations] = useState<EnhancedConsultation[]>([])
+  const [pastFiles, setPastFiles] = useState<Record<string, ConsultationFile[]>>({})
   const [chatInput, setChatInput] = useState('')
   const [sendingMessage, setSendingMessage] = useState(false)
   const chatScrollRef = useRef<HTMLDivElement>(null)
@@ -139,6 +141,20 @@ export default function ConsultationDetail() {
     })()
     return () => { if (unsub) unsub() }
   }, [id, authChecked, lang])
+
+  useEffect(() => {
+    if (consultation?.patient_national_id) {
+      getConsultationsByNationalId(consultation.patient_national_id).then((list) => {
+        const filtered = list.filter(c => c.id !== consultation.id)
+        setPastConsultations(filtered)
+        filtered.forEach(c => {
+          getConsultationFiles(c.id).then(cFiles => {
+            setPastFiles(prev => ({ ...prev, [c.id]: cFiles }))
+          })
+        })
+      }).catch(console.error)
+    }
+  }, [consultation])
 
   useEffect(() => {
     if (chatScrollRef.current) {
@@ -532,11 +548,93 @@ export default function ConsultationDetail() {
                 <div className="dash-info-cell dash-info-val ltr">{consultation.patient_phone}</div>
                 <div className="dash-info-cell dash-info-key">{t('dash_info_age')}</div>
                 <div className="dash-info-cell dash-info-val">{consultation.patient_age} {t('dash_patient_years')}</div>
+                <div className="dash-info-cell dash-info-key">{lang === 'ar' ? 'رقم الهوية / الإقامة' : 'ID / Iqama'}</div>
+                <div className="dash-info-cell dash-info-val">{consultation.patient_national_id || '-'}</div>
               </div>
               <div className="dash-complaint-block">
                 <div className="dash-complaint-kicker">{t('dash_chief_complaint_label')}</div>
                 <div className="dash-complaint-text">{consultation.chief_complaint}</div>
               </div>
+            </div>
+          </div>
+
+          {/* Patient Medical History Archive */}
+          <div className="dash-panel">
+            <div className="dash-panel-head">
+              <span className="dash-panel-head-spine" style={{ background: 'var(--primary)' }} />
+              <span className="dash-panel-title">
+                {lang === 'ar' ? 'أرشيف السجل الطبي للمريض' : 'Patient Medical History'}
+              </span>
+              <span className="dash-panel-count">{pastConsultations.length}</span>
+            </div>
+            <div className="dash-panel-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {pastConsultations.length === 0 ? (
+                <div style={{ color: 'var(--dash-dim)', fontSize: '0.82rem', textAlign: 'center', padding: '1rem 0' }}>
+                  {lang === 'ar' ? 'لا توجد زيارات أو استشارات سابقة مسجلة لهذا الملف.' : 'No past visits or consultations recorded for this record.'}
+                </div>
+              ) : (
+                pastConsultations.map((c) => (
+                  <div key={c.id} style={{
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--r)',
+                    padding: '0.9rem',
+                    background: 'var(--bg-card)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--dash-ink)' }}>
+                        {new Date(c.created_at).toLocaleDateString(lang === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                      <span className={`dash-badge dash-badge-${c.status}`} style={{ fontSize: '0.68rem', padding: '0.15rem 0.4rem' }}>
+                        {t('status_' + c.status)}
+                      </span>
+                    </div>
+                    
+                    <div style={{ fontSize: '0.8rem', color: 'var(--dash-ink)' }}>
+                      <strong>{lang === 'ar' ? 'الشكوى: ' : 'Complaint: '}</strong>
+                      {c.chief_complaint}
+                    </div>
+
+                    {c.doctor_notes && (
+                      <div style={{
+                        fontSize: '0.78rem',
+                        color: 'var(--primary)',
+                        background: 'var(--primary-50)',
+                        padding: '0.5rem 0.75rem',
+                        borderRadius: '4px',
+                        marginTop: '0.25rem',
+                        borderInlineStart: '3px solid var(--primary)'
+                      }}>
+                        <strong>{lang === 'ar' ? 'ملاحظات الطبيب: ' : 'Doctor Notes: '}</strong>
+                        {c.doctor_notes}
+                      </div>
+                    )}
+
+                    {pastFiles[c.id]?.length > 0 && (
+                      <div style={{ marginTop: '0.4rem' }}>
+                        <div style={{ fontSize: '0.74rem', color: 'var(--dash-dim)', marginBottom: '0.25rem', fontWeight: 700 }}>
+                          {lang === 'ar' ? 'المرفقات الطبية:' : 'Medical Attachments:'}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                          {pastFiles[c.id].map(f => (
+                            <a
+                              key={f.id}
+                              href={f.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ fontSize: '0.74rem', color: 'var(--primary)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                            >
+                              📎 {f.file_name} ↗
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

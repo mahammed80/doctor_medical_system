@@ -188,7 +188,7 @@ export default function NewConsultation() {
   }, [selectedDate, selectedDoctorId])
 
   function nextFromStep0() {
-    if (!form.patient_name || !form.patient_phone || !form.patient_age || !form.id_file) {
+    if (!form.patient_name || !form.patient_phone || !form.patient_national_id) {
       toasts.push(t('booking_required_fields_warn'), 'warn')
       return
     }
@@ -200,10 +200,6 @@ export default function NewConsultation() {
       toasts.push(t('booking_complaint_warn'), 'warn')
       return
     }
-    if (form.pain_locations.length === 0 && !form.pain_widespread) {
-      toasts.push(t('booking_pain_warn'), 'warn')
-      return
-    }
     setLoading(true)
     try {
       let data
@@ -211,7 +207,8 @@ export default function NewConsultation() {
         const updated = await updateConsultation(consultationId, {
           patient_name: form.patient_name,
           patient_phone: form.patient_phone,
-          patient_age: Number(form.patient_age),
+          patient_age: Number(form.patient_age) || 0,
+          patient_national_id: form.patient_national_id,
           chief_complaint: form.chief_complaint,
           medical_history: form.medical_history,
           current_medications: form.current_medications,
@@ -234,7 +231,8 @@ export default function NewConsultation() {
         data = await createConsultation({
           patient_name: form.patient_name,
           patient_phone: form.patient_phone,
-          patient_age: Number(form.patient_age),
+          patient_age: Number(form.patient_age) || 0,
+          patient_national_id: form.patient_national_id,
           chief_complaint: form.chief_complaint,
           medical_history: form.medical_history,
           current_medications: form.current_medications,

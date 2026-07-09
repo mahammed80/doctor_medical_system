@@ -169,6 +169,39 @@ export async function getConsultationByPaymentId(paymentId: string): Promise<Enh
   return data as EnhancedConsultation
 }
 
+export async function getLatestConsultationByNationalId(nationalId: string): Promise<EnhancedConsultation | null> {
+  if (isDemo || nationalId.startsWith('demo-') || nationalId.startsWith('mock-')) {
+    const found = getLocalConsultations()
+      .filter(c => c.patient_national_id === nationalId)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    return found[0] || null
+  }
+  const { data, error } = await supabase
+    .from('consultations')
+    .select('*')
+    .eq('patient_national_id', nationalId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (error) throw error
+  return data as EnhancedConsultation | null
+}
+
+export async function getConsultationsByNationalId(nationalId: string): Promise<EnhancedConsultation[]> {
+  if (isDemo || nationalId.startsWith('demo-') || nationalId.startsWith('mock-')) {
+    return getLocalConsultations()
+      .filter(c => c.patient_national_id === nationalId)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  }
+  const { data, error } = await supabase
+    .from('consultations')
+    .select('*')
+    .eq('patient_national_id', nationalId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return (data || []) as EnhancedConsultation[]
+}
+
 // ── Create ──────────────────────────────────────────────────────────────────
 type CreateInput = Omit<EnhancedConsultation, 'id' | 'created_at' | 'status' | 'payment_id' | 'calendly_event_url' | 'doctor_name' | 'specialty'>
   & { doctor_id: string; pain_type?: string | null; pain_duration?: string | null; joint_swelling_stiffness?: string | null }
@@ -201,6 +234,7 @@ export async function createConsultation(data: CreateInput): Promise<EnhancedCon
         patient_name:        data.patient_name,
         patient_phone:       data.patient_phone,
         patient_age:         data.patient_age,
+        patient_national_id: data.patient_national_id || null,
         chief_complaint:     data.chief_complaint,
         medical_history:     data.medical_history,
         current_medications: data.current_medications,
@@ -368,6 +402,16 @@ export async function saveLocalUploadedFile(
 }
 
 // ── Scheduling ──────────────────────────────────────────────────────────────
+export type TimePeriod = {
+  startTime: string
+  endTime: string
+}
+
+export type DaySchedule = {
+  enabled: boolean
+  periods: TimePeriod[]
+}
+
 export type DoctorScheduleSettings = {
   workingDays: number[]
   startTime: string
@@ -384,6 +428,7 @@ export type DoctorScheduleSettings = {
     connected: boolean
     email?: string | null
   }
+  dailySchedule?: Record<number, DaySchedule>
 }
 
 const DEFAULT_SETTINGS: DoctorScheduleSettings = {
@@ -445,9 +490,9 @@ export async function getDoctorSlots(doctorId: string, dateStr: string): Promise
   const settings = await getDoctorSettings(doctorId)
   const date = new Date(dateStr)
   const dayOfWeek = date.getDay()
-  if (!settings.workingDays.includes(dayOfWeek)) return []
 
   const timeToMinutes = (t: string) => {
+    if (!t) return 0
     const [h, m] = t.split(':').map(Number)
     return h * 60 + m
   }
@@ -457,16 +502,43 @@ export async function getDoctorSlots(doctorId: string, dateStr: string): Promise
     return `${h.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`
   }
 
-  const startMin = timeToMinutes(settings.startTime)
-  const endMin = timeToMinutes(settings.endTime)
-  const lunchStartMin = timeToMinutes(settings.lunchStart)
-  const lunchEndMin = timeToMinutes(settings.lunchEnd)
-  const duration = settings.slotDuration
+  // Resolve daily schedule
+  const getDaySchedule = () => {
+    if (settings.dailySchedule && settings.dailySchedule[dayOfWeek]) {
+      return settings.dailySchedule[dayOfWeek]
+    }
+    
+    // Legacy fallback
+    const enabled = settings.workingDays.includes(dayOfWeek)
+    const periods: TimePeriod[] = []
+    if (enabled) {
+      const startMin = timeToMinutes(settings.startTime)
+      const endMin = timeToMinutes(settings.endTime)
+      const lunchStartMin = timeToMinutes(settings.lunchStart)
+      const lunchEndMin = timeToMinutes(settings.lunchEnd)
+      
+      if (lunchStartMin > startMin && lunchEndMin < endMin) {
+        periods.push({ startTime: settings.startTime, endTime: settings.lunchStart })
+        periods.push({ startTime: settings.lunchEnd, endTime: settings.endTime })
+      } else {
+        periods.push({ startTime: settings.startTime, endTime: settings.endTime })
+      }
+    }
+    return { enabled, periods }
+  }
 
+  const daySchedule = getDaySchedule()
+  if (!daySchedule.enabled || daySchedule.periods.length === 0) return []
+
+  const duration = settings.slotDuration
   const slots: TimeSlot[] = []
-  for (let m = startMin; m + duration <= endMin; m += duration) {
-    if (m >= lunchStartMin && m < lunchEndMin) continue
-    slots.push({ time: minutesToTime(m), available: true, status: 'available' })
+
+  for (const period of daySchedule.periods) {
+    const startMin = timeToMinutes(period.startTime)
+    const endMin = timeToMinutes(period.endTime)
+    for (let m = startMin; m + duration <= endMin; m += duration) {
+      slots.push({ time: minutesToTime(m), available: true, status: 'available' })
+    }
   }
 
   // Mark slots occupied by existing consultations
