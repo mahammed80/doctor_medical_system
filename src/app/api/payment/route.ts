@@ -35,7 +35,7 @@ export async function POST(request: Request) {
       request.headers.get('origin') ||
       'http://localhost:3000'
 
-    const redirectUrl = `${baseUrl}/consultation/new?step=5&consultation=${encodeURIComponent(consultationId)}&from=paymob`
+    const redirectUrl = `${baseUrl}/consultation/new`
 
     const [first = 'Patient', ...rest] = (patient?.name ?? '').split(' ')
     const last = rest.join(' ') || 'NA'
