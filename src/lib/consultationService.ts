@@ -156,6 +156,19 @@ export async function getConsultationById(id: string): Promise<EnhancedConsultat
   return data as EnhancedConsultation
 }
 
+export async function getConsultationByPaymentId(paymentId: string): Promise<EnhancedConsultation | null> {
+  if (isDemo || paymentId.startsWith('demo-') || paymentId.startsWith('mock-')) {
+    return getLocalConsultations().find(c => c.payment_id === paymentId) || null
+  }
+  const { data, error } = await supabase
+    .from('consultations')
+    .select('*')
+    .eq('payment_id', paymentId)
+    .maybeSingle()
+  if (error) throw error
+  return data as EnhancedConsultation
+}
+
 // ── Create ──────────────────────────────────────────────────────────────────
 type CreateInput = Omit<EnhancedConsultation, 'id' | 'created_at' | 'status' | 'payment_id' | 'calendly_event_url' | 'doctor_name' | 'specialty'>
   & { doctor_id: string; pain_type?: string | null; pain_duration?: string | null; joint_swelling_stiffness?: string | null }

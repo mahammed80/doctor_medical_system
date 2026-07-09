@@ -8,6 +8,7 @@ import {
   addConsultationFile,
   createConsultation,
   getConsultationById,
+  getConsultationByPaymentId,
   getDoctorSettings,
   getDoctorSlots,
   updateConsultation,
@@ -67,19 +68,55 @@ export default function NewConsultation() {
     const transactionId = params.get('id')
     const orderId = params.get('order')
     const urlStep = params.get('step')
-    const urlConsultationId = params.get('consultation') || orderId
+    const urlConsultationId = params.get('consultation')
 
-    if ((urlStep === '5' || success === 'true') && urlConsultationId) {
-      setStep(5)
-      setConsultationId(urlConsultationId)
-      if (success === 'true' && transactionId) {
-        updateConsultation(urlConsultationId, {
-          status: 'pending_booking',
-          payment_id: transactionId,
-        }).catch((e) => console.error('Failed to mark consultation as paid:', e))
+    const isPaymobRedirect = success === 'true' && transactionId
+
+    if (urlStep === '5' || isPaymobRedirect) {
+      setRedirectResolving(true)
+
+      const resolveAndRedirect = async () => {
+        let resolvedId = urlConsultationId
+
+        // If we don't have our custom consultation ID parameter (due to query params stripping),
+        // look it up using the transactionId (payment_id) from the redirect.
+        if (!resolvedId && transactionId) {
+          try {
+            const match = await getConsultationByPaymentId(transactionId)
+            if (match) {
+              resolvedId = match.id
+            }
+          } catch (e) {
+            console.error('Error resolving consultation by payment ID:', e)
+          }
+        }
+
+        // Final fallback to orderId
+        if (!resolvedId && orderId) {
+          resolvedId = orderId
+        }
+
+        if (resolvedId) {
+          setStep(5)
+          setConsultationId(resolvedId)
+          if (success === 'true' && transactionId) {
+            try {
+              await updateConsultation(resolvedId, {
+                status: 'pending_booking',
+                payment_id: transactionId,
+              })
+            } catch (e) {
+              console.error('Failed to mark consultation as paid:', e)
+            }
+          }
+        }
+        setRedirectResolving(false)
       }
+
+      resolveAndRedirect()
+    } else {
+      setRedirectResolving(false)
     }
-    setRedirectResolving(false)
   }, [])
 
   const packagePrices = {
@@ -110,8 +147,16 @@ export default function NewConsultation() {
       })
       .then((res) => res.json())
         .then((data) => {
-          if (data.checkoutUrl) setCheckoutUrl(data.checkoutUrl)
-          else console.error('Failed to initialize Paymob payment:', data.error)
+          if (data.checkoutUrl) {
+            setCheckoutUrl(data.checkoutUrl)
+            if (data.paymentId) {
+              updateConsultation(consultationId, {
+                payment_id: String(data.paymentId),
+              }).catch((e) => console.error('Failed to save initial payment ID:', e))
+            }
+          } else {
+            console.error('Failed to initialize Paymob payment:', data.error)
+          }
         })
         .catch((err) => {
           console.error(err)
