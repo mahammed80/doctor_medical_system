@@ -23,7 +23,7 @@ const translations = {
     nav_testimonials: 'آراء المرضى',
     nav_faq: 'الأسئلة الشائعة',
     nav_start: 'ابدأ الاستشارة',
-    logo_sub: 'استشاري جراحة العظام والمفاصل أونلاين',
+    logo_sub: 'استشاري جراحة العظام والعمود الفقري أونلاين',
     footer_desc: 'منصة استشارات طبية متكاملة مع د. خالد بترجي، لتقديم رعاية صحية ممتازة وتجربة استشارية آمنة وموثوقة من منزلك.',
     footer_links: 'روابط سريعة',
     footer_rights: 'جميع الحقوق محفوظة',
@@ -31,7 +31,7 @@ const translations = {
     // Hero Section
     hero_badge: 'مركز بترجي للاستشارات الطبية التخصصية',
     hero_title_dr: 'د. خالد بترجي',
-    hero_title_title: 'استشاري جراحة العظام والمفاصل',
+    hero_title_title: 'استشاري جراحة العظام والعمود الفقري',
     hero_title_sub: 'رعاية طبية فائقة لجراحات الركبة والمفاصل الصناعية والمناظير أونلاين من منزلك',
     hero_para: 'أول منصة استشارات طبية متكاملة تجمع بين خبرة الاستشاريين وسهولة التقنية. احجز استشارتك المرئية في دقائق، وارفع فحوصاتك وتقاريرك بخصوصية تامة وتلقى التشخيص والخطة العلاجية من منزلك.',
     hero_btn_start: 'ابدأ الاستشارة الآن',
@@ -41,7 +41,7 @@ const translations = {
     // Hero Stats
     stat_experience_num: '35+',
     stat_experience_label: 'سنة من الخبرة',
-    stat_experience_desc: 'في جراحة العظام والمفاصل',
+    stat_experience_desc: 'في جراحة العظام والعمود الفقري',
     stat_online_num: '100%',
     stat_online_label: 'استشارة أون لاين',
     stat_online_desc: 'مرئية، آمنة ومريحة',
@@ -50,7 +50,7 @@ const translations = {
     stat_satisfaction_desc: 'بنسبة رضا تفوق 98%',
 
     // Expertise Bar
-    exp_joints: 'جراحة العظام والمفاصل',
+    exp_joints: 'جراحة العظام والعمود الفقري',
     exp_scopes: 'المناظير الجراحية',
     exp_pain: 'علاج الآلام المزمنة',
     exp_rehab: 'تأهيل ما بعد العمليات',
@@ -69,7 +69,7 @@ const translations = {
     // Doctor Qualifications
     qual_label: 'المؤهلات العلمية',
     qual_title: 'خبرة تمتد لأكثر من ثلاثة عقود',
-    qual_desc: 'يتمتع الدكتور خالد بترجي بسيرة ذاتية حافلة بالإنجازات الأكاديمية والعملية في مجال جراحة العظام والمفاصل، مع أكثر من 35 عاماً من الخبرة المتراكمة.',
+    qual_desc: 'يتمتع الدكتور خالد بترجي بسيرة ذاتية حافلة بالإنجازات الأكاديمية والعملية في مجال جراحة العظام والعمود الفقري، مع أكثر من 35 عاماً من الخبرة المتراكمة.',
     qual_btn: 'احجز استشارتك',
     qual_1991_title: 'تأسيس مركز بترجي الطبي',
     qual_1991_inst: 'رؤية لتقديم أفضل الخدمات الطبية التخصصية',
@@ -167,7 +167,7 @@ const translations = {
     test_2_title: 'مريضة (جراحة العظام)',
     test_3_text: 'بعد إصابتي في الركبة، تواصلت مع د. خالد بترجي وأعدّ لي برنامج تأهيل حركي منزلي رائع وتابع معي خطوة بخطوة حتى عدت لممارسة الرياضة بشكل طبيعي.',
     test_3_name: 'فهد السبيعي',
-    test_3_title: 'مريض (جراحة العظام والمفاصل)',
+    test_3_title: 'مريض (جراحة العظام والعمود الفقري)',
 
     // Medical Library
     lib_label: 'المكتبة الطبية',
@@ -455,7 +455,7 @@ const translations = {
     nav_testimonials: 'Testimonials',
     nav_faq: 'FAQ',
     nav_start: 'Start Consultation',
-    logo_sub: 'Orthopedic & Joint Consultant Online',
+    logo_sub: 'Orthopedic & Spine Consultant Online',
     footer_desc: 'An integrated medical consultation platform with Dr. Khalid Batterjee, providing excellent healthcare and a secure, reliable consultation experience from your home.',
     footer_links: 'Quick Links',
     footer_rights: 'All rights reserved',
@@ -463,7 +463,7 @@ const translations = {
     // Hero Section
     hero_badge: 'Batterjee Center for Specialized Medical Consultations',
     hero_title_dr: 'Dr. Khalid Batterjee',
-    hero_title_title: 'Consultant Orthopedic & Joint Surgeon',
+    hero_title_title: 'Consultant Orthopedic & Spine Surgeon',
     hero_title_sub: 'Premium medical care for knee surgery, joint replacements, and arthroscopy online from your home',
     hero_para: 'The first integrated medical consultation platform combining consultant expertise with ease of technology. Book your video consultation in minutes, upload your medical files in complete privacy, and receive your diagnosis and treatment plan from home.',
     hero_btn_start: 'Start Consultation Now',
@@ -473,7 +473,7 @@ const translations = {
     // Hero Stats
     stat_experience_num: '35+',
     stat_experience_label: 'Years of Experience',
-    stat_experience_desc: 'In orthopedic and joint surgery',
+    stat_experience_desc: 'In orthopedic and spine surgery',
     stat_online_num: '100%',
     stat_online_label: 'Online Consultations',
     stat_online_desc: 'Video, secure & convenient',
@@ -482,7 +482,7 @@ const translations = {
     stat_satisfaction_desc: 'With satisfaction rate exceeding 98%',
 
     // Expertise Bar
-    exp_joints: 'Orthopedics & Joint Surgery',
+    exp_joints: 'Orthopedics & Spine Surgery',
     exp_scopes: 'Arthroscopic Surgery',
     exp_pain: 'Chronic Pain Treatment',
     exp_rehab: 'Post-Operative Rehab',
@@ -501,7 +501,7 @@ const translations = {
     // Doctor Qualifications
     qual_label: 'Qualifications',
     qual_title: 'Experience extending over three decades',
-    qual_desc: 'Dr. Khalid Batterjee has a rich biography of academic and practical achievements in the field of orthopedic and joint surgery, with more than 35 years of cumulative experience.',
+    qual_desc: 'Dr. Khalid Batterjee has a rich biography of academic and practical achievements in the field of orthopedic and spine surgery, with more than 35 years of cumulative experience.',
     qual_btn: 'Book Consultation',
     qual_1991_title: 'Establishment of Batterjee Medical Center',
     qual_1991_inst: 'A vision to provide the best specialized medical services',
@@ -599,7 +599,7 @@ const translations = {
     test_2_title: 'Patient (Orthopedic Surgery)',
     test_3_text: 'Following my knee injury, I contacted Dr. Khalid Batterjee. He prepared a wonderful home rehabilitation program and followed up with me step-by-step until I returned to sports naturally.',
     test_3_name: 'Fahd Al-Subeaei',
-    test_3_title: 'Patient (Orthopedic & Joint Surgery)',
+    test_3_title: 'Patient (Orthopedic & Spine Surgery)',
 
     // Medical Library
     lib_label: 'Medical Library',

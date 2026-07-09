@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Bone, Dumbbell, Footprints } from 'lucide-react'
 
 export const STATS = [
-  { num: '35+', label: 'سنة من الخبرة', desc: 'في جراحة العظام والمفاصل' },
+  { num: '35+', label: 'سنة من الخبرة', desc: 'في جراحة العظام والعمود الفقري' },
   { num: '100%', label: 'استشارة أون لاين', desc: 'آمنة ومريحة من منزلك' },
   { num: '1,500+', label: 'مريض تم علاجهم', desc: 'بنسبة رضا تفوق 98%' },
 ] as const
@@ -74,7 +74,7 @@ export const FEATURES: Feature[] = [
   {
     icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>,
     title: 'استشاري بخبرة 35 عاماً',
-    desc: 'تستشير د. خالد بترجي، استشاري جراحة العظام والمفاصل الحاصل على البورد والزمالات، بخبرة تمتد لأكثر من ثلاثة عقود.',
+    desc: 'تستشير د. خالد بترجي، استشاري جراحة العظام والعمود الفقري الحاصل على البورد والزمالات، بخبرة تمتد لأكثر من ثلاثة عقود.',
   },
   {
     icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
@@ -186,7 +186,7 @@ export const JOINTS_DATA: Record<JointKey, {
 }
 
 export const EXPERTISE_TAGS = [
-  'جراحة العظام والمفاصل',
+  'جراحة العظام والعمود الفقري',
   'المناظير الجراحية',
   'علاج الآلام المزمنة',
   'تأهيل ما بعد العمليات',
