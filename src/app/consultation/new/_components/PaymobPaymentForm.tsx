@@ -1,4 +1,7 @@
+'use client'
+
 import { Lock } from 'lucide-react'
+import { useLanguage } from '@/context/LanguageContext'
 
 export function PaymobPaymentForm({
   checkoutUrl,
@@ -7,6 +10,8 @@ export function PaymobPaymentForm({
   checkoutUrl: string
   price: string
 }) {
+  const { lang } = useLanguage()
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       <a
@@ -18,9 +23,13 @@ export function PaymobPaymentForm({
           width: '100%',
           justifyContent: 'center',
           textDecoration: 'none',
+          background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-down) 100%)',
+          border: 'none',
+          boxShadow: 'var(--shadow-md)',
+          fontWeight: 700
         }}
       >
-        ادفع {price} ريال عبر Paymob
+        {lang === 'ar' ? `ادفع ${price} ريال عبر Paymob` : `Pay ${price} SAR via Paymob`}
       </a>
       <p
         style={{
@@ -31,8 +40,9 @@ export function PaymobPaymentForm({
         }}
       >
         <span style={{ display: 'inline-flex', marginInlineEnd: '0.35rem' }}><Lock size={14} /></span>
-        الدفع مشفر وآمن عبر Paymob. اضغط الزر أعلاه لإكمال سداد رسوم الاستشارة ({price} ر.س).
-        سيتم تحويلك إلى بوابة Paymob الآمنة، ثم تعود تلقائياً إلى هنا بعد إتمام الدفع.
+        {lang === 'ar' 
+          ? `الدفع مشفر وآمن عبر Paymob. اضغط الزر أعلاه لإكمال سداد رسوم الاستشارة (${price} ر.س). سيتم تحويلك إلى بوابة Paymob الآمنة، ثم تعود تلقائياً إلى هنا بعد إتمام الدفع.`
+          : `Payment is encrypted and secure via Paymob. Click the button above to complete the consultation fee (${price} SAR). You will be redirected to the secure Paymob gateway, then automatically return here after payment.`}
       </p>
     </div>
   )
