@@ -69,14 +69,15 @@ export default function NewConsultation() {
     const orderId = params.get('order')
     const urlStep = params.get('step')
     const urlConsultationId = params.get('consultation')
+    const pendingId = localStorage.getItem('pending_consultation_id')
 
-    const isPaymobRedirect = success === 'true' && transactionId
+    const isPaymobRedirect = success === 'true' && (transactionId || pendingId)
 
     if (urlStep === '5' || isPaymobRedirect) {
       setRedirectResolving(true)
 
       const resolveAndRedirect = async () => {
-        let resolvedId = urlConsultationId
+        let resolvedId = urlConsultationId || pendingId
 
         // If we don't have our custom consultation ID parameter (due to query params stripping),
         // look it up using the transactionId (payment_id) from the redirect.
@@ -99,12 +100,13 @@ export default function NewConsultation() {
         if (resolvedId) {
           setStep(5)
           setConsultationId(resolvedId)
-          if (success === 'true' && transactionId) {
+          if (success === 'true') {
             try {
               await updateConsultation(resolvedId, {
                 status: 'pending_booking',
-                payment_id: transactionId,
+                payment_id: transactionId || '',
               })
+              localStorage.removeItem('pending_consultation_id')
             } catch (e) {
               console.error('Failed to mark consultation as paid:', e)
             }
@@ -149,6 +151,7 @@ export default function NewConsultation() {
         .then((data) => {
           if (data.checkoutUrl) {
             setCheckoutUrl(data.checkoutUrl)
+            localStorage.setItem('pending_consultation_id', consultationId)
             if (data.paymentId) {
               updateConsultation(consultationId, {
                 payment_id: String(data.paymentId),
