@@ -66,7 +66,7 @@ export default function NewConsultation() {
     // Detect Paymob redirect back — check for ?success=true or ?step=5
     const success = params.get('success')
     const transactionId = params.get('id')
-    const orderId = params.get('order')
+    const orderId = params.get('order') || params.get('merchant_order_id')
     const urlStep = params.get('step')
     const urlConsultationId = params.get('consultation')
     const pendingId = localStorage.getItem('pending_consultation_id')
@@ -78,9 +78,12 @@ export default function NewConsultation() {
       step: urlStep,
       consultation: urlConsultationId,
       pendingId,
+      referrer: document.referrer,
     }))
 
-    const isPaymobRedirect = success === 'true' && (transactionId || pendingId)
+    const cameFromPaymob = document.referrer.includes('paymob')
+
+    const isPaymobRedirect = (success === 'true' && (transactionId || pendingId)) || (cameFromPaymob && pendingId)
 
     if (urlStep === '5' || isPaymobRedirect) {
       setRedirectResolving(true)
