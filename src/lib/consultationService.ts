@@ -221,6 +221,7 @@ export async function createConsultation(data: CreateInput): Promise<EnhancedCon
   }
 
   if (isDemo) {
+    console.warn('[consultation] Running in DEMO mode — consultation stored locally only')
     const list = getLocalConsultations()
     list.push(newRecord)
     saveLocalConsultations(list)
@@ -255,10 +256,17 @@ export async function createConsultation(data: CreateInput): Promise<EnhancedCon
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('[consultation] Supabase insert error:', JSON.stringify(error))
+      throw error
+    }
     return { ...newRecord, ...insertedData } as EnhancedConsultation
   } catch (err) {
-    console.error('Supabase insert failed, storing locally in demo mode:', err)
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[consultation] Supabase insert FAILED — falling back to demo mode:', msg)
+    console.error('[consultation] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'MISSING')
+    console.error('[consultation] Supabase ANON KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'set' : 'MISSING')
+    console.error('[consultation] isDemo flag:', isDemo)
     const list = getLocalConsultations()
     list.push(newRecord)
     saveLocalConsultations(list)
