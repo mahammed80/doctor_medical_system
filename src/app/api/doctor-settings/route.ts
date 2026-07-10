@@ -1,38 +1,35 @@
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
+
+const SUPABASE_URL = 'https://qxqkgarlbftrqizhwgxt.supabase.co'
+const SUPABASE_ANON_KEY = 'sb_publishable_omAjsPorlBdXzhAyevYV5g_CVJane3K'
+
+function getAdmin() {
+  return createClient(
+    SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY,
+    { auth: { persistSession: false } },
+  )
+}
 
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url)
     const doctorId = url.searchParams.get('doctorId') || 'khalid'
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+    const { data, error } = await getAdmin()
+      .from('doctor_settings')
+      .select('*')
+      .eq('doctor_id', doctorId)
+      .maybeSingle()
 
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('[api/doctor-settings] Missing Supabase env vars')
+    if (error) {
+      console.error('[api/doctor-settings] error:', JSON.stringify(error))
       return NextResponse.json({ settings: null })
     }
-
-    const res = await fetch(
-      `${supabaseUrl}/rest/v1/doctor_settings?doctor_id=eq.${encodeURIComponent(doctorId)}`,
-      {
-        headers: {
-          apikey: supabaseKey,
-          Authorization: `Bearer ${supabaseKey}`,
-        },
-      },
-    )
-
-    if (!res.ok) {
-      const text = await res.text()
-      console.error(`[api/doctor-settings] Supabase returned ${res.status}: ${text}`)
-      return NextResponse.json({ settings: null })
-    }
-
-    const data = await res.json()
-    return NextResponse.json({ settings: data[0]?.settings || null })
+    return NextResponse.json({ settings: data?.settings || null })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     console.error('[api/doctor-settings] error:', msg)

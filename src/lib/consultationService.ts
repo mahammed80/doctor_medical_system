@@ -343,8 +343,7 @@ export async function createConsultation(data: CreateInput): Promise<EnhancedCon
     if (error) throw error
     return { ...newRecord, ...insertedData } as EnhancedConsultation
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    console.error('[consultation] Supabase insert FAILED, falling back to localStorage:', msg)
+    console.error('[consultation] Supabase insert FAILED, falling back to localStorage:', JSON.stringify(err))
     const list = getLocalConsultations()
     list.push(newRecord)
     saveLocalConsultations(list)
