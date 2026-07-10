@@ -7,6 +7,45 @@ export type EnhancedConsultation = Consultation
 
 const isBrowser = typeof window !== 'undefined'
 
+// On the client, route Supabase calls through server-side API routes
+// because Turbopack in Next.js 16 does not properly inline NEXT_PUBLIC_*
+// env vars in the client bundle, causing 406 errors from PostgREST.
+
+async function apiPost(path: string, body: unknown) {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }))
+    throw new Error(err.error || 'API error')
+  }
+  return res.json()
+}
+
+async function apiPatch(path: string, body: unknown) {
+  const res = await fetch(path, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }))
+    throw new Error(err.error || 'API error')
+  }
+  return res.json()
+}
+
+async function apiGet(path: string) {
+  const res = await fetch(path)
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }))
+    throw new Error(err.error || 'API error')
+  }
+  return res.json()
+}
+
 // ── Initial mock data ───────────────────────────────────────────────────────
 const MOCK_CONSULTATIONS: EnhancedConsultation[] = [
   {
@@ -147,6 +186,16 @@ export async function getConsultationById(id: string): Promise<EnhancedConsultat
   if (id.startsWith('demo-') || id.startsWith('mock-')) {
     return getLocalConsultations().find(c => c.id === id) || null
   }
+
+  if (isBrowser) {
+    try {
+      const result = await apiGet(`/api/consultation?id=${encodeURIComponent(id)}`)
+      return result.consultation as EnhancedConsultation | null
+    } catch {
+      return null
+    }
+  }
+
   const { data, error } = await supabase
     .from('consultations')
     .select('*')
@@ -160,6 +209,16 @@ export async function getConsultationByPaymentId(paymentId: string): Promise<Enh
   if (paymentId.startsWith('demo-') || paymentId.startsWith('mock-')) {
     return getLocalConsultations().find(c => c.payment_id === paymentId) || null
   }
+
+  if (isBrowser) {
+    try {
+      const result = await apiGet(`/api/consultation?payment_id=${encodeURIComponent(paymentId)}`)
+      return result.consultation as EnhancedConsultation | null
+    } catch {
+      return null
+    }
+  }
+
   const { data, error } = await supabase
     .from('consultations')
     .select('*')
@@ -209,6 +268,39 @@ type CreateInput = Omit<EnhancedConsultation, 'id' | 'created_at' | 'status' | '
 export async function createConsultation(data: CreateInput): Promise<EnhancedConsultation> {
   const selectedDoctor = DOCTORS.find(d => d.id === data.doctor_id) || DOCTORS[0]
 
+  if (isBrowser) {
+    try {
+      const result = await apiPost('/api/consultation', {
+        patient_name:        data.patient_name,
+        patient_phone:       data.patient_phone,
+        patient_age:         data.patient_age,
+        patient_national_id: data.patient_national_id || null,
+        chief_complaint:     data.chief_complaint,
+        medical_history:     data.medical_history,
+        current_medications: data.current_medications,
+        doctor_id:           data.doctor_id,
+        doctor_name:         selectedDoctor.name,
+        specialty:           selectedDoctor.specialty,
+        pain_severity:       data.pain_severity ?? null,
+        pain_natures:        data.pain_natures ?? [],
+        pain_locations:      data.pain_locations ?? [],
+        spinal_areas:        data.spinal_areas ?? [],
+        symptom_start:       data.symptom_start ?? null,
+        previous_treatments: data.previous_treatments ?? null,
+        previous_surgeries:  data.previous_surgeries ?? null,
+        aggravating_factors: data.aggravating_factors ?? null,
+        relieving_factors:   data.relieving_factors ?? null,
+        status:              'pending_payment',
+      })
+      console.log('[consultation] Created via API, id:', result.consultation?.id)
+      return result.consultation as EnhancedConsultation
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('[consultation] API create failed, falling back to localStorage:', msg)
+    }
+  }
+
+  // Server-side or fallback: use Supabase client directly
   const newRecord: EnhancedConsultation = {
     ...data,
     id: 'demo-' + Date.now(),
@@ -220,9 +312,6 @@ export async function createConsultation(data: CreateInput): Promise<EnhancedCon
     calendly_event_url: null,
   }
 
-  // Always try Supabase first, regardless of isDemo flag.
-  // The isDemo flag may be unreliable on the client due to build-time
-  // inlining quirks. The catch block handles the true fallback.
   try {
     const { data: insertedData, error } = await supabase
       .from('consultations')
@@ -251,17 +340,11 @@ export async function createConsultation(data: CreateInput): Promise<EnhancedCon
       .select()
       .single()
 
-    if (error) {
-      console.error('[consultation] Supabase insert error:', JSON.stringify(error))
-      throw error
-    }
-    console.log('[consultation] Created in Supabase, id:', insertedData?.id)
+    if (error) throw error
     return { ...newRecord, ...insertedData } as EnhancedConsultation
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     console.error('[consultation] Supabase insert FAILED, falling back to localStorage:', msg)
-    const supabaseConfigured = typeof process !== 'undefined' && !!process.env.NEXT_PUBLIC_SUPABASE_URL
-    console.error('[consultation] Supabase configured:', supabaseConfigured)
     const list = getLocalConsultations()
     list.push(newRecord)
     saveLocalConsultations(list)
@@ -281,6 +364,16 @@ export async function updateConsultation(
     list[index] = { ...list[index], ...updates }
     saveLocalConsultations(list)
     return list[index]
+  }
+
+  if (isBrowser) {
+    try {
+      const result = await apiPatch('/api/consultation', { id, updates })
+      return result.consultation as EnhancedConsultation
+    } catch (err) {
+      console.error('[consultation] API update failed:', err)
+      throw err
+    }
   }
 
   const { data, error } = await supabase
@@ -449,6 +542,17 @@ const DEFAULT_SETTINGS: DoctorScheduleSettings = {
 }
 
 export async function getDoctorSettings(doctorId: string): Promise<DoctorScheduleSettings> {
+  if (isBrowser) {
+    try {
+      const result = await apiGet(`/api/doctor-settings?doctorId=${encodeURIComponent(doctorId)}`)
+      if (result.settings) return result.settings as DoctorScheduleSettings
+    } catch {
+      // fall through to localStorage fallback
+    }
+    const saved = localStorage.getItem(`doctor_settings_${doctorId}`)
+    return saved ? JSON.parse(saved) : DEFAULT_SETTINGS
+  }
+
   try {
     const { data, error } = await supabase
       .from('doctor_settings')
@@ -458,10 +562,6 @@ export async function getDoctorSettings(doctorId: string): Promise<DoctorSchedul
     if (error) throw error
     return (data?.settings as DoctorScheduleSettings) || DEFAULT_SETTINGS
   } catch {
-    if (isBrowser) {
-      const saved = localStorage.getItem(`doctor_settings_${doctorId}`)
-      return saved ? JSON.parse(saved) : DEFAULT_SETTINGS
-    }
     return DEFAULT_SETTINGS
   }
 }
