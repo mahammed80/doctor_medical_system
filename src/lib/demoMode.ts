@@ -12,10 +12,10 @@
  * the substring.
  */
 export function isDemoMode(): boolean {
-  if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
     return true
   }
-  const url = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_URL : ''
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
   if (!url) return true
   if (url === 'https://placeholder.supabase.co') return true
   return false
