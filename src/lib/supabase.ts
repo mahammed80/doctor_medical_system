@@ -1,9 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 
+// Public publishable credentials — hardcoded as fallback.
+// Turbopack in Next.js 16 does not reliably inline NEXT_PUBLIC_* env vars
+// on the client, causing the client to use placeholder values. These keys
+// are already public (they appear in every browser network request).
+const SUPABASE_URL = 'https://qxqkgarlbftrqizhwgxt.supabase.co'
+const SUPABASE_ANON_KEY = 'sb_publishable_omAjsPorlBdXzhAyevYV5g_CVJane3K'
+
 export function getSupabase() {
   return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'
+    (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_SUPABASE_URL) || SUPABASE_URL,
+    (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) || SUPABASE_ANON_KEY,
   )
 }
 

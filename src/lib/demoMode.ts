@@ -7,15 +7,17 @@
  *   2. Otherwise, true when the Supabase URL is missing or is the
  *      development placeholder. This is the "no real backend" case.
  *
- * Use this everywhere instead of duplicating the `URL.includes('placeholder')`
- * check, which can silently misfire on a real URL that happens to contain
- * the substring.
+ * We guard `process.env` access with `typeof process !== 'undefined'`
+ * because Turbopack in Next.js 16 does not reliably inline NEXT_PUBLIC_*
+ * variables on the client. The hardcoded URL ensures client-side works.
  */
+const SUPABASE_URL = 'https://qxqkgarlbftrqizhwgxt.supabase.co'
+
 export function isDemoMode(): boolean {
-  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+  if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
     return true
   }
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  const url = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_SUPABASE_URL) || SUPABASE_URL
   if (!url) return true
   if (url === 'https://placeholder.supabase.co') return true
   return false

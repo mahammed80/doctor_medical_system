@@ -9,14 +9,6 @@ const SECURITY_HEADERS = [
 ]
 
 const nextConfig: NextConfig = {
-  // Force-inline NEXT_PUBLIC_ variables for the client bundle.
-  // Turbopack in this Next.js version may not auto-inline them from Vercel env.
-  env: {
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || '',
-    NEXT_PUBLIC_CONSULTATION_PRICE: process.env.NEXT_PUBLIC_CONSULTATION_PRICE || '5000',
-  },
   async headers() {
     return [
       {

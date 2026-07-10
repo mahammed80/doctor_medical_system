@@ -260,8 +260,8 @@ export async function createConsultation(data: CreateInput): Promise<EnhancedCon
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     console.error('[consultation] Supabase insert FAILED, falling back to localStorage:', msg)
-    console.error('[consultation] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'MISSING')
-    console.error('[consultation] Supabase ANON KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'set' : 'MISSING')
+    const supabaseConfigured = typeof process !== 'undefined' && !!process.env.NEXT_PUBLIC_SUPABASE_URL
+    console.error('[consultation] Supabase configured:', supabaseConfigured)
     const list = getLocalConsultations()
     list.push(newRecord)
     saveLocalConsultations(list)
