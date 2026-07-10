@@ -46,7 +46,10 @@ function verifyHmac(params: Record<string, string>, hmacSecret: string): boolean
 
 export async function POST(request: Request) {
   const hmacSecret = process.env.PAYMOB_HMAC_SECRET
+  console.log('[paymob-webhook] HMAC secret configured:', !!hmacSecret && hmacSecret !== 'replace_with_hmac_secret')
+
   if (!hmacSecret || hmacSecret === 'replace_with_hmac_secret') {
+    console.error('[paymob-webhook] PAYMOB_HMAC_SECRET is not configured or still has placeholder value')
     return NextResponse.json(
       { error: 'PAYMOB_HMAC_SECRET not configured.' },
       { status: 500 },
@@ -64,9 +67,15 @@ export async function POST(request: Request) {
     ) as Record<string, string>
   }
 
+  console.log('[paymob-webhook] received payload keys:', Object.keys(payload))
+  console.log('[paymob-webhook] success field:', payload.success, '| id:', payload.id, '| order:', payload.order, '| merchant_order_id:', payload.merchant_order_id)
+
   if (!verifyHmac(payload, hmacSecret)) {
+    console.error('[paymob-webhook] HMAC verification FAILED for transaction:', payload.id)
     return NextResponse.json({ error: 'Invalid HMAC.' }, { status: 400 })
   }
+
+  console.log('[paymob-webhook] HMAC verification passed')
 
   const success = payload.success === 'true'
   const consultationId = payload.merchant_order_id || payload.order
@@ -74,14 +83,21 @@ export async function POST(request: Request) {
 
   if (success && consultationId) {
     try {
-      await updateConsultationAsService(consultationId, {
+      const result = await updateConsultationAsService(consultationId, {
         status: 'pending_booking',
         payment_id: String(transactionId ?? ''),
       })
+      if (!result) {
+        console.error('[paymob-webhook] updateConsultationAsService returned null for:', consultationId)
+        return NextResponse.json({ error: 'Consultation not found or update failed.' }, { status: 404 })
+      }
+      console.log('[paymob-webhook] Consultation marked as paid:', consultationId)
     } catch (e) {
-      console.error('Failed to mark consultation as paid after Paymob webhook:', e)
+      console.error('[paymob-webhook] Failed to mark consultation as paid:', e)
       return NextResponse.json({ error: 'DB update failed.' }, { status: 500 })
     }
+  } else {
+    console.log('[paymob-webhook] Skipping update: success=%s, consultationId=%s', success, consultationId)
   }
 
   return NextResponse.json({ ok: true })

@@ -71,48 +71,63 @@ export default function NewConsultation() {
     const urlConsultationId = params.get('consultation')
     const pendingId = localStorage.getItem('pending_consultation_id')
 
+    console.log('[paymob-redirect] raw query:', window.location.search, JSON.stringify({
+      success,
+      id: transactionId,
+      order: orderId,
+      step: urlStep,
+      consultation: urlConsultationId,
+      pendingId,
+    }))
+
     const isPaymobRedirect = success === 'true' && (transactionId || pendingId)
 
     if (urlStep === '5' || isPaymobRedirect) {
       setRedirectResolving(true)
 
       const resolveAndRedirect = async () => {
-        let resolvedId = urlConsultationId || pendingId
+        try {
+          let resolvedId = urlConsultationId || pendingId
 
-        // If we don't have our custom consultation ID parameter (due to query params stripping),
-        // look it up using the transactionId (payment_id) from the redirect.
-        if (!resolvedId && transactionId) {
-          try {
-            const match = await getConsultationByPaymentId(transactionId)
-            if (match) {
-              resolvedId = match.id
-            }
-          } catch (e) {
-            console.error('Error resolving consultation by payment ID:', e)
+          if (!resolvedId && orderId) {
+            resolvedId = orderId
           }
-        }
 
-        // Final fallback to orderId
-        if (!resolvedId && orderId) {
-          resolvedId = orderId
-        }
-
-        if (resolvedId) {
-          setStep(5)
-          setConsultationId(resolvedId)
-          if (success === 'true') {
+          // Fallback: look up by transaction ID (payment_id)
+          if (!resolvedId && transactionId) {
             try {
-              await updateConsultation(resolvedId, {
-                status: 'pending_booking',
-                payment_id: transactionId || '',
-              })
-              localStorage.removeItem('pending_consultation_id')
+              const match = await getConsultationByPaymentId(transactionId)
+              if (match) {
+                resolvedId = match.id
+              }
             } catch (e) {
-              console.error('Failed to mark consultation as paid:', e)
+              console.error('[paymob-redirect] Error resolving consultation by payment ID:', e)
             }
           }
+
+          console.log('[paymob-redirect] resolvedId:', resolvedId)
+
+          if (resolvedId) {
+            setStep(5)
+            setConsultationId(resolvedId)
+            if (success === 'true') {
+              try {
+                await updateConsultation(resolvedId, {
+                  status: 'pending_booking',
+                  payment_id: transactionId || '',
+                })
+                localStorage.removeItem('pending_consultation_id')
+                console.log('[paymob-redirect] Consultation marked as paid:', resolvedId)
+              } catch (e) {
+                console.error('[paymob-redirect] Failed to mark consultation as paid:', e)
+              }
+            }
+          } else {
+            console.error('[paymob-redirect] Could not resolve consultation ID from redirect params')
+          }
+        } finally {
+          setRedirectResolving(false)
         }
-        setRedirectResolving(false)
       }
 
       resolveAndRedirect()

@@ -36,6 +36,7 @@ export async function POST(request: Request) {
       'https://www.kbaterjee.clinic'
 
     const redirectUrl = `${baseUrl}/consultation/new`
+    console.log('[paymob-api] redirectUrl:', redirectUrl, 'consultationId:', consultationId)
 
     const [first = 'Patient', ...rest] = (patient?.name ?? '').split(' ')
     const last = rest.join(' ') || 'NA'
