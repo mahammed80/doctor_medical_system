@@ -1,13 +1,11 @@
 import { supabase, Consultation, ConsultationFile, FileCategory, ConsultationStatus } from './supabase'
 import { DOCTORS } from './doctors'
 import { sendMessage } from './chatService'
-import { isDemoMode } from './demoMode'
 
 // Extended type — same shape as Consultation plus legacy local-only props.
 export type EnhancedConsultation = Consultation
 
 const isBrowser = typeof window !== 'undefined'
-const isDemo = isDemoMode()
 
 // ── Initial mock data ───────────────────────────────────────────────────────
 const MOCK_CONSULTATIONS: EnhancedConsultation[] = [
@@ -130,21 +128,23 @@ function saveLocalConsultations(list: EnhancedConsultation[]) {
 
 // ── Read ────────────────────────────────────────────────────────────────────
 export async function getConsultations(): Promise<EnhancedConsultation[]> {
-  if (isDemo) {
+  try {
+    const { data, error } = await supabase
+      .from('consultations')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    return (data || []) as EnhancedConsultation[]
+  } catch (err) {
+    console.warn('[consultation] getConsultations Supabase failed, using localStorage:', err instanceof Error ? err.message : err)
     return getLocalConsultations()
       .slice()
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
   }
-  const { data, error } = await supabase
-    .from('consultations')
-    .select('*')
-    .order('created_at', { ascending: false })
-  if (error) throw error
-  return (data || []) as EnhancedConsultation[]
 }
 
 export async function getConsultationById(id: string): Promise<EnhancedConsultation | null> {
-  if (isDemo || id.startsWith('demo-') || id.startsWith('mock-')) {
+  if (id.startsWith('demo-') || id.startsWith('mock-')) {
     return getLocalConsultations().find(c => c.id === id) || null
   }
   const { data, error } = await supabase
@@ -157,7 +157,7 @@ export async function getConsultationById(id: string): Promise<EnhancedConsultat
 }
 
 export async function getConsultationByPaymentId(paymentId: string): Promise<EnhancedConsultation | null> {
-  if (isDemo || paymentId.startsWith('demo-') || paymentId.startsWith('mock-')) {
+  if (paymentId.startsWith('demo-') || paymentId.startsWith('mock-')) {
     return getLocalConsultations().find(c => c.payment_id === paymentId) || null
   }
   const { data, error } = await supabase
@@ -170,7 +170,7 @@ export async function getConsultationByPaymentId(paymentId: string): Promise<Enh
 }
 
 export async function getLatestConsultationByNationalId(nationalId: string): Promise<EnhancedConsultation | null> {
-  if (isDemo || nationalId.startsWith('demo-') || nationalId.startsWith('mock-')) {
+  if (nationalId.startsWith('demo-') || nationalId.startsWith('mock-')) {
     const found = getLocalConsultations()
       .filter(c => c.patient_national_id === nationalId)
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -188,7 +188,7 @@ export async function getLatestConsultationByNationalId(nationalId: string): Pro
 }
 
 export async function getConsultationsByNationalId(nationalId: string): Promise<EnhancedConsultation[]> {
-  if (isDemo || nationalId.startsWith('demo-') || nationalId.startsWith('mock-')) {
+  if (nationalId.startsWith('demo-') || nationalId.startsWith('mock-')) {
     return getLocalConsultations()
       .filter(c => c.patient_national_id === nationalId)
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -220,14 +220,9 @@ export async function createConsultation(data: CreateInput): Promise<EnhancedCon
     calendly_event_url: null,
   }
 
-  if (isDemo) {
-    console.warn('[consultation] Running in DEMO mode — consultation stored locally only')
-    const list = getLocalConsultations()
-    list.push(newRecord)
-    saveLocalConsultations(list)
-    return newRecord
-  }
-
+  // Always try Supabase first, regardless of isDemo flag.
+  // The isDemo flag may be unreliable on the client due to build-time
+  // inlining quirks. The catch block handles the true fallback.
   try {
     const { data: insertedData, error } = await supabase
       .from('consultations')
@@ -260,13 +255,13 @@ export async function createConsultation(data: CreateInput): Promise<EnhancedCon
       console.error('[consultation] Supabase insert error:', JSON.stringify(error))
       throw error
     }
+    console.log('[consultation] Created in Supabase, id:', insertedData?.id)
     return { ...newRecord, ...insertedData } as EnhancedConsultation
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    console.error('[consultation] Supabase insert FAILED — falling back to demo mode:', msg)
+    console.error('[consultation] Supabase insert FAILED, falling back to localStorage:', msg)
     console.error('[consultation] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'MISSING')
     console.error('[consultation] Supabase ANON KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'set' : 'MISSING')
-    console.error('[consultation] isDemo flag:', isDemo)
     const list = getLocalConsultations()
     list.push(newRecord)
     saveLocalConsultations(list)
@@ -279,7 +274,7 @@ export async function updateConsultation(
   id: string,
   updates: Partial<EnhancedConsultation>
 ): Promise<EnhancedConsultation | null> {
-  if (isDemo || id.startsWith('demo-') || id.startsWith('mock-')) {
+  if (id.startsWith('demo-') || id.startsWith('mock-')) {
     const list = getLocalConsultations()
     const index = list.findIndex(c => c.id === id)
     if (index === -1) return null
@@ -331,7 +326,7 @@ export async function transitionStatus(
 
 // ── Files ───────────────────────────────────────────────────────────────────
 export async function getConsultationFiles(consultationId: string): Promise<ConsultationFile[]> {
-  if (isDemo || consultationId.startsWith('demo-') || consultationId.startsWith('mock-')) {
+  if (consultationId.startsWith('demo-') || consultationId.startsWith('mock-')) {
     if (isBrowser) {
       const savedFiles = localStorage.getItem(`files_${consultationId}`)
       if (savedFiles) return JSON.parse(savedFiles) as ConsultationFile[]
@@ -373,7 +368,7 @@ export async function addConsultationFile(
     created_at: new Date().toISOString(),
   }
 
-  if (isDemo || consultationId.startsWith('demo-') || consultationId.startsWith('mock-')) {
+  if (consultationId.startsWith('demo-') || consultationId.startsWith('mock-')) {
     if (isBrowser) {
       const key = `files_${consultationId}`
       const existing = localStorage.getItem(key)
@@ -454,11 +449,6 @@ const DEFAULT_SETTINGS: DoctorScheduleSettings = {
 }
 
 export async function getDoctorSettings(doctorId: string): Promise<DoctorScheduleSettings> {
-  if (isDemo) {
-    if (!isBrowser) return DEFAULT_SETTINGS
-    const saved = localStorage.getItem(`doctor_settings_${doctorId}`)
-    return saved ? JSON.parse(saved) : DEFAULT_SETTINGS
-  }
   try {
     const { data, error } = await supabase
       .from('doctor_settings')
@@ -468,23 +458,28 @@ export async function getDoctorSettings(doctorId: string): Promise<DoctorSchedul
     if (error) throw error
     return (data?.settings as DoctorScheduleSettings) || DEFAULT_SETTINGS
   } catch {
+    if (isBrowser) {
+      const saved = localStorage.getItem(`doctor_settings_${doctorId}`)
+      return saved ? JSON.parse(saved) : DEFAULT_SETTINGS
+    }
     return DEFAULT_SETTINGS
   }
 }
 
 export async function saveDoctorSettings(doctorId: string, settings: DoctorScheduleSettings): Promise<DoctorScheduleSettings> {
-  if (isDemo) {
+  try {
+    const { error } = await supabase.rpc('upsert_doctor_settings', {
+      p_doctor_id: doctorId,
+      p_settings: settings,
+    })
+    if (error) throw error
+    return settings
+  } catch {
     if (isBrowser) {
       localStorage.setItem(`doctor_settings_${doctorId}`, JSON.stringify(settings))
     }
     return settings
   }
-  const { error } = await supabase.rpc('upsert_doctor_settings', {
-    p_doctor_id: doctorId,
-    p_settings: settings,
-  })
-  if (error) throw error
-  return settings
 }
 
 export type TimeSlot = {
