@@ -14,10 +14,16 @@
 const SUPABASE_URL = 'https://qxqkgarlbftrqizhwgxt.supabase.co'
 
 export function isDemoMode(): boolean {
-  if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+  // On the server, use process.env (available through Node.js).
+  // On the client, Next.js polyfills process but Turbopack may not inline
+  // NEXT_PUBLIC_* values — so use the hardcoded SUPABASE_URL directly.
+  const url = typeof window === 'undefined'
+    ? (process.env.NEXT_PUBLIC_SUPABASE_URL || '')
+    : SUPABASE_URL
+
+  if (typeof window === 'undefined' && process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
     return true
   }
-  const url = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_SUPABASE_URL) || SUPABASE_URL
   if (!url) return true
   if (url === 'https://placeholder.supabase.co') return true
   return false
