@@ -1,9 +1,9 @@
 -- ============================================================
 -- Migration v12 — Allow anonymous patients to read and update consultations
--- The booking flow (payment, scheduling) requires anonymous patients
--- to read and update their own consultation records. Patient-side has no auth,
--- so we allow anon reads and updates. Consultation IDs are UUIDs (unguessable),
--- making this acceptable for a patient-facing booking app.
+-- and read doctor_settings. The booking flow (payment, scheduling) requires
+-- anonymous patients to read their own consultation records and doctor
+-- settings. Patient-side has no auth, so we allow anon access.
+-- Consultation IDs are UUIDs (unguessable), making this acceptable.
 -- Run this in your Supabase SQL editor.
 -- ============================================================
 
@@ -20,4 +20,12 @@ create policy "consultations_update_public"
   to anon
   using (true)
   with check (true);
+
+-- Allow anonymous patients to read doctor settings (schedule hours, prices, etc.)
+drop policy if exists "settings_select_public" on doctor_settings;
+
+create policy "settings_select_public"
+  on doctor_settings for select
+  to anon
+  using (true);
 
