@@ -92,17 +92,22 @@ export default function NewConsultation() {
         try {
           let resolvedId = urlConsultationId || pendingId
 
+          // orderId is Paymob's own order id (stored as payment_id when the
+          // checkout link was created) — not our consultation id — so it
+          // must be resolved via lookup, same as the transaction id fallback.
           if (!resolvedId && orderId) {
-            resolvedId = orderId
+            try {
+              const match = await getConsultationByPaymentId(orderId)
+              if (match) resolvedId = match.id
+            } catch (e) {
+              console.error('[paymob-redirect] Error resolving consultation by order ID:', e)
+            }
           }
 
-          // Fallback: look up by transaction ID (payment_id)
           if (!resolvedId && transactionId) {
             try {
               const match = await getConsultationByPaymentId(transactionId)
-              if (match) {
-                resolvedId = match.id
-              }
+              if (match) resolvedId = match.id
             } catch (e) {
               console.error('[paymob-redirect] Error resolving consultation by payment ID:', e)
             }
@@ -113,18 +118,10 @@ export default function NewConsultation() {
           if (resolvedId) {
             setStep(5)
             setConsultationId(resolvedId)
-            if (success === 'true') {
-              try {
-                await updateConsultation(resolvedId, {
-                  status: 'pending_booking',
-                  payment_id: transactionId || '',
-                })
-                localStorage.removeItem('pending_consultation_id')
-                console.log('[paymob-redirect] Consultation marked as paid:', resolvedId)
-              } catch (e) {
-                console.error('[paymob-redirect] Failed to mark consultation as paid:', e)
-              }
-            }
+            // Payment status is written server-side by the HMAC-verified
+            // /api/payment/verify webhook — the client only displays the
+            // outcome, it never marks a consultation as paid itself.
+            localStorage.removeItem('pending_consultation_id')
           } else {
             console.error('[paymob-redirect] Could not resolve consultation ID from redirect params')
           }

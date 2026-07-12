@@ -118,7 +118,11 @@ export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParam
     integration_id: Number(integrationId),
     is_live: isLive,
     billing_data: params.billingData,
-    extras: { consultation_id: params.consultationId },
+    // Paymob's payment-links API reads this key as `extra` (singular) — a
+    // request sent with `extras` (plural) is silently accepted but the data
+    // is dropped, which we confirmed by decoding a live checkout token and
+    // seeing `"extra": {}` come back empty despite sending consultation_id.
+    extra: { consultation_id: params.consultationId },
     redirection_url: params.redirectUrl,
     merchant_order_id: params.consultationId,
   }
