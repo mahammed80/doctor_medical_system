@@ -1,13 +1,10 @@
-// Paymob KSA uses the new "next/v1" platform whose primary checkout
-// integration is a Payment Link (https://ksa.paymob.com/standalone/?token=…).
-// The legacy "payment_keys + iframe" flow from accept.paymob.com is not
-// available on KSA.
+// Paymob KSA Payment Links flow.
 //
 // Flow:
-//   1. Server: POST /api/ecommerce/payment-links   → returns { url, id, token }
-//   2. Client: redirect (or iframe) to the returned URL.
-//   3. After payment, Paymob redirects to our `redirection_url` with
-//      `?token=…&success=true&…` so the client can mark the consultation paid.
+//   1. Server: POST /api/ecommerce/payment-links → returns { url, id, token }
+//   2. Client: redirect to the returned URL.
+//   3. After payment, Paymob sends webhook to transaction-processed callback
+//      and redirects the user to the transaction-response callback URL.
 
 const PAYMOB_BASE = (process.env.PAYMOB_BASE_URL || 'https://ksa.paymob.com').replace(/\/+$/, '')
 
@@ -52,10 +49,6 @@ export async function getPaymobAuthToken(): Promise<string> {
   return data.token
 }
 
-function authHeader(token: string): Record<string, string> {
-  return { Authorization: `Bearer ${token}` }
-}
-
 export type PaymobBillingData = {
   first_name: string
   last_name: string
@@ -79,10 +72,6 @@ export type CreatePaymobCheckoutParams = {
   redirectUrl: string
 }
 
-/**
- * Creates a Paymob Payment Link and returns the hosted checkout URL the
- * customer should be redirected to. Works on the KSA "next/v1" platform.
- */
 export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParams): Promise<{
   url: string
   paymentId: string
@@ -99,18 +88,8 @@ export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParam
 
   const token = await getPaymobAuthToken()
   const currency = params.currency || 'SAR'
-
-  // Paymob KSA's payment-links endpoint requires `is_live` to explicitly
-  // indicate whether the request targets the live or test environment.
-  // It is read from `PAYMOB_IS_LIVE` ("true" / "false"). Defaults to false
-  // (test mode) so local development works out of the box.
   const isLive = String(process.env.PAYMOB_IS_LIVE || '').toLowerCase() === 'true'
 
-  // KSA's payment-links endpoint requires `payment_methods` to be a non-null
-  // array of integration IDs. We always send a single-element array with the
-  // configured card integration ID. We also include `integration_id` (singular)
-  // as a defensive fallback for older Paymob KSA validator versions that
-  // expect that field name. The API silently ignores unknown fields.
   const body: Record<string, unknown> = {
     amount_cents: params.amountCents,
     currency,
@@ -138,7 +117,7 @@ export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParam
   const data = await postJson<PaymobPaymentLinkResponse>(
     `${PAYMOB_BASE}/api/ecommerce/payment-links`,
     body,
-    authHeader(token),
+    { Authorization: `Bearer ${token}` },
   )
 
   const url = data.client_url || data.url

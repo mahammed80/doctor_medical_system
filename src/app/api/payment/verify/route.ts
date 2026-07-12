@@ -124,7 +124,9 @@ export async function POST(request: Request) {
     try {
       // Paymob identifies orders by its own numeric order id — translate
       // that back to our consultation UUID via the payment_id we stored
-      // when the checkout link was created.
+      // when the checkout link was created. (Passing Paymob's numeric order
+      // id directly as our uuid primary key would fail: the id column is
+      // typed uuid, so a bare numeric string can never match.)
       const consultationId = await getConsultationIdByPaymentId(orderId)
       if (!consultationId) {
         console.error('[paymob-webhook] No consultation found for Paymob order id:', orderId)
