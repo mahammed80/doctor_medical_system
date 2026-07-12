@@ -2,16 +2,7 @@ import { NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
 
-const ALLOWED_TOKEN = process.env.DASHBOARD_PASSWORD || 'admin123'
-
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const token = searchParams.get('token')
-
-  if (token !== ALLOWED_TOKEN) {
-    return NextResponse.json({ error: 'Unauthorized. Add ?token=...' }, { status: 401 })
-  }
-
+export async function GET() {
   const env = {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || '❌ MISSING',
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✅ SET' : '❌ MISSING',
