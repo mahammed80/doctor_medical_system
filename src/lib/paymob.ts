@@ -1,23 +1,20 @@
-// Paymob KSA uses the new "next/v1" platform whose primary checkout
-// integration is a Payment Link (https://ksa.paymob.com/standalone/?token=…).
-// The legacy "payment_keys + iframe" flow from accept.paymob.com is not
-// available on KSA.
+// Paymob KSA MIGS-compatible payment flow.
 //
-// Flow:
-//   1. Server: POST /api/ecommerce/payment-links   → returns { url, id, token }
-//   2. Client: redirect (or iframe) to the returned URL.
-//   3. After payment, Paymob redirects to our `redirection_url` with
-//      `?token=…&success=true&…` so the client can mark the consultation paid.
+// MIGS (Online Card) integrations on Paymob KSA do NOT support the
+// /api/ecommerce/payment-links endpoint. Instead, they use the standard
+// Orders + Payment Keys flow with a standalone redirect:
+//
+//   1. POST /api/ecommerce/orders          → creates order, returns order id
+//   2. POST /api/acceptance/payment_keys   → creates one-time payment key
+//   3. Redirect user to /standalone/?token=… → hosted checkout page
+//   4. After payment, Paymob redirects to our transaction response callback
+//      with ?success=true&id=…&order=…
 
 const PAYMOB_BASE = (process.env.PAYMOB_BASE_URL || 'https://ksa.paymob.com').replace(/\/+$/, '')
 
 type PaymobAuthResponse = { token: string; profile: unknown }
-type PaymobPaymentLinkResponse = {
-  id: number
-  url: string
-  token: string
-  client_url: string
-}
+type PaymobOrderResponse = { id: number; created_at: string }
+type PaymobPaymentKeyResponse = { token: string; id: number }
 
 let cachedToken: { value: string; expiresAt: number } | null = null
 
@@ -52,10 +49,6 @@ export async function getPaymobAuthToken(): Promise<string> {
   return data.token
 }
 
-function authHeader(token: string): Record<string, string> {
-  return { Authorization: `Bearer ${token}` }
-}
-
 export type PaymobBillingData = {
   first_name: string
   last_name: string
@@ -79,10 +72,6 @@ export type CreatePaymobCheckoutParams = {
   redirectUrl: string
 }
 
-/**
- * Creates a Paymob Payment Link and returns the hosted checkout URL the
- * customer should be redirected to. Works on the KSA "next/v1" platform.
- */
 export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParams): Promise<{
   url: string
   paymentId: string
@@ -97,50 +86,67 @@ export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParam
     )
   }
 
-  const token = await getPaymobAuthToken()
+  const authToken = await getPaymobAuthToken()
   const currency = params.currency || 'SAR'
 
-  // Paymob KSA's payment-links endpoint requires `is_live` to explicitly
-  // indicate whether the request targets the live or test environment.
-  // It is read from `PAYMOB_IS_LIVE` ("true" / "false"). Defaults to false
-  // (test mode) so local development works out of the box.
-  const isLive = String(process.env.PAYMOB_IS_LIVE || '').toLowerCase() === 'true'
-
-  // KSA's payment-links endpoint requires `payment_methods` to be a non-null
-  // array of integration IDs. We always send a single-element array with the
-  // configured card integration ID. We also include `integration_id` (singular)
-  // as a defensive fallback for older Paymob KSA validator versions that
-  // expect that field name. The API silently ignores unknown fields.
-  const body: Record<string, unknown> = {
-    amount_cents: params.amountCents,
-    currency,
-    payment_methods: [Number(integrationId)],
-    integration_id: Number(integrationId),
-    is_live: isLive,
-    billing_data: params.billingData,
-    extras: { consultation_id: params.consultationId },
-    redirection_url: params.redirectUrl,
-    merchant_order_id: params.consultationId,
-  }
-
-  console.log('[paymob] creating checkout link', {
+  console.log('[paymob] creating payment via orders+payment_keys flow', {
     consultationId: params.consultationId,
     integrationId,
     amountCents: params.amountCents,
     currency,
-    bodyKeys: Object.keys(body),
   })
 
-  const data = await postJson<PaymobPaymentLinkResponse>(
-    `${PAYMOB_BASE}/api/ecommerce/payment-links`,
-    body,
-    authHeader(token),
+  // Step 1: Create an order
+  const order = await postJson<PaymobOrderResponse>(
+    `${PAYMOB_BASE}/api/ecommerce/orders`,
+    {
+      auth_token: authToken,
+      amount_cents: params.amountCents,
+      currency,
+      merchant_order_id: params.consultationId,
+      items: [],
+      shipping_data: params.billingData,
+      shipping_details: {
+        notes: '',
+        number_of_packages: 1,
+        weight: 1,
+        weight_unit: 'KG',
+        length: 1,
+        width: 1,
+        height: 1,
+        contents: 'Medical Consultation',
+      },
+    },
   )
 
-  const url = data.client_url || data.url
-  if (!url) {
-    throw new Error('Paymob payment link response did not include a URL.')
-  }
+  console.log('[paymob] order created:', { orderId: order.id })
 
-  return { url, paymentId: String(data.id), token: data.token }
+  // Step 2: Generate a payment key (one-time token)
+  const paymentKey = await postJson<PaymobPaymentKeyResponse>(
+    `${PAYMOB_BASE}/api/acceptance/payment_keys`,
+    {
+      auth_token: authToken,
+      amount_cents: params.amountCents,
+      expiration: 3600,
+      order_id: order.id,
+      billing_data: params.billingData,
+      currency,
+      integration_id: Number(integrationId),
+      lock_order_when_paid: true,
+    },
+  )
+
+  // Step 3: Build the standalone checkout URL
+  const checkoutUrl = `${PAYMOB_BASE}/standalone/?token=${paymentKey.token}`
+
+  console.log('[paymob] payment key generated, checkout URL ready:', {
+    paymentKeyId: paymentKey.id,
+    checkoutUrl,
+  })
+
+  return {
+    url: checkoutUrl,
+    paymentId: String(order.id),
+    token: paymentKey.token,
+  }
 }
