@@ -4,11 +4,6 @@ import { updateConsultationAsService } from '@/lib/server/consultationAdmin'
 
 export const runtime = 'nodejs'
 
-// Paymob KSA's "next/v1" platform uses a slightly different transaction
-// callback shape than the legacy HMAC. We accept both shapes — the legacy
-// HMAC is verified when PAYMOB_HMAC_SECRET is configured; the new KSA
-// callback is verified by checking the `success` field on the order query
-// string Paymob redirects back with (?success=true|false).
 const HMAC_FIELDS = [
   'amount_cents',
   'created_at',
@@ -44,6 +39,24 @@ function verifyHmac(params: Record<string, string>, hmacSecret: string): boolean
   }
 }
 
+function flattenPayload(raw: Record<string, unknown>): Record<string, string> {
+  // Paymob's transaction-processed callback wraps fields in an `obj` key:
+  //   { "type": "TRANSACTION", "obj": { "id": 123, "success": true, ... } }
+  // Flatten so we can compute HMAC against the top-level params.* fields.
+  const source = (raw.obj && typeof raw.obj === 'object' ? raw.obj : raw) as Record<string, unknown>
+  const flat: Record<string, string> = {}
+  for (const [k, v] of Object.entries(source)) {
+    if (v === null || v === undefined) {
+      flat[k] = ''
+    } else if (typeof v === 'object') {
+      flat[k] = String((v as Record<string, unknown>).id ?? JSON.stringify(v))
+    } else {
+      flat[k] = String(v)
+    }
+  }
+  return flat
+}
+
 export async function POST(request: Request) {
   const hmacSecret = process.env.PAYMOB_HMAC_SECRET
   console.log('[paymob-webhook] HMAC secret configured:', !!hmacSecret && hmacSecret !== 'replace_with_hmac_secret')
@@ -56,30 +69,39 @@ export async function POST(request: Request) {
     )
   }
 
-  let payload: Record<string, string>
+  let raw: Record<string, unknown>
   const contentType = request.headers.get('content-type') ?? ''
   if (contentType.includes('application/json')) {
-    payload = (await request.json()) as Record<string, string>
+    raw = (await request.json()) as Record<string, unknown>
   } else {
     const form = await request.formData()
-    payload = Object.fromEntries(
+    raw = Object.fromEntries(
       [...form.entries()].map(([k, v]) => [k, typeof v === 'string' ? v : '']),
-    ) as Record<string, string>
+    ) as Record<string, unknown>
   }
 
-  console.log('[paymob-webhook] received payload keys:', Object.keys(payload))
-  console.log('[paymob-webhook] success field:', payload.success, '| id:', payload.id, '| order:', payload.order, '| merchant_order_id:', payload.merchant_order_id)
+  console.log('[paymob-webhook] received payload keys:', Object.keys(raw))
+  console.log('[paymob-webhook] has obj wrapper:', 'obj' in raw)
 
-  if (!verifyHmac(payload, hmacSecret)) {
-    console.error('[paymob-webhook] HMAC verification FAILED for transaction:', payload.id)
+  const params = flattenPayload(raw)
+
+  console.log('[paymob-webhook] flattened fields:', {
+    id: params.id,
+    success: params.success,
+    order: params.order,
+    merchant_order_id: params.merchant_order_id,
+  })
+
+  if (!verifyHmac(params, hmacSecret)) {
+    console.error('[paymob-webhook] HMAC verification FAILED for transaction:', params.id)
     return NextResponse.json({ error: 'Invalid HMAC.' }, { status: 400 })
   }
 
   console.log('[paymob-webhook] HMAC verification passed')
 
-  const success = payload.success === 'true'
-  const consultationId = payload.merchant_order_id || payload.order
-  const transactionId = payload.id
+  const success = params.success === 'true'
+  const consultationId = params.merchant_order_id || params.order
+  const transactionId = params.id
 
   if (success && consultationId) {
     try {

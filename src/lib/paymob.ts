@@ -1,20 +1,20 @@
-// Paymob KSA MIGS-compatible payment flow.
+// Paymob KSA Payment Links flow.
 //
-// MIGS (Online Card) integrations on Paymob KSA do NOT support the
-// /api/ecommerce/payment-links endpoint. Instead, they use the standard
-// Orders + Payment Keys flow with a standalone redirect:
-//
-//   1. POST /api/ecommerce/orders          → creates order, returns order id
-//   2. POST /api/acceptance/payment_keys   → creates one-time payment key
-//   3. Redirect user to /standalone/?token=… → hosted checkout page
-//   4. After payment, Paymob redirects to our transaction response callback
-//      with ?success=true&id=…&order=…
+// Flow:
+//   1. Server: POST /api/ecommerce/payment-links → returns { url, id, token }
+//   2. Client: redirect to the returned URL.
+//   3. After payment, Paymob sends webhook to transaction-processed callback
+//      and redirects the user to the transaction-response callback URL.
 
 const PAYMOB_BASE = (process.env.PAYMOB_BASE_URL || 'https://ksa.paymob.com').replace(/\/+$/, '')
 
 type PaymobAuthResponse = { token: string; profile: unknown }
-type PaymobOrderResponse = { id: number; created_at: string }
-type PaymobPaymentKeyResponse = { token: string; id: number }
+type PaymobPaymentLinkResponse = {
+  id: number
+  url: string
+  token: string
+  client_url: string
+}
 
 let cachedToken: { value: string; expiresAt: number } | null = null
 
@@ -86,67 +86,40 @@ export async function createPaymobCheckoutLink(params: CreatePaymobCheckoutParam
     )
   }
 
-  const authToken = await getPaymobAuthToken()
+  const token = await getPaymobAuthToken()
   const currency = params.currency || 'SAR'
+  const isLive = String(process.env.PAYMOB_IS_LIVE || '').toLowerCase() === 'true'
 
-  console.log('[paymob] creating payment via orders+payment_keys flow', {
+  const body: Record<string, unknown> = {
+    amount_cents: params.amountCents,
+    currency,
+    payment_methods: [Number(integrationId)],
+    integration_id: Number(integrationId),
+    is_live: isLive,
+    billing_data: params.billingData,
+    extra: { consultation_id: params.consultationId },
+    redirection_url: params.redirectUrl,
+    merchant_order_id: params.consultationId,
+  }
+
+  console.log('[paymob] creating checkout link', {
     consultationId: params.consultationId,
     integrationId,
     amountCents: params.amountCents,
     currency,
+    bodyKeys: Object.keys(body),
   })
 
-  // Step 1: Create an order
-  const order = await postJson<PaymobOrderResponse>(
-    `${PAYMOB_BASE}/api/ecommerce/orders`,
-    {
-      auth_token: authToken,
-      amount_cents: params.amountCents,
-      currency,
-      merchant_order_id: params.consultationId,
-      items: [],
-      shipping_data: params.billingData,
-      shipping_details: {
-        notes: '',
-        number_of_packages: 1,
-        weight: 1,
-        weight_unit: 'KG',
-        length: 1,
-        width: 1,
-        height: 1,
-        contents: 'Medical Consultation',
-      },
-    },
+  const data = await postJson<PaymobPaymentLinkResponse>(
+    `${PAYMOB_BASE}/api/ecommerce/payment-links`,
+    body,
+    { Authorization: `Bearer ${token}` },
   )
 
-  console.log('[paymob] order created:', { orderId: order.id })
-
-  // Step 2: Generate a payment key (one-time token)
-  const paymentKey = await postJson<PaymobPaymentKeyResponse>(
-    `${PAYMOB_BASE}/api/acceptance/payment_keys`,
-    {
-      auth_token: authToken,
-      amount_cents: params.amountCents,
-      expiration: 3600,
-      order_id: order.id,
-      billing_data: params.billingData,
-      currency,
-      integration_id: Number(integrationId),
-      lock_order_when_paid: true,
-    },
-  )
-
-  // Step 3: Build the standalone checkout URL
-  const checkoutUrl = `${PAYMOB_BASE}/standalone/?token=${paymentKey.token}`
-
-  console.log('[paymob] payment key generated, checkout URL ready:', {
-    paymentKeyId: paymentKey.id,
-    checkoutUrl,
-  })
-
-  return {
-    url: checkoutUrl,
-    paymentId: String(order.id),
-    token: paymentKey.token,
+  const url = data.client_url || data.url
+  if (!url) {
+    throw new Error('Paymob payment link response did not include a URL.')
   }
+
+  return { url, paymentId: String(data.id), token: data.token }
 }
